@@ -22,7 +22,7 @@ alfred twine
 To configure a python project to use alfred, here is the procedure:
 
 ```bash
-pip install alfred
+pip3 install alfred-cli
 alfred init
 ```
 
