@@ -22,7 +22,7 @@ jobs:
               run: |
                 pip install setuptools
                 pip install pipenv
-                make install_requirements_dev
+                pipenv install --dev
 
             - name: continuous integration process
               run: pipenv run alfred ci

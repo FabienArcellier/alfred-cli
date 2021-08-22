@@ -31,11 +31,14 @@ setup(
         "plumbum",
         "PyYAML"
     ],
-    name='pyalfred',
-    package_dir={'': 'src'},
+    name='alfred-cli',
+    package_dir={
+        '': 'src',
+        'tests': 'tests'
+    },
     package_data={
         'resources': ['src/alfred/resources/*'],
     },
     packages=find_packages(where="src", exclude=["tests.*", "tests"]),
-    version='1.0.0'
+    version='1.0.1'
 )

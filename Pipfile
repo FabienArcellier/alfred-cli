@@ -4,8 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-mylib = {path = ".",extras = ["dev"], editable = true}
+alfred = {path = ".",extras = ["dev"], editable = true}
 
 [packages]
-mylib = {path = ".", editable = true}
-plumbum = "*"
+alfred = {path = ".", editable = true}
