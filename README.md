@@ -1,24 +1,26 @@
 ## Motivation
 
-blueprint to implement a library in python. This library may be deployed on pip.
+Alfred is an extensible building tool that can replace a Makefile or Fabric.
+Writing commands in python is done in a few minutes, even in the case of a mono-repository
+which contains several products.
 
-* code to share between several applications
-* domain specific library
-* compliant with different python version
-* ...
+```bash
+# run the continuous integration process
+alfred ci
+
+alfred product1:migrate:database
+```
 
 [![ci](https://github.com/FabienArcellier/blueprint-library-pip/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/blueprint-library-pip/actions/workflows/ci.yml)
 
-## Getting started
+## Behind the scene
 
-1. clone this repository
+Alfred is magic thanks to click and plumblum :
 
-2. remove .git directory
+* click
+* plumblum
 
-3. use your library identifier as module name
-
-    * replace `mylib`, `mylib_tests` by your own identifier
-    * change `.coveragerc`, `Makefile`, `Pipfile`, `setup.py`, `tox.ini`
+Those libraries are hidden but they are the core of execution of alfred.
 
 ## The latest version
 
@@ -26,16 +28,6 @@ You can find the latest version to ...
 
 ```bash
 git clone https://github.com/FabienArcellier/blueprint-library-pip.git
-```
-
-## Usage
-
-You can run the application with the following command
-
-```python
-import alfred
-
-alfred.hello_world()
 ```
 
 ## Developper guideline
@@ -106,7 +98,7 @@ make tests
 
 MIT License
 
-Copyright (c) 2018 Fabien Arcellier
+Copyright (c) 2021 Fabien Arcellier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

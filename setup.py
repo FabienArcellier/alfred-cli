@@ -14,10 +14,12 @@ setup(
         ],
     },
     install_requires = [
-        "click"
+        "click",
+        "PyYAML"
     ],
     extras_require={
         'dev': [
+            'decorator',
             'pylint',
             'coverage',
             'twine'
