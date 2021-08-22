@@ -56,7 +56,7 @@ class AlfredCli(click.MultiCommand):
         return alfred_configuration["plugins"]
 
 
-cli = AlfredCli(help='')
+cli = AlfredCli(help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
 
 
 if __name__ == '__main__':

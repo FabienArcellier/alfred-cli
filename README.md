@@ -11,39 +11,47 @@ alfred ci
 alfred product1:migrate:database
 ```
 
-[![ci](https://github.com/FabienArcellier/blueprint-library-pip/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/blueprint-library-pip/actions/workflows/ci.yml)
+[![ci](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml)
 
 ## Behind the scene
 
-Alfred is magic thanks to click and plumblum :
+Alfred rely heavily on click and plumblum :
 
-* click
-* plumblum
-
-Those libraries are hidden but they are the core of execution of alfred.
+* [click]()
+* [plumblum]()
 
 ## The latest version
 
 You can find the latest version to ...
 
 ```bash
-git clone https://github.com/FabienArcellier/blueprint-library-pip.git
+git clone https://github.com/FabienArcellier/pyalfred.git
 ```
 
 ## Developper guideline
 
+```bash
+pipenv install
+pipenv shell
 ```
-$ make
-activate                       activate the virtualenv associate with this project
-coverage                       output the code coverage in htmlcov/index.html
-help                           provides cli help for this makefile (default)
-install_requirements_dev       install pip requirements for development
-install_requirements           install pip requirements based on requirements.txt
-lint                           run pylint
-tests                          run automatic tests
-tests_units                    run only unit tests
-tox                            run existing test suite on python 2.7, python 3.6 and python 3.7
-update_requirements            update the project dependencies based on setup.py declaration
+
+```
+$ alfred
+
+Usage: alfred [OPTIONS] COMMAND [ARGS]...
+
+  alfred is a building tool to make engineering tasks easier to develop and to
+  maintain
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  ci                 execute continuous integration process of alfred
+  lint               validate alfred using pylint on the package alfred
+  tests              validate alfred with all the automatic testing
+  tests:acceptances  validate alfred with acceptances testing
+  tests:units        validate alfred with unit testing
 ```
 
 ### Install development environment
@@ -52,13 +60,13 @@ Use make to instanciate a python virtual environment in ./venv and install the
 python dependencies.
 
 ```bash
-make install_requirements_dev
+pipenv install --dev
 ```
 
 ### Install production environment
 
 ```bash
-make install_requirements
+pipenv install
 ```
 
 ### Initiate or update the library requirements
@@ -67,7 +75,7 @@ If you want to initiate or update all the requirements `install_requires` declar
 and freeze a new `Pipfile.lock`, use this command
 
 ```bash
-make update_requirements
+pipenv update
 ```
 
 ### Activate the python environment
@@ -76,8 +84,7 @@ When you setup the requirements, a `venv` directory on python 3 is created.
 To activate the venv, you have to execute :
 
 ```bash
-make venv
-source venv/bin/activate
+pipenv shell
 ```
 
 ### Run the linter and the unit tests
@@ -86,8 +93,7 @@ Before commit or send a pull request, you have to execute `pylint` to check the 
 of your code and run the unit tests to validate the behavior.
 
 ```bash
-make lint
-make tests
+alfred ci
 ```
 
 ## Contributors

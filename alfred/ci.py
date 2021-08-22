@@ -1,7 +1,7 @@
 import alfred
 
 
-@alfred.command('ci', help="execute continuous integration process")
+@alfred.command('ci', help="execute continuous integration process of alfred")
 @alfred.option('-v', '--verbose', is_flag=True)
 def ci(verbose: bool):
     alfred.invoke_command('lint', verbose=verbose)
