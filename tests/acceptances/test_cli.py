@@ -4,7 +4,7 @@ import unittest
 from click.testing import CliRunner
 
 from alfred.cli import cli
-from alfred_tests.fixtures import clone_fixture
+from tests.fixtures import clone_fixture
 
 
 class TestCli(unittest.TestCase):

@@ -1,5 +1,5 @@
-APPLICATION_MODULE=alfred
-TEST_MODULE=$(APPLICATION_MODULE)_tests
+APPLICATION_MODULE=src/alfred
+TEST_MODULE=tests
 
 .PHONY: activate
 activate: ## activate the virtualenv associate with this project
@@ -50,11 +50,15 @@ lint: ## run pylint
 	pipenv run pylint --rcfile=.pylintrc $(APPLICATION_MODULE)
 
 .PHONY: tests
-tests: tests_units ## run automatic tests
+tests: tests_units tests_acceptances  ## run automatic tests
 
 .PHONY: tests_units
 tests_units: ## run only unit tests
 	pipenv run python -u -m unittest discover "$(TEST_MODULE)/units"
+
+.PHONY: tests_acceptances
+tests_acceptances: ## run only unit tests
+	pipenv run python -u -m unittest discover "$(TEST_MODULE)/acceptances"
 
 .PHONY: twine
 twine: ## publish on pypi
