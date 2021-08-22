@@ -32,13 +32,9 @@ setup(
         "PyYAML"
     ],
     name='alfred-cli',
-    package_dir={
-        '': 'src',
-        'tests': 'tests'
-    },
     package_data={
-        'resources': ['src/alfred/resources/*'],
+        'resources': ['alfred/resources/*'],
     },
-    packages=find_packages(where="src", exclude=["tests.*", "tests"]),
+    packages=find_packages(exclude=["tests.*", "tests"]),
     version='1.0.1'
 )

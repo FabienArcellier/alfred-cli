@@ -17,7 +17,7 @@ def lint(verbose: bool):
         args.append('-v')
         args += ['-r', 'y']
 
-    args.append('src/alfred')
+    args.append('alfred')
 
     if args:
         alfred.run(pylint, args)

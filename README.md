@@ -49,7 +49,7 @@ feature. Alfred doesn't have it yet.
 
 Alfred allows you to create more complex commands than with Make. From the start, you benefit from a
 formatted documentation for each of your orders. It is easy to create one command per file  thanks
-to auto discovery. You can see an implementation in this repository in [`alfred /`] (alfred /).
+to auto discovery. You can see an implementation in this repository in [`alfred_cmd/`](alfred_cmd/).
 
 Thanks to the power of Click, it's easy to add options to your commands.
 They allow for example to implement flags for your CI process which
