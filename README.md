@@ -20,6 +20,21 @@ Alfred rely heavily on click and plumblum :
 * [click]()
 * [plumblum]()
 
+## Getting started
+
+To configure a python project to use alfred, here is the procedure:
+
+```bash
+pip install alfred
+alfred init
+```
+
+A hello_world command was created for the example:
+
+```bash
+alfred hello_world --name "Fabien"
+```
+
 ## The latest version
 
 You can find the latest version to ...
