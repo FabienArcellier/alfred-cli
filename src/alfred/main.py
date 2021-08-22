@@ -6,21 +6,63 @@ from typing import Optional
 import click
 import plumbum
 import yaml
+from click import BaseCommand
 from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG
 from plumbum.machines import LocalCommand
 from yaml import SafeLoader
 
-from alfred.decorator import AlfredCommand
+from alfred.decorator import ALFRED_COMMANDS
 from alfred.lib import list_hierarchy_directory
 from alfred.type import path
 
 
 @click.pass_context
-def invoke_command(ctx, command: AlfredCommand, **kwargs) -> None:
-    click_command = command.command
+def invoke_command(ctx, command_label: str, **kwargs) -> None:
+    click_command = None
+    origin_alfred_command = None
+    for alfred_command in ALFRED_COMMANDS:
+        if ctx.command.name == alfred_command.name:
+            origin_alfred_command = alfred_command
+
+    plugin = origin_alfred_command.plugin
+    plugin_click_command=lookup_plugin_command(ALFRED_COMMANDS, command_label, plugin)
+    global_click_command=lookup_global_command(ALFRED_COMMANDS, command_label)
+
+    available_plugins_commands = [command.original_name for command in ALFRED_COMMANDS if command.plugin == plugin]
+    available_global_commands = [command.name for command in ALFRED_COMMANDS]
+    if plugin_click_command is None and global_click_command is None:
+        message = [
+            f"command {command_label} does not exists.",
+            f"Available plugin commands for plugin `{plugin}`: {available_plugins_commands}",
+            f"Available global commands: {available_global_commands}",
+        ]
+
+        raise click.ClickException("\n".join(message))
+
+    if plugin_click_command:
+        click_command = plugin_click_command
+    elif global_click_command:
+        click_command = global_click_command
+
     click.echo(click.style(f"$ alfred {click_command.name} : {click_command.help}", fg='green'))
     ctx.invoke(click_command, **kwargs)
+
+
+def lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:
+    click_command = None
+    for alfred_command in all_commands:
+        if alfred_command.original_name == command_label and alfred_command.plugin == plugin:
+            click_command = alfred_command.command
+    return click_command
+
+
+def lookup_global_command(all_commands, command_label) -> Optional[BaseCommand]:
+    click_command = None
+    for alfred_command in all_commands:
+        if alfred_command.name == command_label:
+            click_command = alfred_command.command
+    return click_command
 
 
 def sh(command_name: str, fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name

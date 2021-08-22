@@ -25,4 +25,4 @@ jobs:
                 make install_requirements_dev
 
             - name: continuous integration process
-              run: make ci
+              run: pipenv run alfred ci

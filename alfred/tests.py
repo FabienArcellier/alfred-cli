@@ -1,20 +1,20 @@
 import os
 
-import click
 import alfred
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
 TESTS_PATH = os.path.realpath(os.path.join(ROOT_DIR, "tests"))
 
 
-@alfred.command(click, 'tests', help="validate alfred with unit testing")
-def tests():
-    alfred.invoke_command(tests_units)
-    alfred.invoke_command(tests_acceptances)
+@alfred.command('tests', help="validate alfred with unit testing")
+@alfred.option('-v', '--verbose', is_flag=True)
+def tests(verbose: bool):
+    alfred.invoke_command('tests:units', verbose=verbose)
+    alfred.invoke_command('tests:acceptances', verbose=verbose)
 
 
-@alfred.command(click, 'tests:units', help="validate alfred with unit testing")
-@click.option('-v', '--verbose', is_flag=True)
+@alfred.command('tests:units', help="validate alfred with unit testing")
+@alfred.option('-v', '--verbose', is_flag=True)
 def tests_units(verbose: bool):
     python = alfred.sh('python')
     os.chdir(TESTS_PATH)
@@ -27,8 +27,8 @@ def tests_units(verbose: bool):
         alfred.run(python, args)
 
 
-@alfred.command(click, 'tests:acceptances', help="validate alfred with acceptances testing")
-@click.option('-v', '--verbose', is_flag=True)
+@alfred.command('tests:acceptances', help="validate alfred with acceptances testing")
+@alfred.option('-v', '--verbose', is_flag=True)
 def tests_acceptances(verbose: bool):
     python = alfred.sh('python')
     os.chdir(TESTS_PATH)
