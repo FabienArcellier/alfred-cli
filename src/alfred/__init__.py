@@ -1,7 +1,4 @@
 #!/usr/bin/python
 
-from __future__ import print_function
-
-
-def hello_world():
-    print("hello_world")
+from alfred.decorator import command
+from alfred.main import sh, run, invoke_command

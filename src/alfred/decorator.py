@@ -4,7 +4,7 @@ import click
 from click import BaseCommand
 
 
-def alfred(click_module: click, name: str, **attrs: Any):
+def command(click_module: click, name: str, **attrs: Any):
 
     def alfred_decorated(func):
         decorator = click_module.command(name, **attrs)
@@ -16,5 +16,5 @@ def alfred(click_module: click, name: str, **attrs: Any):
 
 class AlfredCommand:
 
-    def __init__(self, command: BaseCommand):
-        self.command = command
+    def __init__(self, _command: BaseCommand):
+        self.command = _command

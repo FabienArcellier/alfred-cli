@@ -1,12 +1,54 @@
 import io
+import logging
 import os
 from typing import Optional
 
+import click
+import plumbum
 import yaml
+from click.exceptions import Exit
+from plumbum import CommandNotFound, ProcessExecutionError, FG
+from plumbum.machines import LocalCommand
 from yaml import SafeLoader
 
+from alfred.decorator import AlfredCommand
 from alfred.lib import list_hierarchy_directory
 from alfred.type import path
+
+
+@click.pass_context
+def invoke_command(ctx, command: AlfredCommand, **kwargs) -> None:
+    click_command = command.command
+    click.echo(click.style(f"$ alfred {click_command.name} : {click_command.help}", fg='green'))
+    ctx.invoke(click_command, **kwargs)
+
+
+def sh(command_name: str, fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
+    try:
+        return plumbum.local[command_name]
+    except CommandNotFound as exception:
+        complete_fail_message = f" - {fail_message}" if fail_message is not None else ""
+        raise click.ClickException(f"unknow command {command_name}{complete_fail_message}") from exception
+
+
+def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
+    """
+    Most of the process run by alfred are supposed to stop
+    if the excecution process is finishing with an exit code of 0
+
+    There is one or two exception as the execution of migration by alembic through honcho.
+    exit_on_error allow to manage them
+
+    :param exit_on_error: break the flow if the exit code is different of 0
+    """
+    try:
+        complete_command = command[args]
+        working_directory = os.getcwd()
+        logging.debug(f'{complete_command} - wd: {working_directory}')
+        complete_command & FG  # pylint: disable=pointless-statement
+    except ProcessExecutionError as exception:
+        if exit_on_error:
+            raise Exit(code=exception.retcode) from exception
 
 
 def lookup_alfred_configuration() -> dict:
@@ -20,7 +62,7 @@ def lookup_alfred_configuration() -> dict:
             break
 
     if alfred_configuration_path is None:
-        raise OSError(".alfred.yml configuration is missing")
+        raise click.ClickException(".alfred.yml configuration is missing")
 
     with io.open(alfred_configuration_path,  encoding="utf8") as file:
         alfred_configuration = yaml.load(file, Loader=SafeLoader)

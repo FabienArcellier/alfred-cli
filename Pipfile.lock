@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1fba4a6ea97288815228860c9c9a2072dd9609783724ee09231b0b0d22ac725b"
+            "sha256": "0d60128498d9f28b21c5f718d69f5bdb8a6403f37717d7b58b3a98d7590f4d3f"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -25,6 +25,14 @@
         "mylib": {
             "editable": true,
             "path": "."
+        },
+        "plumbum": {
+            "hashes": [
+                "sha256:139bbe08ee065b522a8a07d4f7e9f8eddffd78cc218b65b11cca2b33683e6b57",
+                "sha256:317744342c755319907c773cc87c3a30adaa3a41b0d34c0ce02d9d1904922dce"
+            ],
+            "index": "pypi",
+            "version": "==1.7.0"
         },
         "pyalfred": {
             "editable": true,
@@ -359,6 +367,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==2.2.0"
+        },
+        "plumbum": {
+            "hashes": [
+                "sha256:139bbe08ee065b522a8a07d4f7e9f8eddffd78cc218b65b11cca2b33683e6b57",
+                "sha256:317744342c755319907c773cc87c3a30adaa3a41b0d34c0ce02d9d1904922dce"
+            ],
+            "index": "pypi",
+            "version": "==1.7.0"
         },
         "pyalfred": {
             "editable": true,

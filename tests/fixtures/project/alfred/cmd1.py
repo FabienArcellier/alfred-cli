@@ -1,9 +1,9 @@
 import click
 
-from alfred.decorator import alfred
+from alfred.decorator import command
 
 
-@alfred(click, "hello_world")
+@command(click, "hello_world")
 @click.option("--name")
 def hello_world_command(name):
     print(f"hello world, {name}")

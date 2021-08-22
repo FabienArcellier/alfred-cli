@@ -6,7 +6,7 @@ from alfred.type import path
 
 
 def import_python(python_path: path) -> dict:
-    module = {}
+    module = {"__file__": python_path}
     with io.open(python_path, encoding="utf8") as file:
         code = compile(file.read(), python_path, 'exec')
         eval(code, module, module)  # pylint: disable=eval-used

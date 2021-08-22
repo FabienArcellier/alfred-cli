@@ -15,6 +15,7 @@ setup(
     },
     install_requires = [
         "click",
+        "plumbum",
         "PyYAML"
     ],
     extras_require={
