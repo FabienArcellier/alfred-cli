@@ -4,6 +4,8 @@ from typing import List, Iterator
 
 from alfred.type import path
 
+ROOT_DIR = os.path.realpath(os.path.join(__file__, '..'))
+
 
 def import_python(python_path: path) -> dict:
 

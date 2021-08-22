@@ -41,6 +41,19 @@ class TestCli(unittest.TestCase):
             # Assert
             self.assertIn("hello world", result.stdout)
 
+    def test_init_should_create_alfred_directory_and_files(self):
+
+        with clone_fixture('empty_directory') as cwddir:
+            # Assign
+            os.chdir(cwddir)
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, ["init"])
+
+            # Assert
+            self.assertTrue(os.path.isfile(os.path.join(cwddir, ".alfred.yml")))
+
 
 if __name__ == '__main__':
     unittest.main()

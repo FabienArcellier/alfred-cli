@@ -104,7 +104,7 @@ def lookup_alfred_configuration() -> dict:
             break
 
     if alfred_configuration_path is None:
-        raise click.ClickException(".alfred.yml configuration is missing")
+        raise click.ClickException(".alfred.yml configuration is missing, use alfred init to initialize alfred")
 
     with io.open(alfred_configuration_path,  encoding="utf8") as file:
         alfred_configuration = yaml.load(file, Loader=SafeLoader)
