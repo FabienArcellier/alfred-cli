@@ -17,6 +17,42 @@ from alfred.lib import list_hierarchy_directory
 from alfred.type import path
 
 
+def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylint: disable=inconsistent-return-statements
+    """
+    Most of the process run by alfred are supposed to stop
+    if the excecution process is finishing with an exit code of 0
+
+    There is one or two exception as the execution of migration by alembic through honcho.
+    exit_on_error allow to manage them
+
+    >>> echo = alfred.sh("echo", "echo is missing on your system")
+    >>> output = alfred.call(echo, ["hello", "world"])
+    >>> print(output)
+    >>> # show `hello world`
+
+
+    :param command: shell program to execute
+    :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
+    """
+    try:
+        complete_command = command[args]
+        working_directory = os.getcwd()
+        logging.debug(f'{complete_command} - wd: {working_directory}')
+        output = complete_command()
+
+        """
+        the output of the command is already parsed but the parsing is
+        not usable on some command. I prefer to have a full stdout and delegate the parsing of stdout
+        further
+        """
+        return "".join(output)
+    except ProcessExecutionError as exception:
+        if exit_on_error:
+            click.echo(exception.stdout)
+            raise Exit(code=exception.retcode) from exception
+
+
+
 @click.pass_context
 def invoke_command(ctx, command_label: str, **kwargs) -> None:
     click_command = None
