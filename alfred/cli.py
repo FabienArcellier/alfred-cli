@@ -1,12 +1,12 @@
 import os
 import shutil
-from typing import List, Iterator, Any
+from typing import List, Any
 
 import click
 
 from alfred.decorator import AlfredCommand, ALFRED_COMMANDS
 from alfred.main import lookup_alfred_configuration
-from alfred.lib import import_python, list_python_modules, ROOT_DIR
+from alfred.lib import import_python, list_python_modules, ROOT_DIR, InvalidPythonModule, print_error
 
 
 @click.command('init')
@@ -24,9 +24,9 @@ class AlfredCli(click.MultiCommand):
     def __init__(self, **attrs: Any):
         super().__init__(**attrs)
         self._commands_loaded = False
+        self._commands: List[AlfredCommand] = []
 
     def list_commands(self, ctx):
-        self.load_commands()
         _list_commands = []
         for command in self._list_commands_from_plugins():
             click_command = command.command
@@ -39,8 +39,6 @@ class AlfredCli(click.MultiCommand):
         if cmd_name == 'init':
             return init
 
-        self.load_commands()
-
         for command in self._list_commands_from_plugins():
             click_command = command.command
             if click_command.name == cmd_name:
@@ -48,24 +46,29 @@ class AlfredCli(click.MultiCommand):
 
         return None
 
-    def load_commands(self):
-        if not self._commands_loaded:
-            for command in self._list_commands_from_plugins():
-                ALFRED_COMMANDS.append(command)
+    def _list_commands_from_plugins(self) -> List[AlfredCommand]:
+        if self._commands_loaded:
+            return self._commands
 
-            self._commands_loaded = True
-
-    def _list_commands_from_plugins(self) -> Iterator[AlfredCommand]:
+        _commands = []
         for plugin in self._plugins_folder():
             folder_path = plugin["path"]
             for python_path in list_python_modules(folder_path):
                 prefix = "" if "prefix" not in plugin else plugin['prefix']
-                result = import_python(python_path)
-                list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
-                for command in list_commands:
-                    command.plugin = folder_path
-                    command.command.name = f"{prefix}{command.name}"
-                    yield command
+                try:
+                    result = import_python(python_path)
+                    list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
+                    for command in list_commands:
+                        command.plugin = folder_path
+                        command.command.name = f"{prefix}{command.name}"
+                        _commands.append(command)
+                        ALFRED_COMMANDS.append(command)
+                except InvalidPythonModule as exception:
+                    print_error(str(exception))
+
+        self._commands_loaded = True
+        self._commands = _commands
+        return self._commands
 
     def _plugins_folder(self) -> List:
         alfred_configuration = lookup_alfred_configuration()

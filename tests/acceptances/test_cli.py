@@ -85,5 +85,19 @@ class TestCli(unittest.TestCase):
             self.assertIn("Error: unknow command [\'@@@@\', \'@@@@@\']", result.stdout, result.stdout)
 
 
+    def test_wrong_commands_should_show_explicit_messages(self):
+
+        with clone_fixture('wrong_command_module') as cwddir:
+            # Assign
+            os.chdir(cwddir)
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, [])
+
+            # Assert
+            self.assertEqual(0, result.exit_code)
+
+
 if __name__ == '__main__':
     unittest.main()
