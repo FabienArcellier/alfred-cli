@@ -1,7 +1,7 @@
 import io
 import logging
 import os
-from typing import Optional
+from typing import Optional, Union, List
 
 import click
 import plumbum
@@ -26,8 +26,8 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
             origin_alfred_command = alfred_command
 
     plugin = origin_alfred_command.plugin
-    plugin_click_command=lookup_plugin_command(ALFRED_COMMANDS, command_label, plugin)
-    global_click_command=lookup_global_command(ALFRED_COMMANDS, command_label)
+    plugin_click_command=_lookup_plugin_command(ALFRED_COMMANDS, command_label, plugin)
+    global_click_command=_lookup_global_command(ALFRED_COMMANDS, command_label)
 
     available_plugins_commands = [command.original_name for command in ALFRED_COMMANDS if command.plugin == plugin]
     available_global_commands = [command.name for command in ALFRED_COMMANDS]
@@ -49,28 +49,42 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
     ctx.invoke(click_command, **kwargs)
 
 
-def lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:
-    click_command = None
-    for alfred_command in all_commands:
-        if alfred_command.original_name == command_label and alfred_command.plugin == plugin:
-            click_command = alfred_command.command
-    return click_command
+def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
+    """
+    Load a shell program from the local system. If the command does not exists, it
+    will show an error `fail_message` to the console.
+
+    If many commands are provided as command name, it will try the command one by one
+    until one of them is present on the system. This behavior is require when you target
+    different platform for example (Ubuntu is using `open` to open an url, when MacOs support `xdg-open`
+    with the same behavior)
+
+    >>> echo = alfred.sh("echo", "echo is missing on your system")
+    >>> alfred.run(echo, ["hello", "world"])
 
 
-def lookup_global_command(all_commands, command_label) -> Optional[BaseCommand]:
-    click_command = None
-    for alfred_command in all_commands:
-        if alfred_command.name == command_label:
-            click_command = alfred_command.command
-    return click_command
+    >>> open = alfred.sh(["open", "xdg-open"], "Either open, either xdg-open is missing on your system. Are you using a compatible platform ?")  # pylint: disable=line-too-long
+    >>> alfred.run(open, "http://www.github.com")
 
+    :param command: command or list of command name to lookup
+    :param fail_message: failure message show to the user if no command has been found
+    :return: a command you can use with alfred.run
+    """
+    if isinstance(command, str):
+        command = [command]
 
-def sh(command_name: str, fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
-    try:
-        return plumbum.local[command_name]
-    except CommandNotFound as exception:
+    shell_command = None
+    for _command in command:
+        try:
+            shell_command = plumbum.local[_command]
+        except CommandNotFound:
+            continue
+
+    if not shell_command:
         complete_fail_message = f" - {fail_message}" if fail_message is not None else ""
-        raise click.ClickException(f"unknow command {command_name}{complete_fail_message}") from exception
+        raise click.ClickException(f"unknow command {command}{complete_fail_message}")
+
+    return shell_command
 
 
 def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
@@ -81,7 +95,18 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
     There is one or two exception as the execution of migration by alembic through honcho.
     exit_on_error allow to manage them
 
-    :param exit_on_error: break the flow if the exit code is different of 0
+    >>> echo = alfred.sh("echo", "echo is missing on your system")
+    >>> alfred.run(echo, ["hello", "world"])
+
+    The flag exitè
+    >>> ls = alfred.sh("ls", "ls is missing on your system")
+    >>> mv = alfred.sh("mv", "mv is missing on your system")
+    >>> alfred.run(ls, ["/var/yolo"], exit_on_error=False)
+    >>> alfred.run(mv, ["/var/yolo", "/var/yolo1"], exit_on_error=False)
+
+
+    :param command: shell program to execute
+    :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
     try:
         complete_command = command[args]
@@ -117,3 +142,19 @@ def path_contains_alfred_configuration(alfred_configuration_path: path) -> Optio
         return alfred_configuration_path
 
     return None
+
+
+def _lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:
+    click_command = None
+    for alfred_command in all_commands:
+        if alfred_command.original_name == command_label and alfred_command.plugin == plugin:
+            click_command = alfred_command.command
+    return click_command
+
+
+def _lookup_global_command(all_commands, command_label) -> Optional[BaseCommand]:
+    click_command = None
+    for alfred_command in all_commands:
+        if alfred_command.name == command_label:
+            click_command = alfred_command.command
+    return click_command
