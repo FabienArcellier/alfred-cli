@@ -113,6 +113,7 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand
     for _command in command:
         try:
             shell_command = plumbum.local[_command]
+            break
         except CommandNotFound:
             continue
 
