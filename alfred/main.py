@@ -154,7 +154,7 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
             raise Exit(code=exception.retcode) from exception
 
 
-def lookup_alfred_configuration() -> dict:
+def lookup_alfred_configuration_path() -> path:
     workingdir = path(os.getcwd())
     hierarchy_directories = list_hierarchy_directory(workingdir)
 
@@ -164,11 +164,20 @@ def lookup_alfred_configuration() -> dict:
         if alfred_configuration_path is not None:
             break
 
-    if alfred_configuration_path is None:
-        raise click.ClickException(".alfred.yml configuration is missing, use alfred init to initialize alfred")
+    logging.debug(f"alfred configuration file : {alfred_configuration_path}")
+
+    return alfred_configuration_path
+
+
+def lookup_alfred_configuration() -> dict:
+    alfred_configuration_path = lookup_alfred_configuration_path()
 
     with io.open(alfred_configuration_path,  encoding="utf8") as file:
         alfred_configuration = yaml.load(file, Loader=SafeLoader)
+        for plugin in alfred_configuration["plugins"]:
+            plugin['path'] =  os.path.realpath(os.path.join(alfred_configuration_path, '..', plugin['path']))
+            logging.debug(f"alfred plugin : {plugin}")
+
         return alfred_configuration
 
 
