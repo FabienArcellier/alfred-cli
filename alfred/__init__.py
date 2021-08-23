@@ -1,4 +1,4 @@
 #!/usr/bin/python
 
 from alfred.decorator import command, option
-from alfred.main import sh, run, invoke_command
+from alfred.main import call, invoke_command, run, sh
