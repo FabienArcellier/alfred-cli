@@ -14,7 +14,7 @@ from yaml import SafeLoader
 
 from alfred.decorator import ALFRED_COMMANDS
 from alfred.lib import list_hierarchy_directory
-from alfred.type import path
+from alfred.type import path, AlfredConfiguration
 
 
 def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylint: disable=inconsistent-return-statements
@@ -170,7 +170,7 @@ def lookup_alfred_configuration_path() -> path:
     return alfred_configuration_path
 
 
-def lookup_alfred_configuration() -> dict:
+def lookup_alfred_configuration() -> AlfredConfiguration:
     alfred_configuration_path = lookup_alfred_configuration_path()
 
     with io.open(alfred_configuration_path,  encoding="utf8") as file:
@@ -179,7 +179,7 @@ def lookup_alfred_configuration() -> dict:
             plugin['path'] =  os.path.realpath(os.path.join(alfred_configuration_path, '..', plugin['path']))
             logging.debug(f"alfred plugin : {plugin}")
 
-        return alfred_configuration
+        return AlfredConfiguration(alfred_configuration)
 
 
 def path_contains_alfred_configuration(alfred_configuration_path: path) -> Optional[path]:

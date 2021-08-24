@@ -36,5 +36,5 @@ setup(
         'resources': ['alfred/resources/*'],
     },
     packages=find_packages(exclude=["tests.*", "tests"]),
-    version='1.0.13'
+    version='1.0.14'
 )

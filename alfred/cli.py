@@ -7,6 +7,7 @@ import click
 from alfred.decorator import AlfredCommand, ALFRED_COMMANDS
 from alfred.main import lookup_alfred_configuration
 from alfred.lib import import_python, list_python_modules, ROOT_DIR, InvalidPythonModule, print_error
+from alfred.type import Environment
 
 
 @click.command('init')
@@ -42,6 +43,10 @@ class AlfredCli(click.MultiCommand):
         for command in self._list_commands_from_plugins():
             click_command = command.command
             if click_command.name == cmd_name:
+                alfred_configuration = lookup_alfred_configuration()
+                for environment in alfred_configuration.environments():
+                    os.environ[environment.key] = environment.value
+
                 return click_command
 
         return None
@@ -70,9 +75,13 @@ class AlfredCli(click.MultiCommand):
         self._commands = _commands
         return self._commands
 
+    def _environments(self) -> List[Environment]:
+        alfred_configuration = lookup_alfred_configuration()
+        return alfred_configuration.environments()
+
     def _plugins_folder(self) -> List:
         alfred_configuration = lookup_alfred_configuration()
-        return alfred_configuration["plugins"]
+        return alfred_configuration.plugins()
 
 
 cli = AlfredCli(help='alfred is a building tool to make engineering tasks easier to develop and to maintain')

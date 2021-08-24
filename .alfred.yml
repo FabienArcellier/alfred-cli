@@ -1,2 +1,2 @@
 plugins:
-  - path: alfred_cmd
+    - path: alfred_cmd
