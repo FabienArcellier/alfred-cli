@@ -3,6 +3,7 @@ import shutil
 from typing import List, Any
 
 import click
+from plumbum import local
 
 from alfred.decorator import AlfredCommand, ALFRED_COMMANDS
 from alfred.main import lookup_alfred_configuration
@@ -45,7 +46,7 @@ class AlfredCli(click.MultiCommand):
             if click_command.name == cmd_name:
                 alfred_configuration = lookup_alfred_configuration()
                 for environment in alfred_configuration.environments():
-                    os.environ[environment.key] = environment.value
+                    local.env[environment.key] = environment.value
 
                 return click_command
 
