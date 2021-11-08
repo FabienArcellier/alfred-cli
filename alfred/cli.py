@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from typing import List, Any
@@ -7,9 +8,9 @@ from plumbum import local
 
 from alfred.decorator import AlfredCommand, ALFRED_COMMANDS
 from alfred.main import lookup_alfred_configuration
+from alfred.logger import logger
 from alfred.lib import import_python, list_python_modules, ROOT_DIR, InvalidPythonModule, print_error
 from alfred.type import Environment
-
 
 @click.command('init')
 def init():
@@ -85,7 +86,13 @@ class AlfredCli(click.MultiCommand):
         return alfred_configuration.plugins()
 
 
-cli = AlfredCli(help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
+@click.command(cls=AlfredCli,
+               help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
+@click.option("-d", "--debug", is_flag=True, help="display debug information as run command and working directory")
+def cli(debug: bool):
+    if debug:
+        logger.setLevel(logging.DEBUG)
+
 
 if __name__ == '__main__':
-    cli()
+    cli()  # pylint: disable=no-value-for-parameter

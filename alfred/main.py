@@ -1,5 +1,4 @@
 import io
-import logging
 import os
 from typing import Optional, Union, List
 
@@ -14,6 +13,7 @@ from yaml import SafeLoader
 
 from alfred.decorator import ALFRED_COMMANDS
 from alfred.lib import list_hierarchy_directory
+from alfred.logger import logger
 from alfred.type import path, AlfredConfiguration
 
 
@@ -37,7 +37,7 @@ def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylin
     try:
         complete_command = command[args]
         working_directory = os.getcwd()
-        logging.debug(f'{complete_command} - wd: {working_directory}')
+        logger.debug(f'{complete_command} - wd: {working_directory}')
         output = complete_command()
 
         """
@@ -148,7 +148,7 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
     try:
         complete_command = command[args]
         working_directory = os.getcwd()
-        logging.debug(f'{complete_command} - wd: {working_directory}')
+        logger.debug(f'{complete_command} - wd: {working_directory}')
         complete_command & FG  # pylint: disable=pointless-statement
     except ProcessExecutionError as exception:
         if exit_on_error:
@@ -165,7 +165,7 @@ def lookup_alfred_configuration_path() -> path:
         if alfred_configuration_path is not None:
             break
 
-    logging.debug(f"alfred configuration file : {alfred_configuration_path}")
+    logger.debug(f"alfred configuration file : {alfred_configuration_path}")
 
     return alfred_configuration_path
 
@@ -177,7 +177,7 @@ def lookup_alfred_configuration() -> AlfredConfiguration:
         alfred_configuration = yaml.load(file, Loader=SafeLoader)
         for plugin in alfred_configuration["plugins"]:
             plugin['path'] =  os.path.realpath(os.path.join(alfred_configuration_path, '..', plugin['path']))
-            logging.debug(f"alfred plugin : {plugin}")
+            logger.debug(f"alfred plugin : {plugin}")
 
         return AlfredConfiguration(alfred_configuration)
 
