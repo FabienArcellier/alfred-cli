@@ -5,10 +5,14 @@ on: [push, pull_request]
 jobs:
     build:
         runs-on: ubuntu-20.04
+        env:
+            LD_LIBRARY_PATH: ""
+            pythonLocation: ""
+
 
         strategy:
           matrix:
-            python-version: [3.8, 3.9]
+            python-version: [3.8]
 
         steps:
             - uses: actions/checkout@v2
@@ -21,8 +25,29 @@ jobs:
             - name: update package manager & install python3 environment
               run: |
                 pip install setuptools
-                pip install pipenv
+                pip install pipenv==2021.5.29
                 pipenv install --dev
 
+            - name: debug integration process
+              shell: /usr/bin/sh {0}
+              run: |
+                  pipenv --venv
+                  pipenv run env
+                  ls -la /usr/bin/python
+                  ls -la /usr/bin/python3
+                  ls -la /usr/bin/python*
+                  ls -la python3
+                  ls -la python3.8
+                  ls -la /opt/hostedtoolcache/Python/3.8.12/x64/bin/python3.8
+                  which $(pipenv --venv)/bin/python
+              env:
+                LD_LIBRARY_PATH: ""
+                pythonLocation: ""
+                PATH: '/opt/hostedtoolcache/Python/3.8.12/x64:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/home/runner/.local/bin:/opt/pipx_bin:/usr/share/rust/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/snap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+
             - name: continuous integration process
-              run: pipenv run alfred ci
+              shell: sh
+              run: pipenv run -v alfred --debug ci
+              env:
+                  LD_LIBRARY_PATH: ""
+                  pythonLocation: ""
