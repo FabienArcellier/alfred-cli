@@ -36,6 +36,6 @@ setup(
         'resources': ['alfred/resources/*'],
     },
     packages=find_packages(exclude=["tests.*", "tests"]),
-    version='1.0.16',
+    version='1.0.17',
     url='https://github.com/FabienArcellier/alfred-cli#alfred'
 )

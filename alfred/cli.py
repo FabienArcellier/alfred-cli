@@ -88,7 +88,7 @@ class AlfredCli(click.MultiCommand):
 
 @click.command(cls=AlfredCli,
                help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
-@click.option("-d", "--debug", is_flag=True, help="display debug information as run command and working directory")
+@click.option("-d", "--debug", is_flag=True, help="display debug information like command runned and working directory")
 def cli(debug: bool):
     if debug:
         logger.setLevel(logging.DEBUG)
