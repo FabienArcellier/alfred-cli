@@ -12,6 +12,7 @@ from plumbum.machines import LocalCommand
 from yaml import SafeLoader
 
 from alfred.decorator import ALFRED_COMMANDS
+from alfred.exceptions import NotInitialized
 from alfred.lib import list_hierarchy_directory
 from alfred.logger import logger
 from alfred.type import path, AlfredConfiguration
@@ -164,6 +165,9 @@ def lookup_alfred_configuration_path() -> path:
         alfred_configuration_path = path_contains_alfred_configuration(directory)
         if alfred_configuration_path is not None:
             break
+
+    if not alfred_configuration_path:
+        raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
 
     logger.debug(f"alfred configuration file : {alfred_configuration_path}")
 

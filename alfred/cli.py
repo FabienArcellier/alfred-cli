@@ -1,12 +1,14 @@
 import logging
 import os
 import shutil
+import sys
 from typing import List, Any
 
 import click
 from plumbum import local
 
 from alfred.decorator import AlfredCommand, ALFRED_COMMANDS
+from alfred.exceptions import NotInitialized
 from alfred.main import lookup_alfred_configuration
 from alfred.logger import logger
 from alfred.lib import import_python, list_python_modules, ROOT_DIR, InvalidPythonModule, print_error
@@ -29,14 +31,31 @@ class AlfredCli(click.MultiCommand):
         self._commands_loaded = False
         self._commands: List[AlfredCommand] = []
 
-    def list_commands(self, ctx):
-        _list_commands = []
-        for command in self._list_commands_from_plugins():
-            click_command = command.command
-            _list_commands.append(click_command.name)
+    def reset(self):
+        """
+        Clean the existing commands. This method is dedicated to automatic
+        testing. AlfredCli kept between two tests. If a list of commands
+        has already been loaded, it will use it.
 
-        _list_commands.sort()
-        return _list_commands
+        >>> self.reset()
+        """
+        self._commands_loaded = False
+        self._commands = []
+
+    def list_commands(self, ctx):
+        try:
+            _list_commands = []
+            for command in self._list_commands_from_plugins():
+                click_command = command.command
+                _list_commands.append(click_command.name)
+
+            _list_commands.sort()
+            return _list_commands
+        except NotInitialized as exception:
+            # When the project is not recognize as alfred, we show a error message
+            # to ask the user to initialized its directory
+            click.echo(click.style(f"{exception.message}", fg='red'))
+            sys.exit(2)
 
     def get_command(self, ctx, cmd_name):
         if cmd_name == 'init':

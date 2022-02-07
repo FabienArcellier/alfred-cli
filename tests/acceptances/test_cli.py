@@ -10,10 +10,51 @@ from tests.fixtures import clone_fixture
 class TestCli(unittest.TestCase):
 
     def setUp(self) -> None:
+        """
+        AlfredCli is create only once
+        :return:
+        """
+        cli.reset()
         self.currentCwd = os.getcwd()
 
     def tearDown(self) -> None:
         os.chdir(self.currentCwd)
+
+    def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred(self):
+        """
+        this test check alfred show an help message to the user if a project
+        does not contains alfred.ini. It triggered if the user run ``alfred``
+        """
+
+        with clone_fixture('empty_directory') as cwddir:
+            # Assign
+            os.chdir(cwddir)
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, [])
+
+            # Assert
+            self.assertEqual(2, result.exit_code)
+            self.assertIn("not an alfred project (or any of the parent directories)", result.stdout)
+
+    def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred_for_option_help(self):
+        """
+        this test check alfred show an help message to the user if a project
+        does not contains alfred.ini. It triggered if the user run ``alfred --help"
+        """
+
+        with clone_fixture('empty_directory') as cwddir:
+            # Assign
+            os.chdir(cwddir)
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, ["--help"])
+
+            # Assert
+            self.assertEqual(2, result.exit_code)
+            self.assertIn("not an alfred project (or any of the parent directories)", result.stdout)
 
     def test_cli_should_list_command_with_prefix(self):
 
