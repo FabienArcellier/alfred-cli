@@ -18,6 +18,7 @@ alfred twine
 [![ci](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml)
 
 - [Getting started](#getting-started)
+  * [Add your own command](#add-your-own-command)
 - [Behind the scene](#behind-the-scene)
 - [Why using alfred instead of Makefile or Bash scripts](#why-using-alfred-instead-of-makefile-or-bash-scripts)
 - [Why not using alfred](#why-not-using-alfred)
@@ -26,6 +27,8 @@ alfred twine
   * [`.Alfred.yml`](#-alfredyml-)
     + [`Plugins` section](#-plugins--section)
     + [`Environment` section](#-environment--section)
+- [Cookbook](#cookbook)
+  * [Display the commands really executed behind the scene](#display-the-commands-really-executed-behind-the-scene)
 - [Developper guideline](#developper-guideline)
   * [Install development environment](#install-development-environment)
   * [Install production environment](#install-production-environment)
@@ -34,7 +37,6 @@ alfred twine
   * [Run the linter and the unit tests](#run-the-linter-and-the-unit-tests)
 - [Contributors](#contributors)
 - [License](#license)
-
 
 ## Getting started
 
@@ -52,6 +54,29 @@ alfred hello_world --name "Fabien"
 ```
 
 A file `.alfred.yml` will be initialized at the root of the repository.
+
+### Add your own command
+
+Vous pouvez ajouter votre commande dans un nouveau module dans `./alfred`. Dans cet exemple, nous allons ajouter la commande `alfred lint` dans le module `alfred/lint.py` :
+
+```python
+import os
+
+import alfred
+
+ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
+
+@alfred.command('lint', help="validate alfred using pylint on the package alfred")
+def lint():
+    # get the command pylint in the user system or show error message if it's missing
+    pylint = alfred.sh('pylint', "pylint is not installed")
+    os.chdir(ROOT_DIR)
+    src_dir = "alfred"
+    args = [src_dir]
+
+    # behind the scene, it invokes the command `pylint alfred`
+    alfred.run(pylint, args)
+```
 
 ## Behind the scene
 
@@ -137,6 +162,27 @@ to erase these differences.
 environment:
     - "VAR=1"
     - "VAR"
+```
+
+## Cookbook
+
+### Display the commands really executed behind the scene
+
+You can display the commands really executed, either to debug the arguments,
+either to run in your terminal again with other attributes.
+
+The option `d` / `--debug` display all the shell commands that are executed by
+`alfred.run()` in your alfred command.
+
+```bash
+$ alfred -d ci
+
+2022-02-07 19:38:31,834 DEBUG - /home/far/.local/share/virtualenvs/20210821_1530__alfred-cli-a8dwJte3/bin/python -m unittest discover units - wd: /home/far/documents/projects/20210821_1530__alfred-cli/tests
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK
 ```
 
 ## Developper guideline
