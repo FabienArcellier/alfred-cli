@@ -11,10 +11,12 @@ setup(
     ],
     extras_require={
         'dev': [
-            'decorator',
             'pylint',
             'coverage',
             'twine'
+        ],
+        "dev_windows": [
+
         ]
     },
     license='MIT license',

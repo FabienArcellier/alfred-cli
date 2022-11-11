@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 
-from decorator import contextmanager
+from contextlib import contextmanager
 
 SCRIPT_DIRECTORY_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -18,7 +18,11 @@ def clone_fixture(fixture_name, working_dir=None):
                         os.path.isdir(os.path.join(SCRIPT_DIRECTORY_PATH, d))]
     raise Exception('the fixture {0} does not exists in fixtures : {1}'.format(fixture_name, fixtures_list))
 
+  previous_working_dir = os.getcwd()
   shutil.copytree(template_working_directory, working_directory)
-  yield working_directory
-
-  shutil.rmtree(working_directory)
+  try:
+    os.chdir(working_directory)
+    yield working_directory
+  finally:
+    os.chdir(previous_working_dir)
+    shutil.rmtree(working_directory)
