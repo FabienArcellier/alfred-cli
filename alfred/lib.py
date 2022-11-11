@@ -44,15 +44,15 @@ def list_python_modules(folder_path: path) -> Iterator[path]:
 
 def list_hierarchy_directory(workingdir: path) -> List[path]:
     workingdir = os.path.realpath(workingdir)
-    all_parts = workingdir.split('/')
+    all_parts = workingdir.split(os.sep)
 
     result = [workingdir]
     while len(all_parts) != 1:
         all_parts.pop()
         if len(all_parts) == 1:
-            result.append('/')
+            result.append(os.sep)
         else:
-            result.append("/".join(all_parts))
+            result.append(os.sep.join(all_parts))
 
     return result
 

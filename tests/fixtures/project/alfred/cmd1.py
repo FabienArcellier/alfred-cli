@@ -1,3 +1,5 @@
+import os
+
 import alfred
 
 
@@ -14,9 +16,9 @@ def hello_world_2_command(name):
 
 
 @alfred.command("multicommand")
-def multicommand():
-    echo = alfred.sh(["@@@@", "test"])
-    alfred.run(echo, ["1", "-eq", "1"])\
+def multicommand_posix():
+    echo = alfred.sh(["@@@@", "python"])
+    alfred.run(echo, ["--version"])
 
 
 @alfred.command("wrong_multicommand")

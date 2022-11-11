@@ -4,6 +4,7 @@ import unittest
 from click.testing import CliRunner
 
 from alfred.cli import cli
+from alfred.os import is_posix, is_windows
 from tests.fixtures import clone_fixture
 
 
@@ -15,10 +16,6 @@ class TestCli(unittest.TestCase):
         :return:
         """
         cli.reset()
-        self.currentCwd = os.getcwd()
-
-    def tearDown(self) -> None:
-        os.chdir(self.currentCwd)
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred(self):
         """
@@ -28,7 +25,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('empty_directory') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -46,7 +42,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('empty_directory') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -60,7 +55,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('project') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -74,7 +68,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('project') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -88,7 +81,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('empty_directory') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -102,7 +94,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('project') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -111,11 +102,10 @@ class TestCli(unittest.TestCase):
             # Assert
             self.assertEqual(0, result.exit_code)
 
-    def test_sh_should_not_work_with_wrong_multicommand(self):
+    def test_sh_should_not_work_with_wrong_multicommand_for_posix(self):
 
         with clone_fixture('project') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts
@@ -130,7 +120,6 @@ class TestCli(unittest.TestCase):
 
         with clone_fixture('wrong_command_module') as cwddir:
             # Assign
-            os.chdir(cwddir)
             runner = CliRunner()
 
             # Acts

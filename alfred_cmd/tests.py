@@ -17,8 +17,7 @@ def tests(verbose: bool):
 @alfred.option('-v', '--verbose', is_flag=True)
 def tests_units(verbose: bool):
     python = alfred.sh('python')
-    os.chdir(TESTS_PATH)
-    args = ['-m', 'unittest', 'discover', 'units']
+    args = ['-m', 'unittest', 'discover', 'tests/units']
 
     if verbose:
         args.append('-v')
@@ -31,8 +30,7 @@ def tests_units(verbose: bool):
 @alfred.option('-v', '--verbose', is_flag=True)
 def tests_acceptances(verbose: bool):
     python = alfred.sh('python')
-    os.chdir(TESTS_PATH)
-    args = ['-m', 'unittest', 'discover', 'acceptances']
+    args = ['-m', 'unittest', 'discover', 'tests/acceptances']
 
     if verbose:
         args.append('-v')
