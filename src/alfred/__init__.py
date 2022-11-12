@@ -11,4 +11,4 @@ version number follow semantic versioning : https://semver.org/
 * MINOR version when you add functionality in a backwards compatible manner
 * PATCH version when you make backwards compatible bug fixes.
 """
-__version__ = "1.0.18"
+__version__ = "1.1.0"

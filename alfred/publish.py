@@ -43,7 +43,7 @@ def publish():
         sys.exit(1)
 
     if current_version == VERSION:
-        click.echo(click.style(f"Version {VERSION} already exists, update __version__ in src/fixtup/__init__.py", fg='red'))
+        click.echo(click.style(f"Version {VERSION} already exists, update __version__ in src/alfred/__init__.py", fg='red'))
         sys.exit(1)
 
     click.echo("")
