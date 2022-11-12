@@ -3,7 +3,6 @@ import os
 import alfred
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
-TESTS_PATH = os.path.realpath(os.path.join(ROOT_DIR, "tests"))
 
 
 @alfred.command('tests', help="validate alfred with all the automatic testing")

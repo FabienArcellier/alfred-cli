@@ -3,7 +3,7 @@ import os
 import alfred
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
-SRC_PATH = os.path.realpath(os.path.join(ROOT_DIR, "src"))
+SRC_PATH = os.path.realpath(os.path.join(ROOT_DIR, "src", "alfred"))
 
 
 @alfred.command('lint', help="validate alfred using pylint on the package alfred")
@@ -17,7 +17,7 @@ def lint(verbose: bool):
         args.append('-v')
         args += ['-r', 'y']
 
-    args.append('alfred')
+    args.append(SRC_PATH)
 
     if args:
         alfred.run(pylint, args)

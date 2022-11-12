@@ -1,7 +1,5 @@
 import alfred
 
-import yo
-
 
 @alfred.command("hello_world")
 @alfred.option("--name")

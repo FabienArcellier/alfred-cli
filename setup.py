@@ -1,43 +1,9 @@
-from setuptools import setup
-from setuptools import find_packages
+#!/usr/bin/env python
+# This file is required with pipenv to setup the project in editable mode with `pipenv install`
+#
+# Without, the installation trigger :
+#   A "pyproject.toml" file was found, but editable mode currently requires a setup.py based build
+import setuptools
 
-setup(
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Intended Audience :: Developers",
-        "Environment :: Console"
-    ],
-    extras_require={
-        'dev': [
-            'pylint',
-            'coverage',
-            'twine'
-        ],
-        "dev_windows": [
-
-        ]
-    },
-    license='MIT license',
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
-    entry_points = {
-        'console_scripts': [
-            'alfred = alfred.cli:cli',
-        ],
-    },
-    include_package_data=True,
-    install_requires = [
-        "click",
-        "plumbum",
-        "PyYAML"
-    ],
-    name='alfred-cli',
-    package_data={
-        'resources': ['alfred/resources/*'],
-    },
-    packages=find_packages(exclude=["tests.*", "tests"]),
-    version='1.1.0',
-    url='https://github.com/FabienArcellier/alfred-cli#alfred'
-)
+if __name__ == "__main__":
+    setuptools.setup()

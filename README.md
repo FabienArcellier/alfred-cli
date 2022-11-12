@@ -66,12 +66,13 @@ import alfred
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
 
+
 @alfred.command('lint', help="validate alfred using pylint on the package alfred")
 def lint():
     # get the command pylint in the user system or show error message if it's missing
     pylint = alfred.sh('pylint', "pylint is not installed")
     os.chdir(ROOT_DIR)
-    src_dir = "alfred"
+    src_dir = "src/alfred"
     args = [src_dir]
 
     # behind the scene, it invokes the command `pylint alfred`
@@ -93,7 +94,7 @@ feature. Alfred doesn't have it yet.
 
 Alfred allows you to create more complex commands than with Make. From the start, you benefit from a
 formatted documentation for each of your orders. It is easy to create one command per file  thanks
-to auto discovery. You can see an implementation in this repository in [`alfred_cmd/`](alfred_cmd/).
+to auto discovery. You can see an implementation in this repository in [`alfred_cmd/`](alfred/).
 
 Thanks to the power of Click, it's easy to add options to your commands.
 They allow for example to implement flags for your CI process which

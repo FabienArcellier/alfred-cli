@@ -3,14 +3,12 @@ name: publish
 on:
     push:
         tags:
-            - "*"
+            - '[0-9]+.[0-9]+.[0-9]+[a-z]?'
 
 jobs:
     build:
         runs-on: ubuntu-20.04
-
-        environment:
-            name: pypi
+        timeout-minutes: 10
 
         strategy:
           matrix:
@@ -30,8 +28,13 @@ jobs:
                 pip install pipenv
                 pipenv install --dev
 
+            - name: run continuous integration to validate fixtup
+              run: |
+                pipenv run alfred ci
+
             - name: publish on pypi
-              run: pipenv run alfred twine
+              run: |
+                pipenv run alfred publish:pypi
               env:
                   TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
                   TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}

@@ -16,6 +16,10 @@ class TestCli(unittest.TestCase):
         :return:
         """
         cli.reset()
+        self.current_cwd = os.getcwd()
+
+    def tearDown(self) -> None:
+        os.chdir(self.current_cwd)
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred(self):
         """
@@ -31,7 +35,7 @@ class TestCli(unittest.TestCase):
             result = runner.invoke(cli, [])
 
             # Assert
-            self.assertEqual(2, result.exit_code)
+            self.assertEqual(2, result.exit_code, result.stdout)
             self.assertIn("not an alfred project (or any of the parent directories)", result.stdout)
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred_for_option_help(self):
@@ -48,7 +52,7 @@ class TestCli(unittest.TestCase):
             result = runner.invoke(cli, ["--help"])
 
             # Assert
-            self.assertEqual(2, result.exit_code)
+            self.assertEqual(2, result.exit_code, result.stdout)
             self.assertIn("not an alfred project (or any of the parent directories)", result.stdout)
 
     def test_cli_should_list_command_with_prefix(self):
@@ -74,7 +78,7 @@ class TestCli(unittest.TestCase):
             result = runner.invoke(cli, ["cmd:hello_world_2"])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
+            self.assertEqual(0, result.exit_code, result.stdout)
             self.assertIn("hello world", result.stdout)
 
     def test_init_should_create_alfred_directory_and_files(self):
