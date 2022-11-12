@@ -2,6 +2,7 @@
 
 from alfred.decorator import command, option
 from alfred.main import call, invoke_command, run, sh
+from alfred.os import is_posix, is_windows, is_linux, is_macos
 
 """
 version number follow semantic versioning : https://semver.org/

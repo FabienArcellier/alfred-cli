@@ -12,7 +12,7 @@ of itself instead of `Makefile` as I usually do.
 alfred ci
 
 # publish the package on pypi
-alfred twine
+alfred publish
 ```
 
 [![ci](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml)
@@ -29,6 +29,7 @@ alfred twine
     + [`Environment` section](#-environment--section)
 - [Cookbook](#cookbook)
   * [Display the commands really executed behind the scene](#display-the-commands-really-executed-behind-the-scene)
+  * [Customize a command for a specific OS](#customize-a-command-for-a-specific-os)
 - [Developper guideline](#developper-guideline)
   * [Install development environment](#install-development-environment)
   * [Install production environment](#install-production-environment)
@@ -55,9 +56,10 @@ alfred hello_world --name "Fabien"
 
 A file `.alfred.yml` will be initialized at the root of the repository.
 
-### Add your own command
+### Add a new build command
 
-Vous pouvez ajouter votre commande dans un nouveau module dans `./alfred`. Dans cet exemple, nous allons ajouter la commande `alfred lint` dans le module `alfred/lint.py` :
+You can add your command in a new module in `./alfred`.
+In this example we will add the command `alfred lint` :
 
 ```python
 import os
@@ -121,7 +123,7 @@ share code between your commands.
 You can find the latest version to ...
 
 ```bash
-git clone https://github.com/FabienArcellier/pyalfred.git
+git clone https://github.com/FabienArcellier/alfred-cli.git
 ```
 
 ## Reference
@@ -144,10 +146,10 @@ at the root of the project.
 
 ```yaml
 plugins:
-    - path: alfred_cmd
+    - path: alfred
 
-    - path: alfred_cmd
-      prefix: "command:"
+    - path: sofware1/alfred
+      prefix: "software1:"
 ```
 
 #### `Environment` section
@@ -186,6 +188,26 @@ Ran 1 test in 0.000s
 OK
 ```
 
+### Customize a command for a specific OS
+
+Alfred can run a specific part of the build for an OS,
+for example to only run the linter on a linux machine.
+
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+@alfred.option('-v', '--verbose', is_flag=True)
+def ci(verbose: bool):
+    if alfred.is_posix():
+        alfred.invoke_command('lint', verbose=verbose)
+    else:
+        print("linter is not supported on non posix platform as windows")
+
+    alfred.invoke_command('tests', verbose=verbose)
+```
+
+the ``alfred.is_posix``, ``alfred.is_linux``, ``alfred.is_macos``, ``alfred.is_windows`` functions allow you to quickly
+target the environment on which specific processing must be performed.
+
 ## Developper guideline
 
 ```bash
@@ -195,23 +217,24 @@ pipenv shell
 
 ```
 $ alfred
-
 Usage: alfred [OPTIONS] COMMAND [ARGS]...
 
   alfred is a building tool to make engineering tasks easier to develop and to
   maintain
 
 Options:
-  --help  Show this message and exit.
+  -d, --debug  display debug information like command runned and working
+               directory
+  --help       Show this message and exit.
 
 Commands:
   ci                 execute continuous integration process of alfred
-  dist               build distributions for alfred in dist/
+  dist               build distribution packages
   lint               validate alfred using pylint on the package alfred
+  publish            tag a new release and trigger pypi publication
   tests              validate alfred with all the automatic testing
   tests:acceptances  validate alfred with acceptances testing
   tests:units        validate alfred with unit testing
-  twine              push the package to pypi
 ```
 
 ### Install development environment
@@ -264,7 +287,7 @@ alfred ci
 
 MIT License
 
-Copyright (c) 2021 Fabien Arcellier
+Copyright (c) 2021-2022 Fabien Arcellier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

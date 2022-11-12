@@ -56,7 +56,7 @@ def publish():
         alfred.run(git, ['push', 'origin', VERSION])
 
 
-@alfred.command("publish:pypi", help="workflow to release fixtup to pypi")
+@alfred.command("publish:pypi", help="workflow to release fixtup to pypi", hidden=True)
 def publish__dist():
     """
     workflow to release fixtup current version to pypi
@@ -67,7 +67,7 @@ def publish__dist():
     alfred.invoke_command('publish:twine')
 
 
-@alfred.command("publish:twine", help="push fixtup to pypi")
+@alfred.command("publish:twine", help="push fixtup to pypi", hidden=True)
 def publish__twine():
     """
     push fixtup to pypi
