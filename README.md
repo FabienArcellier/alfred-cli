@@ -15,7 +15,9 @@ alfred ci
 alfred publish
 ```
 
-[![ci](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci.yml)
+[![version](https://img.shields.io/pypi/v/alfred-cli.svg?label=version)](https://pypi.org/project/alfred-cli/) [![MIT](https://img.shields.io/badge/license-MIT-007EC7.svg)](LICENSE.md)
+
+[![ci](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml) [![ci-windows](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci-windows.yml)
 
 - [Getting started](#getting-started)
   * [Add your own command](#add-your-own-command)
