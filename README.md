@@ -19,19 +19,22 @@ alfred publish
 
 [![ci](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml) [![ci-windows](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci-windows.yml)
 
+<!-- TOC start -->
 - [Getting started](#getting-started)
-  * [Add your own command](#add-your-own-command)
+  * [Add a new build command](#add-a-new-build-command)
 - [Behind the scene](#behind-the-scene)
 - [Why using alfred instead of Makefile or Bash scripts](#why-using-alfred-instead-of-makefile-or-bash-scripts)
 - [Why not using alfred](#why-not-using-alfred)
 - [The latest version](#the-latest-version)
 - [Reference](#reference)
-  * [`.Alfred.yml`](#-alfredyml-)
-    + [`Plugins` section](#-plugins--section)
-    + [`Environment` section](#-environment--section)
+  * [`.Alfred.yml`](#alfredyml)
+    + [`Plugins` section](#plugins-section)
+    + [`Environment` section](#environment-section)
 - [Cookbook](#cookbook)
   * [Display the commands really executed behind the scene](#display-the-commands-really-executed-behind-the-scene)
   * [Customize a command for a specific OS](#customize-a-command-for-a-specific-os)
+  * [Override environment variables](#override-environment-variables)
+    + [Add directories into pythonpath](#add-directories-into-pythonpath)
 - [Developper guideline](#developper-guideline)
   * [Install development environment](#install-development-environment)
   * [Install production environment](#install-production-environment)
@@ -40,6 +43,7 @@ alfred publish
   * [Run the linter and the unit tests](#run-the-linter-and-the-unit-tests)
 - [Contributors](#contributors)
 - [License](#license)
+<!-- TOC end -->
 
 ## Getting started
 
@@ -70,17 +74,13 @@ import alfred
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
 
-
 @alfred.command('lint', help="validate alfred using pylint on the package alfred")
 def lint():
     # get the command pylint in the user system or show error message if it's missing
     pylint = alfred.sh('pylint', "pylint is not installed")
-    os.chdir(ROOT_DIR)
-    src_dir = "src/alfred"
-    args = [src_dir]
 
     # behind the scene, it invokes the command `pylint alfred`
-    alfred.run(pylint, args)
+    alfred.run(pylint, ["src/alfred"])
 ```
 
 ## Behind the scene
@@ -209,6 +209,43 @@ def ci(verbose: bool):
 
 the ``alfred.is_posix``, ``alfred.is_linux``, ``alfred.is_macos``, ``alfred.is_windows`` functions allow you to quickly
 target the environment on which specific processing must be performed.
+
+### Override environment variables
+
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+def ci():
+    with alfred.env(SCREEN="display"):
+        bash = alfred.sh("bash")
+        bash.run("-c" "echo $SCREEN")
+```
+
+#### Add directories into pythonpath
+
+Adding a folder in the pythonpath variable allows you to expose packages without declaring them in the manifest.
+
+This pattern is useful with poetry to be able to reuse the code of the package tests in this one for example.
+
+The ``alfred.pythonpath`` decorator adds the project root. You can save specific folders here.
+
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+@alfred.pythonpath()
+def ci():
+    with alfred.env(SCREEN="display"):
+        bash = alfred.sh("bash")
+        alfred.run(bash, ["-c" "echo $SCREEN"])
+```
+
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+@alfred.pythonpath(['tests'], append_root=False)
+def ci():
+    with alfred.env(SCREEN="display"):
+        bash = alfred.sh("bash")
+        alfred.run(bash, ["-c", "echo $SCREEN"])
+```
+
 
 ## Developper guideline
 
