@@ -1,3 +1,4 @@
+import contextlib
 import io
 import os
 from typing import Optional, Union, List
@@ -7,7 +8,7 @@ import plumbum
 import yaml
 from click import BaseCommand
 from click.exceptions import Exit
-from plumbum import CommandNotFound, ProcessExecutionError, FG
+from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 from yaml import SafeLoader
 
@@ -52,6 +53,29 @@ def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylin
             click.echo(exception.stdout)
             raise Exit(code=exception.retcode) from exception
 
+
+@contextlib.contextmanager
+def env(**kwargs) -> None:
+    """
+    Assign environment variables in a build command
+
+    >>> with alfred.env(ENV="prod"):
+    >>>     echo = alfred.sh("echo")
+    >>>     echo("hello world")
+
+    This instruction should update the python environment and the environment
+     from plumbum.
+    """
+    previous_environ = os.environ.copy()
+    try:
+        local.env.update(**kwargs)
+        os.environ.update(kwargs)
+        yield
+    finally:
+        local.env.clear()
+        local.env.update(previous_environ)
+        os.environ.clear()
+        os.environ.update(previous_environ)
 
 
 @click.pass_context
