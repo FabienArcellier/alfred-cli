@@ -1,24 +1,15 @@
-# pylint: disable=pointless-string-statement
-
-from typing import NewType, List
-
-import click
-
-"""
-path of object (directory or file) in filesystem
-/root
-"""
-path = NewType('path', str)  # pylint: disable=invalid-name
+import logging
+from typing import List, Dict
 
 
-class Environment:
+class Environment:  # pylint: disable=too-few-public-methods
 
     def __init__(self, key: str, value: str):
         self.key = key
         self.value = value
 
 
-class AlfredConfiguration:
+class AlfredManifest:
 
     def __init__(self, alfred_configuration: dict):
         self._alfred_configuration = alfred_configuration
@@ -37,10 +28,10 @@ class AlfredConfiguration:
                             environments.append(Environment(environment_splitted[0], environment_splitted[1]))
 
                     except Exception as exception:  # pylint: disable=broad-except
-                        click.echo(exception, err=True)
+                        logging.exception(exception)
 
         return environments
 
-    def plugins(self) -> List[str]:
+    def plugins(self) -> List[Dict[str, str]]:
         alfred_configuration = self._alfred_configuration
         return alfred_configuration["plugins"]

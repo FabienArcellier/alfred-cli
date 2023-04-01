@@ -1,22 +1,16 @@
 import contextlib
-import io
 import os
 from typing import Optional, Union, List
 
 import click
 import plumbum
-import yaml
 from click import BaseCommand
 from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
-from yaml import SafeLoader
 
-from alfred.decorator import ALFRED_COMMANDS
-from alfred.exceptions import NotInitialized
-from alfred.lib import list_hierarchy_directory
+from alfred import ctx as alfred_ctx, commands, manifest
 from alfred.logger import logger
-from alfred.type import path, AlfredConfiguration
 
 
 def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylint: disable=inconsistent-return-statements
@@ -61,18 +55,12 @@ def project_directory() -> str:
 
     >>> @alfred.command("project_directory")
     >>> def project_directory_command():
-    >>>     project_directory = alfred_configuration_path
+    >>>     project_directory = alfred.project_directory()
     >>>     print(project_directory)
     """
-    workingdir = os.path.realpath(os.getcwd())
-    hierarchy_directories = list_hierarchy_directory(workingdir)
-
-    for directory in hierarchy_directories:
-        alfred_configuration_path = _path_contains_alfred_configuration(directory)
-        if alfred_configuration_path is not None:
-            return directory
-
-    raise NotInitialized(f"{workingdir} or one of its parent is not an alfred project")
+    current_cmd = alfred_ctx.current_command()
+    manifest_path = manifest.lookup_path(current_cmd.path)
+    return os.path.dirname(manifest_path)
 
 @contextlib.contextmanager
 def env(**kwargs) -> None:
@@ -101,17 +89,18 @@ def env(**kwargs) -> None:
 @click.pass_context
 def invoke_command(ctx, command_label: str, **kwargs) -> None:
     click_command = None
+    _commands = commands.list_all()
     origin_alfred_command = None
-    for alfred_command in ALFRED_COMMANDS:
+    for alfred_command in _commands:
         if ctx.command.name == alfred_command.name:
             origin_alfred_command = alfred_command
 
     plugin = origin_alfred_command.plugin
-    plugin_click_command=_lookup_plugin_command(ALFRED_COMMANDS, command_label, plugin)
-    global_click_command=_lookup_global_command(ALFRED_COMMANDS, command_label)
+    plugin_click_command=_lookup_plugin_command(_commands, command_label, plugin)
+    global_click_command=_lookup_global_command(_commands, command_label)
 
-    available_plugins_commands = [command.original_name for command in ALFRED_COMMANDS if command.plugin == plugin]
-    available_global_commands = [command.name for command in ALFRED_COMMANDS]
+    available_plugins_commands = [command.original_name for command in _commands if command.plugin == plugin]
+    available_global_commands = [command.name for command in _commands]
     if plugin_click_command is None and global_click_command is None:
         message = [
             f"command {command_label} does not exists.",
@@ -127,10 +116,11 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
         click_command = global_click_command
 
     click.echo(click.style(f"$ alfred {click_command.name} : {click_command.help}", fg='green'))
-    ctx.invoke(click_command, **kwargs)
+    with alfred_ctx.stack_subcommand(origin_alfred_command):
+        ctx.invoke(click_command, **kwargs)
 
 
-def pythonpath(directories: List[str], append_root=True) -> None:
+def pythonpath(directories: List[str], append_root=True) -> None:  # pylint: disable=unused-argument
     """
     Add the project folder, i.e. the root folder which corresponds to the alfred command used,
     to pythonpath to make available the packages present at this level.
@@ -140,15 +130,16 @@ def pythonpath(directories: List[str], append_root=True) -> None:
     >>> def my_command():
     >>>     pass
 
-    Il est possible d'ajouter d'autres dossiers au pythonpath avec le paramètre `directories`. Le chemin des dossiers
-    ajoutés est relatif au dossier racine de la commande alfred utilisé, c'est à dire l'emplacment du fichier `.alfred.yml`.
+    It is possible to add other directories to the pythonpath with the `directories` parameter.
+    The path of the added folders is relative to the root folder of the alfred command used, ie
+    the location of the `.alfred.yml` file.
 
     >>> @alfred.command()
     >>> @alfred.pythonpath(['src'])
     >>> def my_command():
     >>>     pass
     """
-    pass
+    pass  # pylint: disable=unnecessary-pass
 
 
 def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
@@ -219,44 +210,6 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
     except ProcessExecutionError as exception:
         if exit_on_error:
             raise Exit(code=exception.retcode) from exception
-
-
-def lookup_alfred_configuration_path() -> path:
-    workingdir = path(os.getcwd())
-    hierarchy_directories = list_hierarchy_directory(workingdir)
-
-    alfred_configuration_path = None
-    for directory in hierarchy_directories:
-        alfred_configuration_path = _path_contains_alfred_configuration(directory)
-        if alfred_configuration_path is not None:
-            break
-
-    if not alfred_configuration_path:
-        raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
-
-    logger.debug(f"alfred configuration file : {alfred_configuration_path}")
-
-    return alfred_configuration_path
-
-
-def lookup_alfred_configuration() -> AlfredConfiguration:
-    alfred_configuration_path = lookup_alfred_configuration_path()
-
-    with io.open(alfred_configuration_path,  encoding="utf8") as file:
-        alfred_configuration = yaml.load(file, Loader=SafeLoader)
-        for plugin in alfred_configuration["plugins"]:
-            plugin['path'] =  os.path.realpath(os.path.join(alfred_configuration_path, '..', plugin['path']))
-            logger.debug(f"alfred plugin : {plugin}")
-
-        return AlfredConfiguration(alfred_configuration)
-
-
-def _path_contains_alfred_configuration(alfred_configuration_path: path) -> Optional[path]:
-    alfred_configuration_path = path(os.path.join(alfred_configuration_path, ".alfred.yml"))
-    if os.path.isfile(alfred_configuration_path):
-        return alfred_configuration_path
-
-    return None
 
 
 def _lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:

@@ -1,9 +1,7 @@
-import os
 import unittest
 
 from alfred.lib import list_hierarchy_directory
 from alfred.os import is_posix, is_windows
-from alfred.type import path
 
 
 class TestLib(unittest.TestCase):
@@ -13,7 +11,7 @@ class TestLib(unittest.TestCase):
             self.skipTest("this test run only on linux or macos environment")
 
         # Assign
-        mypath = path("/root/path/os/file")
+        mypath = "/root/path/os/file"
         # Acts
         parents_directory = list_hierarchy_directory(mypath)
 
@@ -28,7 +26,7 @@ class TestLib(unittest.TestCase):
             self.skipTest("this test run only on windows environment")
 
         # Assign
-        mypath = path("C:\\root\\path\\os\\file")
+        mypath = "C:\\root\\path\\os\\file"
         # Acts
         parents_directory = list_hierarchy_directory(mypath)
 

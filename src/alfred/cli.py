@@ -7,12 +7,13 @@ from typing import List, Any
 import click
 from plumbum import local
 
-from alfred.decorator import AlfredCommand, ALFRED_COMMANDS
+from alfred import ctx as alfred_ctx, manifest
+from alfred import commands
+from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
-from alfred.main import lookup_alfred_configuration
+from alfred.lib import ROOT_DIR
 from alfred.logger import logger
-from alfred.lib import import_python, list_python_modules, ROOT_DIR, InvalidPythonModule, print_error
-from alfred.type import Environment
+
 
 @click.command('init')
 def init():
@@ -31,21 +32,11 @@ class AlfredCli(click.MultiCommand):
         self._commands_loaded = False
         self._commands: List[AlfredCommand] = []
 
-    def reset(self):
-        """
-        Clean the existing commands. This method is dedicated to automatic
-        testing. AlfredCli kept between two tests. If a list of commands
-        has already been loaded, it will use it.
-
-        >>> self.reset()
-        """
-        self._commands_loaded = False
-        self._commands = []
-
     def list_commands(self, ctx):
         try:
             _list_commands = []
-            for command in self._list_commands_from_plugins():
+            _commands = commands.list_all()
+            for command in _commands:
                 click_command = command.command
                 _list_commands.append(click_command.name)
 
@@ -61,50 +52,18 @@ class AlfredCli(click.MultiCommand):
         if cmd_name == 'init':
             return init
 
-        commands = self._list_commands_from_plugins()
-        for command in commands:
+        _commands = commands.list_all()
+        for command in _commands:
             click_command = command.command
             if click_command.name == cmd_name:
-                alfred_configuration = lookup_alfred_configuration()
-                for environment in alfred_configuration.environments():
+                alfred_ctx.stack_root_command(command)
+                alfred_manifest = manifest.lookup()
+                for environment in alfred_manifest.environments():
                     local.env[environment.key] = environment.value
 
                 return click_command
 
         return None
-
-    def _list_commands_from_plugins(self) -> List[AlfredCommand]:
-        if self._commands_loaded:
-            return self._commands
-
-        _commands = []
-        for plugin in self._plugins_folder():
-            folder_path = plugin["path"]
-            for python_path in list_python_modules(folder_path):
-                prefix = "" if "prefix" not in plugin else plugin['prefix']
-                try:
-                    result = import_python(python_path)
-                    list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
-                    for command in list_commands:
-                        command.plugin = folder_path
-                        command.path = folder_path
-                        command.command.name = f"{prefix}{command.name}"
-                        _commands.append(command)
-                        ALFRED_COMMANDS.append(command)
-                except InvalidPythonModule as exception:
-                    print_error(str(exception))
-
-        self._commands_loaded = True
-        self._commands = _commands
-        return self._commands
-
-    def _environments(self) -> List[Environment]:
-        alfred_configuration = lookup_alfred_configuration()
-        return alfred_configuration.environments()
-
-    def _plugins_folder(self) -> List:
-        alfred_configuration = lookup_alfred_configuration()
-        return alfred_configuration.plugins()
 
 
 @click.command(cls=AlfredCli,

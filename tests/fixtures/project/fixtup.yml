@@ -11,4 +11,4 @@ keep_mounted: False
 #
 # This attribute allow to start a database only once and stop the container only when unittest has finished to run
 # the test suite. It may be interested to improve the performance if your start and stop process is too slow
-keep_running: False
+keep_up: False
