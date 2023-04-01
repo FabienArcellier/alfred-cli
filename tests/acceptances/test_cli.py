@@ -4,8 +4,8 @@ import unittest
 import fixtup
 from click.testing import CliRunner
 
-from alfred import commands
 from alfred.cli import cli
+from tests.fixtures import alfred_fixture
 
 
 class TestCli(unittest.TestCase):
@@ -15,7 +15,10 @@ class TestCli(unittest.TestCase):
         AlfredCli is create only once
         :return:
         """
-        commands.clear()
+        self.context = alfred_fixture.setup_context()
+
+    def tearDown(self) -> None:
+        alfred_fixture.teardown_context(self.context)
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred(self):
         """
