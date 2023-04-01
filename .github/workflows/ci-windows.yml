@@ -22,7 +22,7 @@ jobs:
               run: |
                 pip install setuptools
                 pip install pipenv
-                pipenv install
+                pipenv install --dev
 
             - name: continuous integration process
               shell: sh

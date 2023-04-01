@@ -1,9 +1,12 @@
 import multiprocessing
 import os
 
+import pytest
+
 import alfred
 
 
+@pytest.mark.skipif(alfred.is_windows(), reason="this test run only on linux or macos environment")
 def test_env_should_inject_environment_variable_in_subprocess():
     def task(queue):
         queue.put(0 if os.getenv("RANDOMVALUE") == "prod" else 1)

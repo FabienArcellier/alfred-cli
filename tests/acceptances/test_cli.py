@@ -80,7 +80,7 @@ class TestCli(unittest.TestCase):
 
         with fixtup.up('empty_directory'):
             # Assign
-            cwddir = os.getcwd()
+            cwd = os.path.realpath(os.getcwd())
             runner = CliRunner()
 
             # Acts
@@ -88,12 +88,13 @@ class TestCli(unittest.TestCase):
 
             # Assert
             self.assertEqual(0, result.exit_code)
-            self.assertTrue(os.path.isfile(os.path.join(cwddir, ".alfred.yml")))
+            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.yml")))
 
     def test_pythonpath_should_work_as_decorator(self):
 
         with fixtup.up('project'):
             # Assign
+            cwd = os.path.realpath(os.getcwd())
             runner = CliRunner()
 
             # Acts
@@ -101,12 +102,13 @@ class TestCli(unittest.TestCase):
 
             # Assert
             self.assertEqual(0, result.exit_code)
-            assert os.getcwd() in result.stdout
+            assert cwd in result.stdout
 
     def test_pythonpath_should_add_src_as_decorator(self):
 
         with fixtup.up('project'):
             # Assign
+            cwd = os.path.realpath(os.getcwd())
             runner = CliRunner()
 
             # Acts
@@ -114,7 +116,7 @@ class TestCli(unittest.TestCase):
 
             # Assert
             self.assertEqual(0, result.exit_code)
-            assert os.path.join(os.getcwd(), 'src')  in result.stdout
+            assert os.path.join(cwd, 'src')  in result.stdout
 
 
     def test_sh_should_work_with_multicommand(self):

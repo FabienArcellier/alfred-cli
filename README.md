@@ -232,16 +232,22 @@ The ``alfred.pythonpath`` decorator adds the project root. You can save specific
 @alfred.command('ci', help="execute continuous integration process of alfred")
 @alfred.pythonpath()
 def ci():
-    with alfred.env(SCREEN="display"):
-        bash = alfred.sh("bash")
-        alfred.run(bash, ["-c" "echo $SCREEN"])
+    bash = alfred.sh("bash")
+    alfred.run(bash, ["-c" "echo $SCREEN"])
 ```
 
 ```python
 @alfred.command('ci', help="execute continuous integration process of alfred")
 @alfred.pythonpath(['tests'], append_project=False)
 def ci():
-    with alfred.env(SCREEN="display"):
+    bash = alfred.sh("bash")
+    alfred.run(bash, ["-c", "echo $SCREEN"])
+```
+
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+def ci():
+    with alfred.pythonpath():
         bash = alfred.sh("bash")
         alfred.run(bash, ["-c", "echo $SCREEN"])
 ```
