@@ -9,6 +9,18 @@ def hello_world_command(name):
     print(f"hello world, {name}")
 
 
+@alfred.command("pythonpath")
+@alfred.pythonpath()
+def pythonpath():
+    print(f"{os.getenv('PYTHONPATH')}")
+
+
+@alfred.command("pythonpath_src")
+@alfred.pythonpath(['src'])
+def pythonpath_src():
+    print(f"{os.getenv('PYTHONPATH')}")
+
+
 @alfred.command("hello_world_2")
 @alfred.option("--name")
 def hello_world_2_command(name):

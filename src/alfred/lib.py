@@ -5,8 +5,6 @@ from typing import List, Iterator
 
 import click
 
-from alfred.type import path
-
 ROOT_DIR = os.path.realpath(os.path.join(__file__, '..'))
 
 
@@ -14,7 +12,7 @@ class InvalidPythonModule(Exception):
     pass
 
 
-def import_python(python_path: path) -> dict:
+def import_python(python_path: str) -> dict:
 
     module = {"__file__": python_path}
     with io.open(python_path, encoding="utf8") as file:
@@ -35,14 +33,14 @@ def import_python(python_path: path) -> dict:
     return module
 
 
-def list_python_modules(folder_path: path) -> Iterator[path]:
+def list_python_modules(folder_path: str) -> Iterator[str]:
     for filename in os.listdir(folder_path):
         if filename.endswith('.py') and filename != '__init__.py':
-            python_path = path(os.path.join(folder_path, filename))
+            python_path = os.path.join(folder_path, filename)
             yield python_path
 
 
-def list_hierarchy_directory(workingdir: path) -> List[path]:
+def list_hierarchy_directory(workingdir: str) -> List[str]:
     workingdir = os.path.realpath(workingdir)
     all_parts = workingdir.split(os.sep)
 

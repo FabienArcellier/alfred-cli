@@ -1,11 +1,11 @@
 import os
 import unittest
 
+import fixtup
 from click.testing import CliRunner
 
 from alfred.cli import cli
-from alfred.os import is_posix, is_windows
-from tests.fixtures import clone_fixture
+from tests.fixtures import alfred_fixture
 
 
 class TestCli(unittest.TestCase):
@@ -15,19 +15,17 @@ class TestCli(unittest.TestCase):
         AlfredCli is create only once
         :return:
         """
-        cli.reset()
-        self.current_cwd = os.getcwd()
+        self.context = alfred_fixture.setup_context()
 
     def tearDown(self) -> None:
-        os.chdir(self.current_cwd)
+        alfred_fixture.teardown_context(self.context)
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred(self):
         """
         this test check alfred show an help message to the user if a project
         does not contains alfred.ini. It triggered if the user run ``alfred``
         """
-
-        with clone_fixture('empty_directory') as cwddir:
+        with fixtup.up('empty_directory'):
             # Assign
             runner = CliRunner()
 
@@ -44,7 +42,7 @@ class TestCli(unittest.TestCase):
         does not contains alfred.ini. It triggered if the user run ``alfred --help"
         """
 
-        with clone_fixture('empty_directory') as cwddir:
+        with fixtup.up('empty_directory'):
             # Assign
             runner = CliRunner()
 
@@ -57,7 +55,7 @@ class TestCli(unittest.TestCase):
 
     def test_cli_should_list_command_with_prefix(self):
 
-        with clone_fixture('project') as cwddir:
+        with fixtup.up('project'):
             # Assign
             runner = CliRunner()
 
@@ -70,7 +68,7 @@ class TestCli(unittest.TestCase):
 
     def test_cli_should_invoke_command_with_prefix(self):
 
-        with clone_fixture('project') as cwddir:
+        with fixtup.up('project'):
             # Assign
             runner = CliRunner()
 
@@ -83,8 +81,9 @@ class TestCli(unittest.TestCase):
 
     def test_init_should_create_alfred_directory_and_files(self):
 
-        with clone_fixture('empty_directory') as cwddir:
+        with fixtup.up('empty_directory'):
             # Assign
+            cwd = os.path.realpath(os.getcwd())
             runner = CliRunner()
 
             # Acts
@@ -92,11 +91,40 @@ class TestCli(unittest.TestCase):
 
             # Assert
             self.assertEqual(0, result.exit_code)
-            self.assertTrue(os.path.isfile(os.path.join(cwddir, ".alfred.yml")))
+            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.yml")))
+
+    def test_pythonpath_should_work_as_decorator(self):
+
+        with fixtup.up('project'):
+            # Assign
+            cwd = os.path.realpath(os.getcwd())
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, ["cmd:pythonpath"])
+
+            # Assert
+            self.assertEqual(0, result.exit_code)
+            assert cwd in result.stdout
+
+    def test_pythonpath_should_add_src_as_decorator(self):
+
+        with fixtup.up('project'):
+            # Assign
+            cwd = os.path.realpath(os.getcwd())
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, ["cmd:pythonpath_src"])
+
+            # Assert
+            self.assertEqual(0, result.exit_code)
+            assert os.path.join(cwd, 'src')  in result.stdout
+
 
     def test_sh_should_work_with_multicommand(self):
 
-        with clone_fixture('project') as cwddir:
+        with fixtup.up('project'):
             # Assign
             runner = CliRunner()
 
@@ -108,7 +136,7 @@ class TestCli(unittest.TestCase):
 
     def test_sh_should_not_work_with_wrong_multicommand_for_posix(self):
 
-        with clone_fixture('project') as cwddir:
+        with fixtup.up('project'):
             # Assign
             runner = CliRunner()
 
@@ -122,7 +150,7 @@ class TestCli(unittest.TestCase):
 
     def test_wrong_commands_should_show_explicit_messages(self):
 
-        with clone_fixture('wrong_command_module') as cwddir:
+        with fixtup.up('wrong_command_module'):
             # Assign
             runner = CliRunner()
 
