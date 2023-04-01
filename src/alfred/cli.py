@@ -61,7 +61,8 @@ class AlfredCli(click.MultiCommand):
         if cmd_name == 'init':
             return init
 
-        for command in self._list_commands_from_plugins():
+        commands = self._list_commands_from_plugins()
+        for command in commands:
             click_command = command.command
             if click_command.name == cmd_name:
                 alfred_configuration = lookup_alfred_configuration()
@@ -86,6 +87,7 @@ class AlfredCli(click.MultiCommand):
                     list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
                     for command in list_commands:
                         command.plugin = folder_path
+                        command.path = folder_path
                         command.command.name = f"{prefix}{command.name}"
                         _commands.append(command)
                         ALFRED_COMMANDS.append(command)

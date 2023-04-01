@@ -1,7 +1,7 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 import click
-from click import BaseCommand
+from click import BaseCommand, Command
 
 
 def command(name: str, **attrs: Any):
@@ -29,9 +29,13 @@ def option(*args, **attrs):
 class AlfredCommand:
 
     def __init__(self, _command: BaseCommand):
-        self.command = _command
-        self._plugin = None
+        self.command: BaseCommand = _command
+        self.plugin: Optional[str] = None
         self._original_name = _command.name
+        self.path: Optional[str] = None
+
+    def __repr__(self):
+        return f"<AlfredCommand {self.name}, {self.path}>"
 
     @property
     def name(self):
@@ -40,14 +44,6 @@ class AlfredCommand:
     @property
     def original_name(self):
         return self._original_name
-
-    @property
-    def plugin(self):
-        return self._plugin
-
-    @plugin.setter
-    def plugin(self, value):
-        self._plugin = value
 
 
 ALFRED_COMMANDS: List[AlfredCommand] = []

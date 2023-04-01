@@ -54,6 +54,26 @@ def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylin
             raise Exit(code=exception.retcode) from exception
 
 
+def project_directory() -> str:
+    """
+    Returns the project directory of alfred relative to the current command.
+    This is the first parent where the `.alfred.yml` file is present.
+
+    >>> @alfred.command("project_directory")
+    >>> def project_directory_command():
+    >>>     project_directory = alfred_configuration_path
+    >>>     print(project_directory)
+    """
+    workingdir = os.path.realpath(os.getcwd())
+    hierarchy_directories = list_hierarchy_directory(workingdir)
+
+    for directory in hierarchy_directories:
+        alfred_configuration_path = _path_contains_alfred_configuration(directory)
+        if alfred_configuration_path is not None:
+            return directory
+
+    raise NotInitialized(f"{workingdir} or one of its parent is not an alfred project")
+
 @contextlib.contextmanager
 def env(**kwargs) -> None:
     """
@@ -108,6 +128,27 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
 
     click.echo(click.style(f"$ alfred {click_command.name} : {click_command.help}", fg='green'))
     ctx.invoke(click_command, **kwargs)
+
+
+def pythonpath(directories: List[str], append_root=True) -> None:
+    """
+    Add the project folder, i.e. the root folder which corresponds to the alfred command used,
+    to pythonpath to make available the packages present at this level.
+
+    >>> @alfred.command()
+    >>> @alfred.pythonpath()
+    >>> def my_command():
+    >>>     pass
+
+    Il est possible d'ajouter d'autres dossiers au pythonpath avec le paramètre `directories`. Le chemin des dossiers
+    ajoutés est relatif au dossier racine de la commande alfred utilisé, c'est à dire l'emplacment du fichier `.alfred.yml`.
+
+    >>> @alfred.command()
+    >>> @alfred.pythonpath(['src'])
+    >>> def my_command():
+    >>>     pass
+    """
+    pass
 
 
 def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
@@ -186,7 +227,7 @@ def lookup_alfred_configuration_path() -> path:
 
     alfred_configuration_path = None
     for directory in hierarchy_directories:
-        alfred_configuration_path = path_contains_alfred_configuration(directory)
+        alfred_configuration_path = _path_contains_alfred_configuration(directory)
         if alfred_configuration_path is not None:
             break
 
@@ -210,7 +251,7 @@ def lookup_alfred_configuration() -> AlfredConfiguration:
         return AlfredConfiguration(alfred_configuration)
 
 
-def path_contains_alfred_configuration(alfred_configuration_path: path) -> Optional[path]:
+def _path_contains_alfred_configuration(alfred_configuration_path: path) -> Optional[path]:
     alfred_configuration_path = path(os.path.join(alfred_configuration_path, ".alfred.yml"))
     if os.path.isfile(alfred_configuration_path):
         return alfred_configuration_path

@@ -1,0 +1,14 @@
+# This flag control if a fixture is mounted on every test and unmounted at the end of the test or if
+# the fixture is mounted only once and remove when the test runner end its execution.
+#
+# This attribute allow to load and init a database only once and use the same container in every
+# test. Fixtup avoid to destroy and create a new container every time. It may be interested to
+# improve the performance but you lost the ability to have a brand new environment on each test.
+keep_mounted: False
+
+# This flag control if a fixture stay up and running between every test. The fixture is stop and
+# unmount when the test process stop
+#
+# This attribute allow to start a database only once and stop the container only when unittest has finished to run
+# the test suite. It may be interested to improve the performance if your start and stop process is too slow
+keep_running: False
