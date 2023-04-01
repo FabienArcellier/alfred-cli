@@ -90,6 +90,33 @@ class TestCli(unittest.TestCase):
             self.assertEqual(0, result.exit_code)
             self.assertTrue(os.path.isfile(os.path.join(cwddir, ".alfred.yml")))
 
+    def test_pythonpath_should_work_as_decorator(self):
+
+        with fixtup.up('project'):
+            # Assign
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, ["cmd:pythonpath"])
+
+            # Assert
+            self.assertEqual(0, result.exit_code)
+            assert os.getcwd() in result.stdout
+
+    def test_pythonpath_should_add_src_as_decorator(self):
+
+        with fixtup.up('project'):
+            # Assign
+            runner = CliRunner()
+
+            # Acts
+            result = runner.invoke(cli, ["cmd:pythonpath_src"])
+
+            # Assert
+            self.assertEqual(0, result.exit_code)
+            assert os.path.join(os.getcwd(), 'src')  in result.stdout
+
+
     def test_sh_should_work_with_multicommand(self):
 
         with fixtup.up('project'):

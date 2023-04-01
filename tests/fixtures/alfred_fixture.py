@@ -11,6 +11,7 @@ def use_command_context(command_name: str):
     :param command_name: The name of the command to use.
     :return: A context manager that will use the context of the command.
     """
+    commands.clear()
     _commands = commands.list_all()
     command_exist = False
     for _command in _commands:

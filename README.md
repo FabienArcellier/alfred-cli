@@ -239,7 +239,7 @@ def ci():
 
 ```python
 @alfred.command('ci', help="execute continuous integration process of alfred")
-@alfred.pythonpath(['tests'], append_root=False)
+@alfred.pythonpath(['tests'], append_project=False)
 def ci():
     with alfred.env(SCREEN="display"):
         bash = alfred.sh("bash")

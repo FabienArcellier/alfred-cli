@@ -16,14 +16,14 @@ def tests(verbose: bool):
 @alfred.command('tests:units', help="validate alfred with unit testing")
 @alfred.option('-v', '--verbose', is_flag=True)
 def tests_units(verbose: bool):
-    python = alfred.sh('python')
-    args = ['-m', 'unittest', 'discover', 'tests/units']
+    pytest = alfred.sh('pytest')
+    args = ['tests/units']
 
     if verbose:
         args.append('-v')
 
     if args:
-        alfred.run(python, args)
+        alfred.run(pytest, args)
 
 
 @alfred.command('tests:integrations', help="validate alfred with integration testing")
@@ -42,11 +42,11 @@ def tests_integrations(verbose: bool):
 @alfred.command('tests:acceptances', help="validate alfred with acceptances testing")
 @alfred.option('-v', '--verbose', is_flag=True)
 def tests_acceptances(verbose: bool):
-    python = alfred.sh('python')
-    args = ['-m', 'unittest', 'discover', 'tests/acceptances']
+    pytest = alfred.sh('pytest')
+    args = ['tests/acceptances']
 
     if verbose:
         args.append('-v')
 
     if args:
-        alfred.run(python, args)
+        alfred.run(pytest, args)

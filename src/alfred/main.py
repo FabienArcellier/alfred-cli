@@ -1,6 +1,7 @@
 import contextlib
 import os
-from typing import Optional, Union, List
+from functools import wraps
+from typing import Optional, Union, List, Callable
 
 import click
 import plumbum
@@ -10,7 +11,7 @@ from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
 from alfred import ctx as alfred_ctx, commands, manifest
-from alfred.logger import logger
+from alfred.logger import get_logger
 
 
 def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylint: disable=inconsistent-return-statements
@@ -31,6 +32,7 @@ def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylin
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
     try:
+        logger = get_logger()
         complete_command = command[args]
         working_directory = os.getcwd()
         logger.debug(f'{complete_command} - wd: {working_directory}')
@@ -58,9 +60,12 @@ def project_directory() -> str:
     >>>     project_directory = alfred.project_directory()
     >>>     print(project_directory)
     """
+    alfred_ctx.assert_in_command("alfred.project_directory")
+
     current_cmd = alfred_ctx.current_command()
     manifest_path = manifest.lookup_path(current_cmd.path)
     return os.path.dirname(manifest_path)
+
 
 @contextlib.contextmanager
 def env(**kwargs) -> None:
@@ -119,8 +124,7 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
     with alfred_ctx.stack_subcommand(origin_alfred_command):
         ctx.invoke(click_command, **kwargs)
 
-
-def pythonpath(directories: List[str], append_root=True) -> None:  # pylint: disable=unused-argument
+class pythonpath:  #pylint: disable=invalid-name
     """
     Add the project folder, i.e. the root folder which corresponds to the alfred command used,
     to pythonpath to make available the packages present at this level.
@@ -139,7 +143,58 @@ def pythonpath(directories: List[str], append_root=True) -> None:  # pylint: dis
     >>> def my_command():
     >>>     pass
     """
-    pass  # pylint: disable=unnecessary-pass
+
+    def __init__(self, directories: List[str] = None, append_project=True):
+        """
+        manage the case where the decorator is used without parenthesis
+
+        """
+        if isinstance(directories, Callable):
+            raise TypeError("alfred.pythonpath decoratore must be called with parenthesis as @alfred.pythonpath()")
+
+        self.directories = directories
+        self.append_project = append_project
+        self._generator = None
+
+    def __enter__(self):
+        self._generator = _pythonpath(self.directories, self.append_project)
+        self._generator.__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._generator.__exit__(exc_type, exc_val, exc_tb)
+
+    def __call__(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with _pythonpath(self.directories, self.append_project):
+                return func(*args, **kwargs)
+
+        return wrapper
+
+
+@contextlib.contextmanager
+def _pythonpath(directories: List[str] = None, append_project=True) -> None:
+    """
+    See the pythonpath class above which implements the pattern
+    to support a decorator and a context manager.
+    """
+    alfred_ctx.assert_in_command("alfred.pythonpath")
+
+    logger = get_logger()
+    if directories is None:
+        directories = []
+
+    _pythonpath = os.environ.get("PYTHONPATH", "").split(':')
+    root_directory = project_directory()
+    real_directories = [os.path.realpath(directory) for directory in directories]
+
+    if append_project:
+        real_directories += [root_directory]
+
+    override_pythonpath = ":".join(real_directories + _pythonpath)
+    logger.debug(f"env PYTHONPATH: {override_pythonpath}")
+    with env(PYTHONPATH=override_pythonpath):
+        yield
 
 
 def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
@@ -203,6 +258,7 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
     try:
+        logger = get_logger()
         complete_command = command[args]
         working_directory = os.getcwd()
         logger.debug(f'{complete_command} - wd: {working_directory}')

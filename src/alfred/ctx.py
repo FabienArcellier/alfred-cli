@@ -7,6 +7,7 @@ import dataclasses
 from typing import List, Optional
 
 from alfred.decorator import AlfredCommand
+from alfred.exceptions import NotInCommand
 
 
 @dataclasses.dataclass
@@ -28,6 +29,17 @@ def current_command() -> Optional[AlfredCommand]:
     :return:
     """
     return _context.commands_stack[0] if _context.running else None
+
+
+def assert_in_command(instruction: str) -> None:
+    """
+    Throws an exception if an alfred command is not running
+
+    >>> ctx.assert_in_command("alfred.pythonpath")
+    :return:
+    """
+    if _context.running is False:
+        raise NotInCommand(instruction)
 
 
 def root_command() -> Optional[AlfredCommand]:
