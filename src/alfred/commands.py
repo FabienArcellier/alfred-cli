@@ -57,7 +57,6 @@ def load_commands() -> None:
                     command.path = folder_path
                     command.command.name = f"{prefix}{command.name}"
                     _commands.commands.append(command)
-                    _commands.commands.append(command)
             except InvalidPythonModule as exception:
                 print_error(str(exception))
 
