@@ -12,7 +12,7 @@ jobs:
 
         strategy:
           matrix:
-            python-version: [3.8]
+            python-version: ["3.8", "3.9", "3.10", "3.11"]
 
         steps:
             - uses: actions/checkout@v2
@@ -25,12 +25,8 @@ jobs:
             - name: update package manager & install python3 environment
               run: |
                 pip install setuptools
-                pip install pipenv==2021.5.29
-                pipenv install --dev
+                pip install poetry
+                poetry install
 
             - name: continuous integration process
-              shell: sh
-              run: pipenv run -v alfred --debug ci
-              env:
-                  LD_LIBRARY_PATH: ""
-                  pythonLocation: ""
+              run: poetry run alfred ci

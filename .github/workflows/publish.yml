@@ -25,16 +25,16 @@ jobs:
             - name: update package manager & install python3 environment
               run: |
                 pip install setuptools
-                pip install pipenv
-                pipenv install --dev
+                pip install poetry
+                poetry install
 
             - name: run continuous integration to validate fixtup
               run: |
-                pipenv run alfred ci
+                poetry run alfred ci
 
             - name: publish on pypi
               run: |
-                pipenv run alfred publish:pypi
+                poetry run alfred publish:pypi
               env:
                   TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
                   TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
