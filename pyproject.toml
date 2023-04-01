@@ -1,6 +1,55 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+[tool.poetry]
+name = "alfred-cli"
+version = "1.2.0"
+description = "alfred is an extensible building tool that can replace a Makefile or Fabric. Writing commands in python is done in minutes."
+authors = ["Fabien Arcellier <fabien.arcellier@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "alfred", from = "src"}]
+include = [
+    { path = "alfred/resources/*" }
 ]
-build-backend = "setuptools.build_meta"
+
+homepage = "https://github.com/FabienArcellier/alfred-cli#alfred"
+repository = "https://github.com/FabienArcellier/alfred-cli"
+keywords = ["building tool", "makefile", "productivity", "automation", "continuous integration", "developper friendly"]
+classifiers = [
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Development Status :: 4 - Beta"
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "^8.1.3"
+plumbum = "^1.8.1"
+pyyaml = "^6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+build = "^0.10.0"
+coverage = "^7.2.2"
+fixtup = "^0.1.5"
+pylint = "^2.17.1"
+pytest = "^7.2.2"
+twine = "^4.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+alfred = "alfred.cli:cli"
+
+
+
+[tools.fixtup]
+fixtures = "tests/fixtures"
+plugins = [
+    "fixtup.plugins.dotenv",
+    "fixtup.plugins.docker"
+]
