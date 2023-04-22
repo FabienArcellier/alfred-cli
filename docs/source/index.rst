@@ -6,13 +6,13 @@ Writing commands in python is done in a few minutes, even in the case of a mono-
 which contains several products.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    features
 
-Indices and tables
-==================
+Links
+-----
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+* Documentation : https://alfred-cli.readthedocs.io/en/latest
+* PyPI Release : https://pypi.org/project/alfred-cli
+* Source code: https://github.com/FabienArcellier/alfred-cli

@@ -12,6 +12,8 @@ include = [
 
 homepage = "https://github.com/FabienArcellier/alfred-cli#alfred"
 repository = "https://github.com/FabienArcellier/alfred-cli"
+documentation = "https://alfred-cli.readthedocs.io/en/latest"
+
 keywords = ["building tool", "makefile", "productivity", "automation", "continuous integration", "developper friendly"]
 classifiers = [
     "Topic :: Software Development :: Build Tools",
