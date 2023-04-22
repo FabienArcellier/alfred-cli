@@ -7,7 +7,7 @@ from typing import List, Dict
 
 from alfred import manifest
 from alfred.domain.command import AlfredCommand
-from alfred.lib import list_python_modules, import_python, InvalidPythonModule, print_error
+from alfred.lib import list_python_modules, import_python
 
 
 @dataclasses.dataclass
@@ -39,31 +39,42 @@ def load_commands() -> None:
     The search for the manifest is done from the current directory. If the manifest is not found, the search continues
     and goes back to the parent folder.
 
-    Once the commands are loaded, they are available in the ALFRED_COMMANDS global variable.
+    Once the commands are loaded, they are available in _commands global variable.
 
     >>> from alfred import commands
     >>> commands.load_commands()
     """
     _commands.commands = []
-    for plugin in list_plugins_folder():
-        folder_path = plugin["path"]
-        for python_path in list_python_modules(folder_path):
-            prefix = "" if "prefix" not in plugin else plugin['prefix']
-            try:
-                result = import_python(python_path)
-                list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
-                for command in list_commands:
-                    command.plugin = folder_path
-                    command.path = folder_path
+    for pattern in manifest.project_commands_pattern():
+        prefix = manifest.prefix()
+        for python_module in list_python_modules(pattern):
+            module = import_python(python_module)
+            for command in module.values():
+                if isinstance(command, AlfredCommand):
+                    command.plugin = pattern
+                    command.path = pattern
                     command.command.name = f"{prefix}{command.name}"
                     _commands.commands.append(command)
-            except InvalidPythonModule as exception:
-                print_error(str(exception))
+
+    # include the commands from the plugins
+    # for plugin in manifest.project_commands_pattern():
+    #     folder_path = plugin["path"]
+    #     for python_path in list_python_modules(folder_path):
+    #         prefix = "" if "prefix" not in plugin else plugin['prefix']
+    #         try:
+    #             result = import_python(python_path)
+    #             list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
+    #             for command in list_commands:
+    #                 command.plugin = folder_path
+    #                 command.path = folder_path
+    #                 command.command.name = f"{prefix}{command.name}"
+    #                 _commands.commands.append(command)
+    #         except InvalidPythonModule as exception:
+    #             print_error(str(exception))
 
 
 def list_plugins_folder() -> List[Dict[str, str]]:
-    alfred_configuration = manifest.lookup()
-    return alfred_configuration.plugins()
+    return []
 
 
 @contextlib.contextmanager

@@ -1,9 +1,9 @@
+import glob
 import io
 import os
 import sys
 from typing import List, Iterator
 
-import click
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, '..'))
 
@@ -33,11 +33,10 @@ def import_python(python_path: str) -> dict:
     return module
 
 
-def list_python_modules(folder_path: str) -> Iterator[str]:
-    for filename in os.listdir(folder_path):
+def list_python_modules(glob_expression: str) -> Iterator[str]:
+    for filename in glob.glob(glob_expression):
         if filename.endswith('.py') and filename != '__init__.py':
-            python_path = os.path.join(folder_path, filename)
-            yield python_path
+            yield filename
 
 
 def list_hierarchy_directory(workingdir: str) -> List[str]:
@@ -53,7 +52,3 @@ def list_hierarchy_directory(workingdir: str) -> List[str]:
             result.append(os.sep.join(all_parts))
 
     return result
-
-
-def print_error(msg: str):
-    click.echo(click.style(msg, fg="red", bold=True), err=True)

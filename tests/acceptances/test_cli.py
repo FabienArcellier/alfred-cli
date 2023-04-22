@@ -91,7 +91,7 @@ class TestCli(unittest.TestCase):
 
             # Assert
             self.assertEqual(0, result.exit_code)
-            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.yml")))
+            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.toml")))
 
     def test_pythonpath_should_work_as_decorator(self):
 

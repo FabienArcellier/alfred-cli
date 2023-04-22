@@ -1428,7 +1428,7 @@ test = ["pytest"]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
@@ -1639,4 +1639,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "8af02b241b1f3326ee7ec2dc646391e5e1b1d1be389dc18f21ef3306b4a339e8"
+content-hash = "62eec5ac4f88fa7f95474627b2730e2ac83c2746ebacf28508e5a095f9a76ca5"

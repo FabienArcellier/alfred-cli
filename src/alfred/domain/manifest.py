@@ -1,6 +1,5 @@
 import logging
-from typing import List, Dict
-
+from typing import List
 
 class Environment:  # pylint: disable=too-few-public-methods
 
@@ -13,6 +12,9 @@ class AlfredManifest:
 
     def __init__(self, alfred_configuration: dict):
         self._alfred_configuration = alfred_configuration
+
+    def configuration(self) -> dict:
+        return self._alfred_configuration
 
     def environments(self) -> List[Environment]:
         environments = []
@@ -31,7 +33,3 @@ class AlfredManifest:
                         logging.exception(exception)
 
         return environments
-
-    def plugins(self) -> List[Dict[str, str]]:
-        alfred_configuration = self._alfred_configuration
-        return alfred_configuration["plugins"]

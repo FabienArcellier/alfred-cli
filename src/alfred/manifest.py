@@ -1,10 +1,10 @@
 import io
 import os
-from typing import Optional
+from typing import Optional, List
 
-import yaml
-from yaml import SafeLoader
+import toml
 
+from alfred import echo
 from alfred.domain.manifest import AlfredManifest
 from alfred.exceptions import NotInitialized
 from alfred.lib import list_hierarchy_directory
@@ -13,24 +13,18 @@ from alfred.logger import logger
 
 def lookup() -> AlfredManifest:
     """
-    Retrieves the contents of the `.alfred.yml` manifest. The search for the manifest starts from
+    Retrieves the contents of the `.alfred.toml` manifest. The search for the manifest starts from
     the current folder and goes up from parent to parent.
 
     If no alfred manifest is found, an exception is thrown.
 
     >>> from alfred import manifest
     >>> _manifest = manifest.lookup()
-    >>> for plugin in _manifest.plugins():
-    >>>     pass
     """
     alfred_manifest_path = lookup_path()
 
     with io.open(alfred_manifest_path,  encoding="utf8") as file:
-        alfred_configuration = yaml.load(file, Loader=SafeLoader)
-        for plugin in alfred_configuration["plugins"]:
-            plugin['path'] =  os.path.realpath(os.path.join(alfred_manifest_path, '..', plugin['path']))
-            logger.debug(f"alfred plugin : {plugin}")
-
+        alfred_configuration = toml.load(file)
         return AlfredManifest(alfred_configuration)
 
 
@@ -49,7 +43,7 @@ def lookup_path(starting_path: Optional[str] = None) -> str:
 
     alfred_configuration_path = None
     for directory in hierarchy_directories:
-        alfred_configuration_path = is_manifest_directory(directory)
+        alfred_configuration_path = _is_manifest_directory(directory)
         if alfred_configuration_path is not None:
             break
 
@@ -61,8 +55,95 @@ def lookup_path(starting_path: Optional[str] = None) -> str:
     return alfred_configuration_path
 
 
-def is_manifest_directory(alfred_configuration_path: str) -> Optional[str]:
-    alfred_configuration_path = os.path.join(alfred_configuration_path, ".alfred.yml")
+def lookup_obsolete_manifests(directory: Optional[str] = None) -> List[str]:
+    """
+    Retrieves the list of obsolete manifest files (for example .alfred.yml).
+
+    >>> from alfred import manifest
+    >>> obsolete_manifests = manifest.lookup_obsolete_manifests()
+    """
+    obsolete_manifests = []
+    if directory is None:
+        directory = os.getcwd()
+
+    hierarchy_directories = list_hierarchy_directory(directory)
+    for hdirectory in hierarchy_directories:
+        obsolete_manifest_path = contains_obsolete_manifest(hdirectory)
+        if obsolete_manifest_path is not None:
+            obsolete_manifests.append(obsolete_manifest_path)
+
+    return obsolete_manifests
+
+
+def contains_obsolete_manifest(directory: Optional[str] = None) -> Optional[str]:
+    """
+    Checks if the directory contains an obsolete manifest file (for example .alfred.yml).
+
+    It returns None, if there is no obsolete manifest file. Otherwise, it returns the path to the
+    obsolete manifest file.
+    """
+    alfred_manifest_path = os.path.join(directory, ".alfred.yml")
+    if os.path.isfile(alfred_manifest_path):
+        return alfred_manifest_path
+
+    return None
+
+
+def contains_manifest(directory: Optional[str] = None) -> bool:
+    """
+    Checks if the current directory contains an alfred manifest file.
+
+    >>> if manifest.contains_manifest():
+    >>>     print("This is an alfred project")
+    """
+    if directory is None:
+        directory = os.getcwd()
+
+    return _is_manifest_directory(directory) is not None
+
+
+def project_commands_pattern() -> List[str]:
+    """
+    Retrieves the list of glob expression to scan alfred commands.
+
+    :return:
+    """
+    _manifest = lookup()
+    configuration = _manifest.configuration()
+
+    _default = ["alfred/*.py"]
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'project' not in configuration['alfred']:
+        return _default
+
+    if 'command' not in configuration['alfred']['project']:
+        return _default
+
+    command = configuration['alfred']['project']['command']
+    if not isinstance(command, list):
+        echo.warning(f"The command in the manifest must be a list of string, use {_default} instead")
+        return _default
+
+    return command
+
+
+def prefix() -> str:
+    _manifest = lookup()
+    configuration = _manifest.configuration()
+    _default = ''
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'prefix' not in configuration['alfred']:
+        return _default
+
+    return configuration['alfred']['prefix']
+
+
+def _is_manifest_directory(directory: str) -> Optional[str]:
+    alfred_configuration_path = os.path.join(directory, ".alfred.toml")
     if os.path.isfile(alfred_configuration_path):
         return alfred_configuration_path
 

@@ -7,7 +7,7 @@ from typing import List, Any
 import click
 from plumbum import local
 
-from alfred import ctx as alfred_ctx, manifest
+from alfred import ctx as alfred_ctx, manifest, echo
 from alfred import commands
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
@@ -17,11 +17,12 @@ from alfred.logger import logger
 
 @click.command('init')
 def init():
-    if os.path.isfile('.alfred.yml'):
-        raise click.ClickException(".alfred.yml already exists in this directory")
+    display_obsolete_manifests()
+    if manifest.contains_manifest():
+        exit_on_error("manifest .alfred.toml already exists in this directory")
 
     os.makedirs('alfred')
-    shutil.copy(os.path.join(ROOT_DIR, 'resources', '.alfred.yml'), '.alfred.yml')
+    shutil.copy(os.path.join(ROOT_DIR, 'resources', '.alfred.toml'), '.alfred.toml')
     shutil.copy(os.path.join(ROOT_DIR, 'resources', 'cmd.py'), os.path.join('alfred', 'cmd.py'))
 
 
@@ -72,6 +73,32 @@ class AlfredCli(click.MultiCommand):
 def cli(debug: bool):
     if debug:
         logger.setLevel(logging.DEBUG)
+
+    display_obsolete_manifests()
+
+
+def display_obsolete_manifests():
+    """
+    Show a warning if obsolete manifest files are found.
+
+    >>> cli.display_obsolete_manifests()
+    """
+    obsolete_manifests = manifest.lookup_obsolete_manifests()
+    if len(obsolete_manifests) > 0:
+        echo.warning(f"The following obsolete manifest files have been found: {obsolete_manifests}")
+
+
+def exit_on_error(message: str, exit_code: int = 1):
+    """
+    Exit the program with a message.
+
+    The exit code can be customized.
+
+    >>> exit_on_error(".alfred.yml already exists in this directory")
+    """
+    exception = click.ClickException(message)
+    exception.exit_code = exit_code
+    raise exception
 
 
 if __name__ == '__main__':
