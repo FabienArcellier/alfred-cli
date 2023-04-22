@@ -3,6 +3,7 @@ This module performs column loading operations from the manifest definition.
 """
 import contextlib
 import dataclasses
+import os
 from typing import List, Dict
 
 from alfred import manifest
@@ -51,8 +52,8 @@ def load_commands() -> None:
             module = import_python(python_module)
             for command in module.values():
                 if isinstance(command, AlfredCommand):
-                    command.plugin = pattern
-                    command.path = pattern
+                    command.plugin = python_module
+                    command.path = os.path.realpath(python_module)
                     command.command.name = f"{prefix}{command.name}"
                     _commands.commands.append(command)
 

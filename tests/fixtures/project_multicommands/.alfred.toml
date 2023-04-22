@@ -1,0 +1,7 @@
+[alfred]
+
+[alfred.project]
+command = [
+    'alfred/*.py',
+    'alfred_admin/*.py'
+]

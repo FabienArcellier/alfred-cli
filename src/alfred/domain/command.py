@@ -12,7 +12,7 @@ class AlfredCommand:
         self.path: Optional[str] = None
 
     def __repr__(self):
-        return f"<AlfredCommand {self.name}, {self.path}>"
+        return f"<AlfredCommand '{self.name}', '{self.path}'>"
 
     @property
     def name(self):
