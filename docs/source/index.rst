@@ -7,11 +7,8 @@ which contains several products.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-In this dev, we are eating our own dog food. We are using `alfred` for the continuous integration process. To test,
-clone this project, install the dependencies with poetry, then run the tests with ``poetry run alfred ci``.
-
+   features
 
 Indices and tables
 ==================
