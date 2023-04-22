@@ -9,3 +9,4 @@ __pycache__
 venv
 *.egg-info
 .tox
+/docs/build

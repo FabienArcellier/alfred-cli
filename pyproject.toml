@@ -12,6 +12,8 @@ include = [
 
 homepage = "https://github.com/FabienArcellier/alfred-cli#alfred"
 repository = "https://github.com/FabienArcellier/alfred-cli"
+documentation = "https://alfred-cli.readthedocs.io/en/latest"
+
 keywords = ["building tool", "makefile", "productivity", "automation", "continuous integration", "developper friendly"]
 classifiers = [
     "Topic :: Software Development :: Build Tools",
@@ -37,6 +39,8 @@ fixtup = "^0.1.5"
 pylint = "^2.17.1"
 pytest = "^7.2.2"
 twine = "^4.0.2"
+sphinx = "^6.1.3"
+sphinx-rtd-theme = "^1.2.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,17 +1,13 @@
 ## Alfred
 
 Alfred is an extensible building tool that can replace a Makefile or Fabric.
-Writing commands in python is done in a few minutes, even in the case of a mono-repository
-which contains several products.
-
-In this dev, we are eating our own dog food. We are using `alfred` for the continuous integration process
-of itself instead of `Makefile` as I usually do.
+Writing commands in python is done in a few minutes, even in the case of a mono-repository.
 
 ```bash
-# run the continuous integration process
+# use alfred to run continuous integration process
 alfred ci
 
-# publish the package on pypi
+# use alfred to publish a package on pypi
 alfred publish
 ```
 
@@ -19,8 +15,11 @@ alfred publish
 
 [![ci](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml) [![ci-windows](https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/FabienArcellier/pyalfred/actions/workflows/ci-windows.yml)
 
-<!-- TOC start -->
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
 - [Getting started](#getting-started)
+- [Documentation](#documentation)
+- [Cookbook](#cookbook)
   * [Add a new build command](#add-a-new-build-command)
 - [Behind the scene](#behind-the-scene)
 - [Why using alfred instead of Makefile or Bash scripts](#why-using-alfred-instead-of-makefile-or-bash-scripts)
@@ -30,7 +29,7 @@ alfred publish
   * [`.Alfred.yml`](#alfredyml)
     + [`Plugins` section](#plugins-section)
     + [`Environment` section](#environment-section)
-- [Cookbook](#cookbook)
+- [Cookbook](#cookbook-1)
   * [Display the commands really executed behind the scene](#display-the-commands-really-executed-behind-the-scene)
   * [Customize a command for a specific OS](#customize-a-command-for-a-specific-os)
   * [Override environment variables](#override-environment-variables)
@@ -43,6 +42,7 @@ alfred publish
   * [Run the linter and the unit tests](#run-the-linter-and-the-unit-tests)
 - [Contributors](#contributors)
 - [License](#license)
+
 <!-- TOC end -->
 
 ## Getting started
@@ -61,6 +61,15 @@ alfred hello_world --name "Fabien"
 ```
 
 A file `.alfred.yml` will be initialized at the root of the repository.
+
+## Links
+
+* Documentation : https://alfred-cli.readthedocs.io/en/latest
+* PyPI Release : https://pypi.org/project/alfred-cli
+* Source code: https://github.com/FabienArcellier/alfred-cli
+* Chat: https://discord.gg/nMn9YPRGSY
+
+## Cookbook
 
 ### Add a new build command
 
@@ -332,7 +341,7 @@ alfred ci
 
 MIT License
 
-Copyright (c) 2021-2022 Fabien Arcellier
+Copyright (c) 2021-2023 Fabien Arcellier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
