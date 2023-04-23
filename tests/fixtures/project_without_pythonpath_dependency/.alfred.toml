@@ -1,0 +1,4 @@
+[alfred]
+
+[alfred.project]
+python_path_project_root = false

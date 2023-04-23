@@ -146,6 +146,25 @@ class TestCli(unittest.TestCase):
             self.assertEqual(2, exit_code)
             assert "Error: No such command" in stderr
 
+    def test_alfred_invocation_use_project_directory_in_pythonpath(self):
+        with fixtup.up('project_with_pythonpath_dependency'):
+            _, stdout, _ = alfred_fixture.invoke(["hello_world"])
+
+            assert "invocation through pythonpath" in stdout
+
+    def test_alfred_invocation_not_use_project_directory(self):
+        """
+        If alfred's project manifest declares that the project path is not added to the pythonpath,
+        then python cannot resolve the dependency on a project module.
+
+        """
+        with fixtup.up('project_without_pythonpath_dependency'):
+
+            try:
+                alfred_fixture.invoke(["hello_world"])
+            except ModuleNotFoundError as exception:
+                assert "No module named 'utils'" in str(exception)
+
 
 if __name__ == '__main__':
     unittest.main()

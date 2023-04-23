@@ -10,7 +10,7 @@ from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, manifest
+from alfred import ctx as alfred_ctx, commands, manifest, echo, lib
 from alfred.logger import get_logger
 
 
@@ -100,11 +100,11 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
         if ctx.command.name == alfred_command.name:
             origin_alfred_command = alfred_command
 
-    plugin = origin_alfred_command.plugin
+    plugin = origin_alfred_command.module
     plugin_click_command=_lookup_plugin_command(_commands, command_label, plugin)
     global_click_command=_lookup_global_command(_commands, command_label)
 
-    available_plugins_commands = [command.original_name for command in _commands if command.plugin == plugin]
+    available_plugins_commands = [command.original_name for command in _commands if command.module == plugin]
     available_global_commands = [command.name for command in _commands]
     if plugin_click_command is None and global_click_command is None:
         message = [
@@ -120,7 +120,7 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
     elif global_click_command:
         click_command = global_click_command
 
-    click.echo(click.style(f"$ alfred {click_command.name} : {click_command.help}", fg='green'))
+    echo.subcommand(f"$ alfred {click_command.name} : {click_command.help}")
     with alfred_ctx.stack_subcommand(origin_alfred_command):
         ctx.invoke(click_command, **kwargs)
 
@@ -180,7 +180,6 @@ def _pythonpath(directories: List[str] = None, append_project=True) -> None:
     """
     alfred_ctx.assert_in_command("alfred.pythonpath")
 
-    logger = get_logger()
     if directories is None:
         directories = []
 
@@ -191,9 +190,8 @@ def _pythonpath(directories: List[str] = None, append_project=True) -> None:
     if append_project:
         real_directories += [root_directory]
 
-    override_pythonpath = ":".join(real_directories + _pythonpath)
-    logger.debug(f"env PYTHONPATH: {override_pythonpath}")
-    with env(PYTHONPATH=override_pythonpath):
+    new_pythonpath = ":".join(real_directories + _pythonpath)
+    with lib.override_pythonpath(new_pythonpath):
         yield
 
 
@@ -271,7 +269,7 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
 def _lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:
     click_command = None
     for alfred_command in all_commands:
-        if alfred_command.original_name == command_label and alfred_command.plugin == plugin:
+        if alfred_command.original_name == command_label and alfred_command.module == plugin:
             click_command = alfred_command.command
     return click_command
 

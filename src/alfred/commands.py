@@ -52,7 +52,7 @@ def load_commands() -> None:
             module = import_python(python_module)
             for command in module.values():
                 if isinstance(command, AlfredCommand):
-                    command.plugin = python_module
+                    command.module = python_module
                     command.path = os.path.realpath(python_module)
                     command.command.name = f"{prefix}{command.name}"
                     _commands.commands.append(command)

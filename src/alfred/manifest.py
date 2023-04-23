@@ -51,7 +51,6 @@ def lookup_path(starting_path: Optional[str] = None) -> str:
         raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
 
     logger.debug(f"alfred configuration file : {alfred_configuration_path}")
-
     return alfred_configuration_path
 
 
@@ -140,6 +139,22 @@ def prefix() -> str:
         return _default
 
     return configuration['alfred']['prefix']
+
+
+def python_path_project_root() -> Optional[bool]:
+    _manifest = lookup()
+    configuration = _manifest.configuration()
+    _default = True
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'project' not in configuration['alfred']:
+        return _default
+
+    if 'python_path_project_root' not in configuration['alfred']['project']:
+        return _default
+
+    return configuration['alfred']['project']['python_path_project_root']
 
 
 def _is_manifest_directory(directory: str) -> Optional[str]:

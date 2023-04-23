@@ -12,8 +12,19 @@ CliResult = namedtuple('CliResult', ['exit_code', 'stdout', 'stderr'])
 
 
 def invoke(args: List[str]) -> CliResult:
+    """
+    simulates invoking alfred from the command line.
+
+    >>> exit_code, stdout, stderr = alfred_fixture.invoke(["--help"])
+
+    If the command line invocation raises an exception,
+    this fixture also throws it.
+    """
     runner = CliRunner(mix_stderr=False)
     result = runner.invoke(cli, args)
+    if result.exception is not None and not isinstance(result.exception, SystemExit):
+        raise result.exception
+
     return CliResult(result.exit_code, result.stdout, result.stderr)
 
 

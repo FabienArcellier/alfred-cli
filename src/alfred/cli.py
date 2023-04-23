@@ -1,17 +1,18 @@
+import contextlib
 import logging
 import os
 import shutil
 import sys
-from typing import List, Any
+from typing import List, Any, Generator
 
 import click
 from plumbum import local
 
-from alfred import ctx as alfred_ctx, manifest, echo
+from alfred import ctx as alfred_ctx, manifest, echo, project_directory
 from alfred import commands
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
-from alfred.lib import ROOT_DIR
+from alfred.lib import ROOT_DIR, override_pythonpath
 from alfred.logger import logger
 
 
@@ -58,7 +59,9 @@ class AlfredCli(click.MultiCommand):
             click_command = command.command
             if click_command.name == cmd_name:
                 alfred_ctx.stack_root_command(command)
+                command.register_context(_context_middleware)
                 alfred_manifest = manifest.lookup()
+
                 for environment in alfred_manifest.environments():
                     local.env[environment.key] = environment.value
 
@@ -99,6 +102,23 @@ def exit_on_error(message: str, exit_code: int = 1):
     exception = click.ClickException(message)
     exception.exit_code = exit_code
     raise exception
+
+
+@contextlib.contextmanager
+def _context_middleware() -> Generator[None, None, None]:
+    """
+    le code du contexte est exécuté avant d'exécuter la commande cible
+    de l'utilisateur.
+    """
+    pythonpath = os.environ.get("PYTHONPATH", "")
+    if manifest.python_path_project_root():
+        _pythonpath = pythonpath.split(':')
+        root_directory = project_directory()
+        _pythonpath.append(root_directory)
+        pythonpath = ":".join(_pythonpath)
+
+    with override_pythonpath(pythonpath):
+        yield
 
 
 if __name__ == '__main__':

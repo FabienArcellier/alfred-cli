@@ -1,5 +1,12 @@
 import click
 
+def subcommand(text: str):
+    """
+    Prints a subcommand to the console.
+
+    >>> echo.subcommand("alfred tests:unit")
+    """
+    click.echo(click.style(text, fg="green", bold=True))
 
 def message(text: str):
     """
