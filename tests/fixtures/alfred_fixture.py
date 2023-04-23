@@ -1,6 +1,20 @@
 import contextlib
+from collections import namedtuple
+from typing import List
 
+from click.testing import CliRunner
+
+from alfred.cli import cli
 from alfred import commands, ctx
+
+
+CliResult = namedtuple('CliResult', ['exit_code', 'stdout', 'stderr'])
+
+
+def invoke(args: List[str]) -> CliResult:
+    runner = CliRunner(mix_stderr=False)
+    result = runner.invoke(cli, args)
+    return CliResult(result.exit_code, result.stdout, result.stderr)
 
 
 def setup_context():
