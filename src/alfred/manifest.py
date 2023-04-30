@@ -6,12 +6,12 @@ import toml
 
 from alfred import echo
 from alfred.domain.manifest import AlfredManifest
-from alfred.exceptions import NotInitialized
+from alfred.exceptions import NotInitialized, AlfredException
 from alfred.lib import list_hierarchy_directory
 from alfred.logger import logger
 
 
-def lookup(starting_path: Optional[str] = None) -> AlfredManifest:
+def lookup(path: Optional[str] = None, search: bool = True) -> AlfredManifest:
     """
     Retrieves the contents of the `.alfred.toml` manifest. The search for the manifest starts from
     the current folder and goes up from parent to parent.
@@ -21,40 +21,47 @@ def lookup(starting_path: Optional[str] = None) -> AlfredManifest:
     >>> from alfred import manifest
     >>> _manifest = manifest.lookup()
     """
-    alfred_manifest_path = lookup_path(starting_path)
+    alfred_manifest_path = lookup_path(path=path, search=search)
 
     with io.open(alfred_manifest_path,  encoding="utf8") as file:
         alfred_configuration = toml.load(file)
         return AlfredManifest(alfred_configuration)
 
 
-def lookup_path(starting_path: Optional[str] = None) -> str:
+def lookup_path(path: Optional[str] = None, search: bool = True) -> str:
     """
     Finds the path to the nearest alfred manifest. The search starts at the current folder,
     then goes up from parent to parent. If the manifest is found, the full path is returned.
 
+
     >>> from alfred import manifest
     >>> manifest_path = manifest.lookup_path()
     """
-    if starting_path is None:
-        starting_path = os.getcwd()
-
-    hierarchy_directories = list_hierarchy_directory(starting_path)
+    if path is None:
+        path = os.getcwd()
 
     alfred_configuration_path = None
-    for directory in hierarchy_directories:
-        alfred_configuration_path = _is_manifest_directory(directory)
-        if alfred_configuration_path is not None:
-            break
+    if search is True:
+        hierarchy_directories = list_hierarchy_directory(path)
+        for directory in hierarchy_directories:
+            alfred_configuration_path = _is_manifest_directory(directory)
+            if alfred_configuration_path is not None:
+                break
 
-    if not alfred_configuration_path:
-        raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
+        if not alfred_configuration_path:
+            raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
+    else:
+        if _is_manifest_directory(path):
+            alfred_configuration_path = os.path.join(path, ".alfred.yml")
+
+        if not alfred_configuration_path:
+            raise AlfredException(f"{path} is not an alfred project")
 
     logger.debug(f"alfred configuration file : {alfred_configuration_path}")
     return alfred_configuration_path
 
 
-def lookup_obsolete_manifests(directory: Optional[str] = None) -> List[str]:
+def lookup_obsolete_manifests(path: Optional[str] = None) -> List[str]:
     """
     Retrieves the list of obsolete manifest files (for example .alfred.yml).
 
@@ -62,10 +69,10 @@ def lookup_obsolete_manifests(directory: Optional[str] = None) -> List[str]:
     >>> obsolete_manifests = manifest.lookup_obsolete_manifests()
     """
     obsolete_manifests = []
-    if directory is None:
-        directory = os.getcwd()
+    if path is None:
+        path = os.getcwd()
 
-    hierarchy_directories = list_hierarchy_directory(directory)
+    hierarchy_directories = list_hierarchy_directory(path)
     for hdirectory in hierarchy_directories:
         obsolete_manifest_path = contains_obsolete_manifest(hdirectory)
         if obsolete_manifest_path is not None:
@@ -74,14 +81,38 @@ def lookup_obsolete_manifests(directory: Optional[str] = None) -> List[str]:
     return obsolete_manifests
 
 
-def contains_obsolete_manifest(directory: Optional[str] = None) -> Optional[str]:
+def lookup_venv(project_dir: Optional[str] = None) -> Optional[str]:
+    """
+    Get the venv from the alfred project manifest or the project manifest in the directory folder
+
+    If directory is empty, we get the current manifest.
+
+    :return: the path to the venv
+    """
+    alfred_manifest = lookup(project_dir)
+    _default = None
+
+    configuration = alfred_manifest.configuration()
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'project' not in configuration['alfred']:
+        return _default
+
+    if 'venv' not in configuration['alfred']['project']:
+        return _default
+
+    return os.path.realpath(os.path.join(project_dir, configuration['alfred']['project']['venv']))
+
+
+def contains_obsolete_manifest(project_dir: Optional[str] = None) -> Optional[str]:
     """
     Checks if the directory contains an obsolete manifest file (for example .alfred.yml).
 
     It returns None, if there is no obsolete manifest file. Otherwise, it returns the path to the
     obsolete manifest file.
     """
-    alfred_manifest_path = os.path.join(directory, ".alfred.yml")
+    alfred_manifest_path = os.path.join(project_dir, ".alfred.yml")
     if os.path.isfile(alfred_manifest_path):
         return alfred_manifest_path
 
