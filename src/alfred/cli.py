@@ -73,8 +73,8 @@ class AlfredCli(click.MultiCommand):
         """
         The invocation of a command in alfred depends on the location of the targeted alfred command.
 
-        Dans le cas où elle est dans un sous-projet avec son propre venv, la commande doit être invoquée
-        dans l'interpréteur associé au projet. Dans le cas contraire, la commande est invoquée dans l'interpréteur
+        In case it is in a subproject with its own venv, the command must be invoked in the interpreter associated 7
+        with the subproject. Otherwise, the command is invoked in the current interpreter.
         """
         return super().invoke(ctx)
 
