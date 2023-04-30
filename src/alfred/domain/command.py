@@ -59,6 +59,12 @@ class AlfredCommand:
         else:
             yield
 
+class AlfredSubproject:
+
+    def __init__(self, name: str, path: str):
+        self.name = name
+        self.path = path
+
 
 def make_context(alfred_command: AlfredCommand, func: Callable) -> Callable:
 

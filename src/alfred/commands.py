@@ -3,17 +3,40 @@ This module performs column loading operations from the manifest definition.
 """
 import contextlib
 import dataclasses
+import glob
 import os
-from typing import List, Dict
+import typing as t
+from typing import List
+
+import click
+from click import Context, Command
 
 from alfred import manifest
 from alfred.domain.command import AlfredCommand
 from alfred.lib import list_python_modules, import_python
 
 
+class AlfredSubprojectCommand(click.MultiCommand):
+
+    def __init__(self, *args, **attrs: t.Any):
+        if "path" in attrs:
+            self.path = attrs["path"]
+            del attrs["path"]
+
+        super().__init__(*args, **attrs)
+
+
+    def list_commands(self, ctx: Context) -> t.List[str]:
+        return []
+
+    def get_command(self, ctx: Context, cmd_name: str) -> t.Optional[Command]:
+        pass
+
+
 @dataclasses.dataclass
 class Commands:
     commands: List[AlfredCommand] = dataclasses.field(default_factory=list)
+    subprojects: List[str] = dataclasses.field(default_factory=list)
 
     @property
     def loaded(self) -> bool:
@@ -46,7 +69,8 @@ def load_commands() -> None:
     >>> commands.load_commands()
     """
     _commands.commands = []
-    for pattern in manifest.project_commands_pattern():
+    _manifest = manifest.lookup()
+    for pattern in manifest.project_commands(_manifest):
         prefix = manifest.prefix()
         for python_module in list_python_modules(pattern):
             module = import_python(python_module)
@@ -57,26 +81,19 @@ def load_commands() -> None:
                     command.command.name = f"{prefix}{command.name}"
                     _commands.commands.append(command)
 
-    # include the commands from the plugins
-    # for plugin in manifest.project_commands_pattern():
-    #     folder_path = plugin["path"]
-    #     for python_path in list_python_modules(folder_path):
-    #         prefix = "" if "prefix" not in plugin else plugin['prefix']
-    #         try:
-    #             result = import_python(python_path)
-    #             list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
-    #             for command in list_commands:
-    #                 command.plugin = folder_path
-    #                 command.path = folder_path
-    #                 command.command.name = f"{prefix}{command.name}"
-    #                 _commands.commands.append(command)
-    #         except InvalidPythonModule as exception:
-    #             print_error(str(exception))
-
-
-def list_plugins_folder() -> List[Dict[str, str]]:
-    return []
-
+    _commands.subprojects = []
+    subprojects_glob = manifest.subprojects(_manifest)
+    for subproject in subprojects_glob:
+        directories = glob.glob(subproject)
+        for directory in directories:
+            if os.path.isdir(directory) and manifest.contains_manifest(directory):
+                _subproject_manifest = manifest.lookup(directory)
+                command = AlfredCommand()
+                command.command = AlfredSubprojectCommand(name=manifest.name(_subproject_manifest),
+                                                          help=manifest.description(_subproject_manifest),
+                                                          path=directory)
+                command.path = directory
+                _commands.commands.append(command)
 
 @contextlib.contextmanager
 def use_new_context() -> None:

@@ -6,10 +6,10 @@ import sys
 from typing import List, Any, Generator
 
 import click
-from plumbum import local
 
 from alfred import ctx as alfred_ctx, manifest, echo, project_directory
 from alfred import commands
+from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
 from alfred.lib import ROOT_DIR, override_pythonpath
@@ -43,7 +43,9 @@ class AlfredCli(click.MultiCommand):
                 _list_commands.append(click_command.name)
 
             _list_commands.sort()
+
             return _list_commands
+
         except NotInitialized as exception:
             # When the project is not recognize as alfred, we show a error message
             # to ask the user to initialized its directory
@@ -57,17 +59,24 @@ class AlfredCli(click.MultiCommand):
         _commands = commands.list_all()
         for command in _commands:
             click_command = command.command
-            if click_command.name == cmd_name:
+            if click_command.name == cmd_name and isinstance(command, AlfredCommand):
                 alfred_ctx.stack_root_command(command)
                 command.register_context(_context_middleware)
-                alfred_manifest = manifest.lookup()
+                return click_command
 
-                for environment in alfred_manifest.environments():
-                    local.env[environment.key] = environment.value
-
+            if click_command.name == cmd_name and isinstance(command, commands.AlfredSubprojectCommand):
                 return click_command
 
         return None
+
+    def invoke(self, ctx: Context) -> Any:
+        """
+        The invocation of a command in alfred depends on the location of the targeted alfred command.
+
+        Dans le cas où elle est dans un sous-projet avec son propre venv, la commande doit être invoquée
+        dans l'interpréteur associé au projet. Dans le cas contraire, la commande est invoquée dans l'interpréteur
+        """
+        return super().invoke(ctx)
 
 
 @click.command(cls=AlfredCli,

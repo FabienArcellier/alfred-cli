@@ -11,7 +11,7 @@ from alfred.lib import list_hierarchy_directory
 from alfred.logger import logger
 
 
-def lookup() -> AlfredManifest:
+def lookup(starting_path: Optional[str] = None) -> AlfredManifest:
     """
     Retrieves the contents of the `.alfred.toml` manifest. The search for the manifest starts from
     the current folder and goes up from parent to parent.
@@ -21,7 +21,7 @@ def lookup() -> AlfredManifest:
     >>> from alfred import manifest
     >>> _manifest = manifest.lookup()
     """
-    alfred_manifest_path = lookup_path()
+    alfred_manifest_path = lookup_path(starting_path)
 
     with io.open(alfred_manifest_path,  encoding="utf8") as file:
         alfred_configuration = toml.load(file)
@@ -101,14 +101,30 @@ def contains_manifest(directory: Optional[str] = None) -> bool:
     return _is_manifest_directory(directory) is not None
 
 
-def project_commands_pattern() -> List[str]:
+def subprojects(_manifest: Optional[AlfredManifest] = None) -> List[str]:
+    """
+    Retrieves the list of glob expression to scan alfred subprojects.
+    """
+
+    configuration = _manifest_configuration(_manifest)
+    _default = []
+
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'subprojects' not in configuration['alfred']:
+        return _default
+
+    return configuration['alfred']['subprojects']
+
+
+def project_commands(_manifest: Optional[AlfredManifest] = None) -> List[str]:
     """
     Retrieves the list of glob expression to scan alfred commands.
 
     :return:
     """
-    _manifest = lookup()
-    configuration = _manifest.configuration()
+    configuration = _manifest_configuration(_manifest)
 
     _default = ["alfred/*.py"]
     if 'alfred' not in configuration:
@@ -127,10 +143,8 @@ def project_commands_pattern() -> List[str]:
 
     return command
 
-
-def prefix() -> str:
-    _manifest = lookup()
-    configuration = _manifest.configuration()
+def prefix(_manifest: Optional[AlfredManifest] = None) -> str:
+    configuration = _manifest_configuration(_manifest)
     _default = ''
     if 'alfred' not in configuration:
         return _default
@@ -141,9 +155,8 @@ def prefix() -> str:
     return configuration['alfred']['prefix']
 
 
-def python_path_project_root() -> Optional[bool]:
-    _manifest = lookup()
-    configuration = _manifest.configuration()
+def python_path_project_root(_manifest: Optional[AlfredManifest] = None) -> Optional[bool]:
+    configuration = _manifest_configuration(_manifest)
     _default = True
     if 'alfred' not in configuration:
         return _default
@@ -157,9 +170,40 @@ def python_path_project_root() -> Optional[bool]:
     return configuration['alfred']['project']['python_path_project_root']
 
 
+def name(_manifest: Optional[AlfredManifest] = None) -> str:
+    configuration = _manifest_configuration(_manifest)
+    _default = ''
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'name' not in configuration['alfred']:
+        return _default
+
+    return configuration['alfred']['name']
+
+
+def description(_manifest: Optional[AlfredManifest] = None) -> str:
+    configuration = _manifest_configuration(_manifest)
+    _default = ''
+    if 'alfred' not in configuration:
+        return _default
+
+    if 'description' not in configuration['alfred']:
+        return _default
+
+    return configuration['alfred']['description']
+
+
 def _is_manifest_directory(directory: str) -> Optional[str]:
     alfred_configuration_path = os.path.join(directory, ".alfred.toml")
     if os.path.isfile(alfred_configuration_path):
         return alfred_configuration_path
 
     return None
+
+
+def _manifest_configuration(_manifest: Optional[AlfredManifest] = None) -> dict:
+    if _manifest is None:
+        _manifest = lookup()
+    configuration = _manifest.configuration()
+    return configuration
