@@ -76,5 +76,5 @@ def use_new_context():
     """
     sets up a new independent execution context for a test
     """
-    with ctx.use_new_context(), commands.use_new_context():
+    with ctx.use_new_context():
         yield

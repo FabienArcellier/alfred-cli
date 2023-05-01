@@ -30,3 +30,10 @@ def test_lookup_venv_should_return_venv_when_it_is_defined():
         root_path = os.getcwd()
 
         assert manifest.lookup_venv(os.path.join(root_path, 'products', 'product1')) == os.path.join(root_path, 'products', 'product1', '.venv')
+
+
+def test_lookup_venv_should_return_none_when_venv_is_undefined():
+    with fixtup.up('multiproject'):
+        root_path = os.getcwd()
+
+        assert manifest.lookup_venv(os.path.join(root_path, 'products', 'product2')) is None

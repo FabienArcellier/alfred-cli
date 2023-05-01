@@ -166,5 +166,11 @@ class TestCli(unittest.TestCase):
                 assert "No module named 'utils'" in str(exception)
 
 
+    def test_alfred_subproject_should_invoke_in_its_own_venv(self):
+        with fixtup.up('multiproject', keep_mounted_fixture=True):
+            _, stdout, _ = alfred_fixture.invoke(["product1", "print_python_exec"])
+
+            assert os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'bin', 'python') in stdout
+
 if __name__ == '__main__':
     unittest.main()

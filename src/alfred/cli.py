@@ -13,7 +13,7 @@ from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
 from alfred.lib import ROOT_DIR, override_pythonpath
-from alfred.logger import logger
+from alfred.logger import logger, get_logger
 
 
 @click.command('init')
@@ -37,7 +37,8 @@ class AlfredCli(click.MultiCommand):
     def list_commands(self, ctx):
         try:
             _list_commands = []
-            _commands = commands.list_all()
+            project_dir = manifest.lookup_project_dir()
+            _commands = commands.list_all(project_dir)
             for command in _commands:
                 click_command = command.command
                 _list_commands.append(click_command.name)
@@ -56,7 +57,9 @@ class AlfredCli(click.MultiCommand):
         if cmd_name == 'init':
             return init
 
-        _commands = commands.list_all()
+        project_dir = manifest.lookup_project_dir()
+        _commands = commands.list_all(project_dir)
+
         for command in _commands:
             click_command = command.command
             if click_command.name == cmd_name and isinstance(command, AlfredCommand):
@@ -91,9 +94,14 @@ class AlfredCli(click.MultiCommand):
             alfred_cmd = alfred_ctx.current_command()
             if alfred_cmd is not None:
                 venv = manifest.lookup_venv(alfred_cmd.project_dir)
-                if venv is not None and interpreter.venv() != venv:
-                    interpreter.run_module(module='alfred', venv_path=venv, args=args)
-                    return
+
+                if venv is not None and interpreter.get_venv() != venv:
+                    _logger = get_logger()
+                    _logger.debug(f"alfred interpreter - current venv: {interpreter.get_venv()}")
+                    _logger.debug(f"alfred interpreter - expected venv: {venv}")
+
+                    result = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
+                    print(result)
 
         """
         The command is executed by click normally.

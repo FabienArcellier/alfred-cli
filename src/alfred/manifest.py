@@ -45,14 +45,14 @@ def lookup_project_dir(path: Optional[str] = None, search: bool = True) -> str:
         for directory in hierarchy_directories:
             alfred_configuration_path = _is_manifest_directory(directory)
             if alfred_configuration_path is not None:
-                project_directory = path
+                project_directory = os.path.realpath(directory)
                 break
 
         if not alfred_configuration_path:
             raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
     else:
         if _is_manifest_directory(path):
-            project_directory = path
+            project_directory = os.path.realpath(path)
 
         if not alfred_configuration_path:
             raise AlfredException(f"{path} is not an alfred project")

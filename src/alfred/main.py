@@ -10,7 +10,7 @@ from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, echo, lib
+from alfred import ctx as alfred_ctx, commands, echo, lib, manifest
 from alfred.logger import get_logger
 
 
@@ -91,7 +91,10 @@ def env(**kwargs) -> None:
 @click.pass_context
 def invoke_command(ctx, command_label: str, **kwargs) -> None:
     click_command = None
-    _commands = commands.list_all()
+
+    project_dir = manifest.lookup_project_dir()
+    _commands = commands.list_all(project_dir)
+
     origin_alfred_command = None
     for alfred_command in _commands:
         if ctx.command.name == alfred_command.name:
@@ -167,29 +170,6 @@ class pythonpath:  #pylint: disable=invalid-name
                 return func(*args, **kwargs)
 
         return wrapper
-
-
-@contextlib.contextmanager
-def _pythonpath(directories: List[str] = None, append_project=True) -> None:
-    """
-    See the pythonpath class above which implements the pattern
-    to support a decorator and a context manager.
-    """
-    alfred_ctx.assert_in_command("alfred.pythonpath")
-
-    if directories is None:
-        directories = []
-
-    _pythonpath = os.environ.get("PYTHONPATH", "").split(':')
-    root_directory = project_directory()
-    real_directories = [os.path.realpath(directory) for directory in directories]
-
-    if append_project:
-        real_directories += [root_directory]
-
-    new_pythonpath = ":".join(real_directories + _pythonpath)
-    with lib.override_pythonpath(new_pythonpath):
-        yield
 
 
 def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
@@ -277,3 +257,26 @@ def _lookup_global_command(all_commands, command_label) -> Optional[BaseCommand]
         if alfred_command.name == command_label:
             click_command = alfred_command.command
     return click_command
+
+
+@contextlib.contextmanager
+def _pythonpath(directories: List[str] = None, append_project=True) -> None:
+    """
+    See the pythonpath class above which implements the pattern
+    to support a decorator and a context manager.
+    """
+    alfred_ctx.assert_in_command("alfred.pythonpath")
+
+    if directories is None:
+        directories = []
+
+    _pythonpath = os.environ.get("PYTHONPATH", "").split(':')
+    root_directory = project_directory()
+    real_directories = [os.path.realpath(directory) for directory in directories]
+
+    if append_project:
+        real_directories += [root_directory]
+
+    new_pythonpath = ":".join(real_directories + _pythonpath)
+    with lib.override_pythonpath(new_pythonpath):
+        yield

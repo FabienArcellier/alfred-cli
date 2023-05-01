@@ -1,8 +1,6 @@
 """
 This module performs column loading operations from the manifest definition.
 """
-import contextlib
-import dataclasses
 import glob
 import os
 import typing as t
@@ -25,37 +23,21 @@ class AlfredSubprojectCommand(click.MultiCommand):
 
         super().__init__(*args, **attrs)
 
-
     def list_commands(self, ctx: Context) -> t.List[str]:
-        return []
+        all_commands = list_all(self.path)
+        return [command.name for command in all_commands]
 
     def get_command(self, ctx: Context, cmd_name: str) -> t.Optional[Command]:
-        pass
+        all_commands = list_all(self.path)
+        for command in all_commands:
+            if cmd_name == command.name:
+                return command.command
+
+        return None
 
 
-@dataclasses.dataclass
-class Commands:
-    commands: List[AlfredCommand] = dataclasses.field(default_factory=list)
-    subprojects: List[str] = dataclasses.field(default_factory=list)
 
-    @property
-    def loaded(self) -> bool:
-        return len(self.commands) > 0
-
-
-_commands = Commands()
-
-
-def list_all() -> List[AlfredCommand]:
-    if _commands.loaded:
-        return _commands.commands
-
-    load_commands()
-
-    return _commands.commands
-
-
-def load_commands() -> None:
+def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
     """
     Loads all commands available in the project. This function retrieves the .alfred.yml manifest,
     analyzes the plugins present and loads the commands.
@@ -66,48 +48,38 @@ def load_commands() -> None:
     Once the commands are loaded, they are available in _commands global variable.
 
     >>> from alfred import commands
-    >>> commands.load_commands()
+    >>> commands.list_all()
     """
-    _commands.commands = []
-    _project_dir = manifest.lookup_project_dir()
-    for pattern in manifest.project_commands(_project_dir):
-        prefix = manifest.prefix()
-        for python_module in list_python_modules(pattern):
-            module = import_python(python_module)
+    if project_dir is None:
+        project_dir = manifest.lookup_project_dir()
+
+    commands = []
+    for pattern in manifest.project_commands(project_dir):
+        pattern_path = os.path.join(project_dir, pattern)
+        prefix = manifest.prefix(project_dir)
+        for python_module in list_python_modules(pattern_path):
+            module_path = os.path.join(project_dir, python_module)
+            module = import_python(module_path)
             for command in module.values():
                 if isinstance(command, AlfredCommand):
                     command.module = python_module
                     command.path = os.path.realpath(python_module)
-                    command.project_dir = os.path.realpath(_project_dir)
+                    command.project_dir = os.path.realpath(project_dir)
                     command.command.name = f"{prefix}{command.name}"
-                    _commands.commands.append(command)
+                    commands.append(command)
 
-    _commands.subprojects = []
-    subprojects_glob = manifest.subprojects(_project_dir)
+    subprojects_glob = manifest.subprojects(project_dir)
     for subproject in subprojects_glob:
         directories = glob.glob(subproject)
         for directory in directories:
             if os.path.isdir(directory) and manifest.contains_manifest(directory):
                 _subproject_manifest = manifest.lookup(directory)
                 command = AlfredCommand()
-                command.command = AlfredSubprojectCommand(name=manifest.name(_project_dir),
-                                                          help=manifest.description(_project_dir),
-                                                          path=directory)
+                command.command = AlfredSubprojectCommand(name=manifest.name(directory),
+                                                          help=manifest.description(directory),
+                                                          path=os.path.realpath(directory))
                 command.path = os.path.realpath(directory)
                 command.project_dir = os.path.realpath(directory)
-                _commands.commands.append(command)
+                commands.append(command)
 
-@contextlib.contextmanager
-def use_new_context() -> None:
-    """
-    This context manager is dedicated to unit testing. It allows to reset the
-    context to its initial state.
-
-    >>> with commands.use_new_context():
-    >>>     pass
-    """
-    global _commands # pylint: disable=global-statement
-    previous_context = _commands
-    _commands = Commands()
-    yield
-    _commands = previous_context
+    return commands
