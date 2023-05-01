@@ -89,9 +89,9 @@ def lookup_venv(project_dir: Optional[str] = None) -> Optional[str]:
 
     :return: the path to the venv
     """
-    alfred_manifest = lookup(project_dir)
     _default = None
 
+    alfred_manifest = lookup(project_dir)
     configuration = alfred_manifest.configuration()
     if 'alfred' not in configuration:
         return _default
@@ -132,13 +132,14 @@ def contains_manifest(directory: Optional[str] = None) -> bool:
     return _is_manifest_directory(directory) is not None
 
 
-def subprojects(_manifest: Optional[AlfredManifest] = None) -> List[str]:
+def subprojects(project_dir: Optional[str] = None) -> List[str]:
     """
     Retrieves the list of glob expression to scan alfred subprojects.
     """
-
-    configuration = _manifest_configuration(_manifest)
     _default = []
+
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration()
 
     if 'alfred' not in configuration:
         return _default
@@ -149,13 +150,14 @@ def subprojects(_manifest: Optional[AlfredManifest] = None) -> List[str]:
     return configuration['alfred']['subprojects']
 
 
-def project_commands(_manifest: Optional[AlfredManifest] = None) -> List[str]:
+def project_commands(project_dir: Optional[str] = None) -> List[str]:
     """
     Retrieves the list of glob expression to scan alfred commands.
 
     :return:
     """
-    configuration = _manifest_configuration(_manifest)
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration()
 
     _default = ["alfred/*.py"]
     if 'alfred' not in configuration:
@@ -174,8 +176,10 @@ def project_commands(_manifest: Optional[AlfredManifest] = None) -> List[str]:
 
     return command
 
-def prefix(_manifest: Optional[AlfredManifest] = None) -> str:
-    configuration = _manifest_configuration(_manifest)
+def prefix(project_dir: Optional[str] = None) -> str:
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration()
+
     _default = ''
     if 'alfred' not in configuration:
         return _default
@@ -186,8 +190,10 @@ def prefix(_manifest: Optional[AlfredManifest] = None) -> str:
     return configuration['alfred']['prefix']
 
 
-def python_path_project_root(_manifest: Optional[AlfredManifest] = None) -> Optional[bool]:
-    configuration = _manifest_configuration(_manifest)
+def python_path_project_root(project_dir: Optional[str] = None) -> Optional[bool]:
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration()
+
     _default = True
     if 'alfred' not in configuration:
         return _default
@@ -201,8 +207,10 @@ def python_path_project_root(_manifest: Optional[AlfredManifest] = None) -> Opti
     return configuration['alfred']['project']['python_path_project_root']
 
 
-def name(_manifest: Optional[AlfredManifest] = None) -> str:
-    configuration = _manifest_configuration(_manifest)
+def name(project_dir: Optional[str] = None) -> str:
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration()
+
     _default = ''
     if 'alfred' not in configuration:
         return _default
@@ -213,8 +221,10 @@ def name(_manifest: Optional[AlfredManifest] = None) -> str:
     return configuration['alfred']['name']
 
 
-def description(_manifest: Optional[AlfredManifest] = None) -> str:
-    configuration = _manifest_configuration(_manifest)
+def description(project_dir: Optional[str] = None) -> str:
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration()
+
     _default = ''
     if 'alfred' not in configuration:
         return _default
@@ -231,10 +241,3 @@ def _is_manifest_directory(directory: str) -> Optional[str]:
         return alfred_configuration_path
 
     return None
-
-
-def _manifest_configuration(_manifest: Optional[AlfredManifest] = None) -> dict:
-    if _manifest is None:
-        _manifest = lookup()
-    configuration = _manifest.configuration()
-    return configuration

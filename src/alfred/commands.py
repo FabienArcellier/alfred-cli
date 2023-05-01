@@ -69,9 +69,8 @@ def load_commands() -> None:
     >>> commands.load_commands()
     """
     _commands.commands = []
-    _manifest = manifest.lookup()
     _project_dir = manifest.lookup_project_dir()
-    for pattern in manifest.project_commands(_manifest):
+    for pattern in manifest.project_commands(_project_dir):
         prefix = manifest.prefix()
         for python_module in list_python_modules(pattern):
             module = import_python(python_module)
@@ -84,15 +83,15 @@ def load_commands() -> None:
                     _commands.commands.append(command)
 
     _commands.subprojects = []
-    subprojects_glob = manifest.subprojects(_manifest)
+    subprojects_glob = manifest.subprojects(_project_dir)
     for subproject in subprojects_glob:
         directories = glob.glob(subproject)
         for directory in directories:
             if os.path.isdir(directory) and manifest.contains_manifest(directory):
                 _subproject_manifest = manifest.lookup(directory)
                 command = AlfredCommand()
-                command.command = AlfredSubprojectCommand(name=manifest.name(_subproject_manifest),
-                                                          help=manifest.description(_subproject_manifest),
+                command.command = AlfredSubprojectCommand(name=manifest.name(_project_dir),
+                                                          help=manifest.description(_project_dir),
                                                           path=directory)
                 command.path = os.path.realpath(directory)
                 command.project_dir = os.path.realpath(directory)
