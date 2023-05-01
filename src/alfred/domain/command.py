@@ -15,11 +15,12 @@ class AlfredCommand:
 
         self.module: Optional[str] = None
         self.path: Optional[str] = None
+        self.project_dir: Optional[str] = None # alfred project directory where the command is attached
 
         self._context_middleware: Optional[Callable[[], Generator[None, None, None]]] = None
 
     def __repr__(self):
-        return f"<AlfredCommand '{self.name}', '{self.path}'>"
+        return f"<AlfredCommand '{self.name}', '{self.path}', {self.project_dir}>"
 
     @property
     def name(self):

@@ -10,7 +10,7 @@ from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, manifest, echo, lib
+from alfred import ctx as alfred_ctx, commands, echo, lib
 from alfred.logger import get_logger
 
 
@@ -60,11 +60,8 @@ def project_directory() -> str:
     >>>     project_directory = alfred.project_directory()
     >>>     print(project_directory)
     """
-    alfred_ctx.assert_in_command("alfred.project_directory")
-
     current_cmd = alfred_ctx.current_command()
-    manifest_path = manifest.lookup_path(current_cmd.path)
-    return os.path.dirname(manifest_path)
+    return current_cmd.project_dir
 
 
 @contextlib.contextmanager

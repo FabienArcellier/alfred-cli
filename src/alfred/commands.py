@@ -70,6 +70,7 @@ def load_commands() -> None:
     """
     _commands.commands = []
     _manifest = manifest.lookup()
+    _project_dir = manifest.lookup_project_dir()
     for pattern in manifest.project_commands(_manifest):
         prefix = manifest.prefix()
         for python_module in list_python_modules(pattern):
@@ -78,6 +79,7 @@ def load_commands() -> None:
                 if isinstance(command, AlfredCommand):
                     command.module = python_module
                     command.path = os.path.realpath(python_module)
+                    command.project_dir = os.path.realpath(_project_dir)
                     command.command.name = f"{prefix}{command.name}"
                     _commands.commands.append(command)
 
@@ -92,7 +94,8 @@ def load_commands() -> None:
                 command.command = AlfredSubprojectCommand(name=manifest.name(_subproject_manifest),
                                                           help=manifest.description(_subproject_manifest),
                                                           path=directory)
-                command.path = directory
+                command.path = os.path.realpath(directory)
+                command.project_dir = os.path.realpath(directory)
                 _commands.commands.append(command)
 
 @contextlib.contextmanager

@@ -21,44 +21,44 @@ def lookup(path: Optional[str] = None, search: bool = True) -> AlfredManifest:
     >>> from alfred import manifest
     >>> _manifest = manifest.lookup()
     """
-    alfred_manifest_path = lookup_path(path=path, search=search)
+    alfred_project_dir = lookup_project_dir(path=path, search=search)
+    alfred_manifest_path = os.path.join(alfred_project_dir, ".alfred.toml")
 
     with io.open(alfred_manifest_path,  encoding="utf8") as file:
         alfred_configuration = toml.load(file)
         return AlfredManifest(alfred_configuration)
 
 
-def lookup_path(path: Optional[str] = None, search: bool = True) -> str:
+def lookup_project_dir(path: Optional[str] = None, search: bool = True) -> str:
     """
-    Finds the path to the nearest alfred manifest. The search starts at the current folder,
-    then goes up from parent to parent. If the manifest is found, the full path is returned.
-
-
-    >>> from alfred import manifest
-    >>> manifest_path = manifest.lookup_path()
+    Finds the path to the nearest alfred project directory. The nearest project directory is the
+    first directory that contains an alfred manifest. The search starts at the current folder,
+    then goes up from parent to parent. If the manifest is found, the path of alfred project directory is returned.
     """
     if path is None:
         path = os.getcwd()
 
+    project_directory = None
     alfred_configuration_path = None
     if search is True:
         hierarchy_directories = list_hierarchy_directory(path)
         for directory in hierarchy_directories:
             alfred_configuration_path = _is_manifest_directory(directory)
             if alfred_configuration_path is not None:
+                project_directory = path
                 break
 
         if not alfred_configuration_path:
             raise NotInitialized("not an alfred project (or any of the parent directories), you should run alfred init")
     else:
         if _is_manifest_directory(path):
-            alfred_configuration_path = os.path.join(path, ".alfred.yml")
+            project_directory = path
 
         if not alfred_configuration_path:
             raise AlfredException(f"{path} is not an alfred project")
 
-    logger.debug(f"alfred configuration file : {alfred_configuration_path}")
-    return alfred_configuration_path
+    logger.debug(f"alfred project directory : {project_directory}")
+    return project_directory
 
 
 def lookup_obsolete_manifests(path: Optional[str] = None) -> List[str]:

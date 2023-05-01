@@ -7,7 +7,7 @@ from typing import List, Any, Generator
 
 import click
 
-from alfred import ctx as alfred_ctx, manifest, echo, project_directory
+from alfred import ctx as alfred_ctx, manifest, echo, project_directory, interpreter
 from alfred import commands
 from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
@@ -65,6 +65,7 @@ class AlfredCli(click.MultiCommand):
                 return click_command
 
             if click_command.name == cmd_name and isinstance(command, commands.AlfredSubprojectCommand):
+                alfred_ctx.stack_root_command(command)
                 return click_command
 
         return None
@@ -76,7 +77,28 @@ class AlfredCli(click.MultiCommand):
         In case it is in a subproject with its own venv, the command must be invoked in the interpreter associated 7
         with the subproject. Otherwise, the command is invoked in the current interpreter.
         """
-        return super().invoke(ctx)
+
+        """
+        Invoking an alfred command may run with a different interpreter than
+        the one a developer first invoked alfred with.
+
+        From the command, if it is played with the wrong interpreter, alfred restarts itself with the target interpreter.
+        """
+        args = [*ctx.protected_args, *ctx.args]
+        cmd_output = self.resolve_command(ctx, args)
+
+        if cmd_output is not None:
+            alfred_cmd = alfred_ctx.current_command()
+            if alfred_cmd is not None:
+                venv = manifest.lookup_venv(alfred_cmd.project_dir)
+                if venv is not None and interpreter.venv() != venv:
+                    interpreter.run_module(module='alfred', venv_path=venv, args=args)
+                    return
+
+        """
+        The command is executed by click normally.
+        """
+        super().invoke(ctx)
 
 
 @click.command(cls=AlfredCli,
@@ -116,8 +138,8 @@ def exit_on_error(message: str, exit_code: int = 1):
 @contextlib.contextmanager
 def _context_middleware() -> Generator[None, None, None]:
     """
-    le code du contexte est exécuté avant d'exécuter la commande cible
-    de l'utilisateur.
+    the context code is executed before executing
+    the user's target command.
     """
     pythonpath = os.environ.get("PYTHONPATH", "")
     if manifest.python_path_project_root():
