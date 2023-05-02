@@ -2,13 +2,21 @@ Alfred
 ======
 
 Alfred is an extensible building tool that can replace a Makefile or Fabric.
-Writing commands in python is done in a few minutes, even in the case of a mono-repository
+
+Alfred offers the best of two worlds, shell and python. It is easy to automate tasks such as running a developer environment, running automated tests, publishing packages, running a continuous integration workflow, generating documentation, updating update of a database, ...
+
+Writing commands is done in a few minutes, even in the case of a mono-repository
 which contains several products.
 
 .. toctree::
    :maxdepth: 1
 
    features
+   getting_started
+   installation
+   command_line
+   project
+
 
 Links
 -----

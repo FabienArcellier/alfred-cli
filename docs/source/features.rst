@@ -21,7 +21,13 @@ Commands
 * invoke a sub-command with argument in alfred command with ``alfred.shell`` and ``alfred.run``
 * ensure command invokation from alfred project root
 * use the output of sub-command in python in alfred command
-* documenter les commandes disponibles dans la ligne de commande ``alfred``
+
+Projects
+********
+
+* discovers commands in multiple locations
+* discover commands in subprojects as multi command ``alfred {project} {command}``
+* execute a command from a virtual environment associated with the project
 
 
 
