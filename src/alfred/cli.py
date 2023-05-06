@@ -53,23 +53,25 @@ class AlfredCli(click.MultiCommand):
             click.echo(click.style(f"{exception.message}", fg='red'))
             sys.exit(2)
 
-    def get_command(self, ctx, cmd_name):
+    def get_command(self, ctx, cmd_name: str):
         if cmd_name == 'init':
             return init
 
         project_dir = manifest.lookup_project_dir()
-        _commands = commands.list_all(project_dir)
+        _command = commands.lookup(cmd_name, project_dir=project_dir)
+        if _command is None:
+            return  None
 
-        for command in _commands:
-            click_command = command.command
-            if click_command.name == cmd_name and isinstance(command, AlfredCommand):
-                alfred_ctx.stack_root_command(command)
-                command.register_context(_context_middleware)
-                return click_command
 
-            if click_command.name == cmd_name and isinstance(command, commands.AlfredSubprojectCommand):
-                alfred_ctx.stack_root_command(command)
-                return click_command
+        click_command = _command.command
+        if click_command.name == cmd_name and isinstance(_command, AlfredCommand):
+            alfred_ctx.stack_root_command(_command)
+            _command.register_context(_context_middleware)
+            return click_command
+
+        if click_command.name == cmd_name and isinstance(_command, commands.AlfredSubprojectCommand):
+            alfred_ctx.stack_root_command(_command)
+            return click_command
 
         return None
 

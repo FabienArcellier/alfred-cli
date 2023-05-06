@@ -1,5 +1,6 @@
 """
-This module performs column loading operations from the manifest definition.
+Ce module fournit des fonctions pour charger les commandes d'un projet
+alfred et de ses sous projets.
 """
 import glob
 import os
@@ -29,12 +30,11 @@ class AlfredSubprojectCommand(click.MultiCommand):
 
     def get_command(self, ctx: Context, cmd_name: str) -> t.Optional[Command]:
         all_commands = list_all(self.path)
-        for command in all_commands:
-            if cmd_name == command.name:
-                return command.command
+        for _command in all_commands:
+            if _command.name == cmd_name:
+                return _command.command
 
         return None
-
 
 
 def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
@@ -50,8 +50,13 @@ def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
     >>> from alfred import commands
     >>> commands.list_all()
     """
+    subproject = None
+    main_project_dir = manifest.lookup_project_dir()
     if project_dir is None:
-        project_dir = manifest.lookup_project_dir()
+        project_dir = main_project_dir
+
+    if main_project_dir != project_dir:
+        subproject = manifest.name(project_dir)
 
     commands = []
     for pattern in manifest.project_commands(project_dir):
@@ -66,6 +71,7 @@ def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
                     command.path = os.path.realpath(python_module)
                     command.project_dir = os.path.realpath(project_dir)
                     command.command.name = f"{prefix}{command.name}"
+                    command.subproject = subproject
                     commands.append(command)
 
     subprojects_glob = manifest.subprojects(project_dir)
@@ -83,3 +89,34 @@ def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
                 commands.append(command)
 
     return commands
+
+
+def lookup(command: str or List[str], project_dir: t.Optional[str] = None) -> t.Optional[AlfredCommand]:
+    """
+    Searches for a command by its name.
+
+    >>> _command = commands.lookup('build')
+    >>> print(_command.project_dir)
+
+    Searches for an order based on its project and its name.
+
+    >>> _command = commands.lookup(["product1", 'build'])
+    """
+    if isinstance(command, str):
+        command = [command]
+
+    all_commands = list_all(project_dir)
+    for _command in all_commands:
+        if _command.name == command[0]:
+            if isinstance(_command.command, AlfredSubprojectCommand):
+                if len(command) == 1:
+                    return _command
+
+                subcommands = list_all(_command.project_dir)
+                for subcommand in subcommands:
+                    if subcommand.name == command[1]:
+                        return subcommand
+
+            return _command
+
+    return None

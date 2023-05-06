@@ -89,7 +89,21 @@ def env(**kwargs) -> None:
 
 
 @click.pass_context
-def invoke_command(ctx, command_label: str, **kwargs) -> None:
+def invoke_command(ctx, command: str or List[str], **kwargs) -> None:
+    """
+    Invokes a command as a subcommand.
+
+    >>> alfred.invoke_command("test"])
+
+    Command arguments are passed as named parameters.
+
+    >>> alfred.invoke_command("hello_world", name="fabien"])
+
+    To invoke a command from a sub-project, it is possible to pass the fullname of a command as
+    an array as an argument.
+
+    >>> alfred.invoke_command(["product1", "hello_world"], name="fabien"])
+    """
     click_command = None
 
     project_dir = manifest.lookup_project_dir()
@@ -101,14 +115,14 @@ def invoke_command(ctx, command_label: str, **kwargs) -> None:
             origin_alfred_command = alfred_command
 
     plugin = origin_alfred_command.module
-    plugin_click_command=_lookup_plugin_command(_commands, command_label, plugin)
-    global_click_command=_lookup_global_command(_commands, command_label)
+    plugin_click_command=_lookup_plugin_command(_commands, command, plugin)
+    global_click_command=_lookup_global_command(_commands, command)
 
     available_plugins_commands = [command.original_name for command in _commands if command.module == plugin]
     available_global_commands = [command.name for command in _commands]
     if plugin_click_command is None and global_click_command is None:
         message = [
-            f"command {command_label} does not exists.",
+            f"command {command} does not exists.",
             f"Available plugin commands for plugin `{plugin}`: {available_plugins_commands}",
             f"Available global commands: {available_global_commands}",
         ]

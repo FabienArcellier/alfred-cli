@@ -13,6 +13,7 @@ class AlfredCommand:
         if _command is not None:
             self._original_name = _command.name
 
+        self.subproject: Optional[str] = None
         self.module: Optional[str] = None
         self.path: Optional[str] = None
         self.project_dir: Optional[str] = None # alfred project directory where the command is attached
@@ -22,9 +23,21 @@ class AlfredCommand:
     def __repr__(self):
         return f"<AlfredCommand '{self.name}', '{self.path}', {self.project_dir}>"
 
+
+    @property
+    def fullname(self):
+        name = ""
+        if self.subproject is not None:
+            name += f"{self.subproject} "
+
+        name += self.command.name
+        return name
+
+
     @property
     def name(self):
         return self.command.name
+
 
     @property
     def original_name(self):
