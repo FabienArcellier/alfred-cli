@@ -5,6 +5,7 @@ from typing import Optional, List
 import plumbum
 from plumbum import local
 
+from alfred.os import is_windows
 from alfred.exceptions import AlfredException
 from alfred.logger import logger
 
@@ -30,7 +31,10 @@ def run_module(module: str, venv: str, args: List[str]):
     run alfred in another virtual environment with same commands.
 
     """
-    python_path = os.path.join(venv, 'bin', 'python')
+    if is_windows():
+        python_path = os.path.join(venv, 'Scripts', 'python.exe')
+    else:
+        python_path = os.path.join(venv, 'bin', 'python')
     if not os.path.isfile(python_path):
         raise AlfredException(f"python interpreter not found in venv: {venv}")
 

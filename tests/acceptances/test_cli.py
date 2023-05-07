@@ -3,6 +3,7 @@ import unittest
 
 import fixtup
 
+from alfred import is_windows
 from tests.fixtures import alfred_fixture
 
 
@@ -170,7 +171,12 @@ class TestCli(unittest.TestCase):
         with fixtup.up('multiproject', keep_mounted_fixture=True):
             _, stdout, _ = alfred_fixture.invoke(["product1", "print_python_exec"])
 
-            assert os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'bin', 'python') in stdout
+            if is_windows():
+                expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'Scripts', 'python.exe'))
+            else:
+                expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'bin', 'python'))
+
+            assert expected_python_executable in stdout
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,9 +3,9 @@ import sys
 
 import click
 import fixtup
-from click.testing import CliRunner
 
 import alfred
+from alfred.os import is_windows
 from tests.fixtures import alfred_fixture
 
 
@@ -76,6 +76,10 @@ def test_invoke_command_should_invoke_command_in_subproject():
             exit_code, stdout, _ = alfred_fixture.invoke_click(click_wrapper)
 
             # Assert
-            expected_python_exec = os.path.realpath(os.path.join(os.getcwd(), "products", "product1", ".venv", "bin", "python"))
+            if is_windows():
+                expected_python_exec = os.path.realpath(os.path.join(os.getcwd(), "products", "product1", ".venv", "Scripts", "python.exe"))
+            else:
+                expected_python_exec = os.path.realpath(os.path.join(os.getcwd(), "products", "product1", ".venv", "bin", "python"))
+
             assert exit_code == 0
             assert expected_python_exec in stdout

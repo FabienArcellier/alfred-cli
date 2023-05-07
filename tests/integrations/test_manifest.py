@@ -29,7 +29,8 @@ def test_lookup_venv_should_return_venv_when_it_is_defined():
     with fixtup.up('multiproject'):
         root_path = os.getcwd()
 
-        assert manifest.lookup_venv(os.path.join(root_path, 'products', 'product1')) == os.path.join(root_path, 'products', 'product1', '.venv')
+        expected_venv_path = os.path.realpath(os.path.join(root_path, 'products', 'product1', '.venv'))
+        assert manifest.lookup_venv(os.path.join(root_path, 'products', 'product1')) == expected_venv_path
 
 
 def test_lookup_venv_should_return_none_when_venv_is_undefined():
