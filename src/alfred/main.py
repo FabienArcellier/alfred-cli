@@ -1,16 +1,15 @@
 import contextlib
 import os
 from functools import wraps
-from typing import Optional, Union, List, Callable
+from typing import Union, List, Callable
 
 import click
 import plumbum
-from click import BaseCommand
 from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, echo, lib, manifest
+from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command
 from alfred.logger import get_logger
 
 
@@ -104,39 +103,31 @@ def invoke_command(ctx, command: str or List[str], **kwargs) -> None:
 
     >>> alfred.invoke_command(["product1", "hello_world"], name="fabien"])
     """
-    click_command = None
 
-    project_dir = manifest.lookup_project_dir()
-    _commands = commands.list_all(project_dir)
+    _calling_commmand = alfred_ctx.current_command()
+    if _calling_commmand is not None:
+        project_dir = _calling_commmand.project_dir
+    else:
+        project_dir = manifest.lookup_project_dir()
 
-    origin_alfred_command = None
-    for alfred_command in _commands:
-        if ctx.command.name == alfred_command.name:
-            origin_alfred_command = alfred_command
+    _command = commands.lookup(command, project_dir)
+    if _command is None:
+        raise click.ClickException(f"command {command} does not exists.")
 
-    plugin = origin_alfred_command.module
-    plugin_click_command=_lookup_plugin_command(_commands, command, plugin)
-    global_click_command=_lookup_global_command(_commands, command)
 
-    available_plugins_commands = [command.original_name for command in _commands if command.module == plugin]
-    available_global_commands = [command.name for command in _commands]
-    if plugin_click_command is None and global_click_command is None:
-        message = [
-            f"command {command} does not exists.",
-            f"Available plugin commands for plugin `{plugin}`: {available_plugins_commands}",
-            f"Available global commands: {available_global_commands}",
-        ]
+    click_command = _command.command
+    if hasattr(click_command, "help"):
+        echo.subcommand(f"$ alfred {click_command.name} : {click_command.help}")
+    else:
+        echo.subcommand(f"$ alfred {click_command.name}")
 
-        raise click.ClickException("\n".join(message))
+    with alfred_ctx.stack_subcommand(_command):
+        args = alfred_command.format_cli_arguments(_command, kwargs)
+        if alfred_ctx.should_use_external_venv():
+            alfred_ctx.invoke_through_external_venv(args)
+        else:
+            ctx.invoke(click_command, **kwargs)
 
-    if plugin_click_command:
-        click_command = plugin_click_command
-    elif global_click_command:
-        click_command = global_click_command
-
-    echo.subcommand(f"$ alfred {click_command.name} : {click_command.help}")
-    with alfred_ctx.stack_subcommand(origin_alfred_command):
-        ctx.invoke(click_command, **kwargs)
 
 class pythonpath:  #pylint: disable=invalid-name
     """
@@ -255,22 +246,6 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
     except ProcessExecutionError as exception:
         if exit_on_error:
             raise Exit(code=exception.retcode) from exception
-
-
-def _lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:
-    click_command = None
-    for alfred_command in all_commands:
-        if alfred_command.original_name == command_label and alfred_command.module == plugin:
-            click_command = alfred_command.command
-    return click_command
-
-
-def _lookup_global_command(all_commands, command_label) -> Optional[BaseCommand]:
-    click_command = None
-    for alfred_command in all_commands:
-        if alfred_command.name == command_label:
-            click_command = alfred_command.command
-    return click_command
 
 
 @contextlib.contextmanager

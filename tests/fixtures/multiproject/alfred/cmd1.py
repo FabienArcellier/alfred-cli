@@ -1,4 +1,5 @@
 import os
+import sys
 
 import alfred
 
@@ -7,6 +8,11 @@ import alfred
 @alfred.option("--name")
 def hello_world_command(name):
     print(f"hello world, {name}")
+
+
+@alfred.command("print_python_exec")
+def print_python_exec():
+    print(sys.executable)
 
 
 @alfred.command("pythonpath")

@@ -15,3 +15,8 @@ class NotInitialized(AlfredException):
 class NotInCommand(AlfredException):
     def __init__(self, instruction: str):
         super().__init__(f"alfred command is not running, {instruction} must be used in alfred command")
+
+
+class UnknownCommand(AlfredException):
+    def __init__(self, command: str):
+        super().__init__(f"command {command} does not exists")

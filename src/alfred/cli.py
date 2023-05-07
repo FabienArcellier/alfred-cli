@@ -7,13 +7,13 @@ from typing import List, Any, Generator
 
 import click
 
-from alfred import ctx as alfred_ctx, manifest, echo, project_directory, interpreter
+from alfred import ctx as alfred_ctx, manifest, echo, project_directory
 from alfred import commands
 from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
 from alfred.lib import ROOT_DIR, override_pythonpath
-from alfred.logger import logger, get_logger
+from alfred.logger import logger
 
 
 @click.command('init')
@@ -92,18 +92,9 @@ class AlfredCli(click.MultiCommand):
         args = [*ctx.protected_args, *ctx.args]
         cmd_output = self.resolve_command(ctx, args)
 
-        if cmd_output is not None:
-            alfred_cmd = alfred_ctx.current_command()
-            if alfred_cmd is not None:
-                venv = manifest.lookup_venv(alfred_cmd.project_dir)
-
-                if venv is not None and interpreter.get_venv() != venv:
-                    _logger = get_logger()
-                    _logger.debug(f"alfred interpreter - current venv: {interpreter.get_venv()}")
-                    _logger.debug(f"alfred interpreter - expected venv: {venv}")
-
-                    result = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
-                    print(result)
+        if cmd_output is not None and alfred_ctx.should_use_external_venv():
+            alfred_ctx.invoke_through_external_venv(args)
+            return
 
         """
         The command is executed by click normally.

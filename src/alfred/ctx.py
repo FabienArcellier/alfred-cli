@@ -6,8 +6,10 @@ import contextlib
 import dataclasses
 from typing import List, Optional
 
+from alfred import manifest, interpreter
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInCommand
+from alfred.logger import get_logger
 
 
 @dataclasses.dataclass
@@ -21,16 +23,6 @@ class Context:
 
 _context = Context()
 
-
-def current_command() -> Optional[AlfredCommand]:
-    """
-    Retrieves the last running command.
-
-    :return:
-    """
-    return _context.commands_stack[0] if _context.running else None
-
-
 def assert_in_command(instruction: str) -> None:
     """
     Throws an exception if an alfred command is not running
@@ -42,6 +34,26 @@ def assert_in_command(instruction: str) -> None:
         raise NotInCommand(instruction)
 
 
+def current_command() -> Optional[AlfredCommand]:
+    """
+    Retrieves the last running command.
+
+    :return:
+    """
+    return _context.commands_stack[0] if _context.running else None
+
+
+def invoke_through_external_venv(args: List[str]) -> None:
+    """
+    Invokes the current alfred command in its own virtual environment.
+
+    """
+    alfred_cmd = current_command()
+    venv = manifest.lookup_venv(alfred_cmd.project_dir)
+    result = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
+    print(result)
+
+
 def root_command() -> Optional[AlfredCommand]:
     """
     Retrieves the root command causing the execution.
@@ -49,6 +61,25 @@ def root_command() -> Optional[AlfredCommand]:
     :return:
     """
     return _context.commands_stack[-1] if _context.running else None
+
+
+def should_use_external_venv() -> bool:
+    """
+    Checks whether the current command should run in its own virtual environment different from
+    the one currently active.
+
+    """
+    alfred_cmd = current_command()
+    if alfred_cmd is not None:
+        venv = manifest.lookup_venv(alfred_cmd.project_dir)
+
+        if venv is not None and interpreter.get_venv() != venv:
+            _logger = get_logger()
+            _logger.debug(f"alfred interpreter - current venv: {interpreter.get_venv()}")
+            _logger.debug(f"alfred interpreter - expected venv: {venv}")
+            return True
+
+    return False
 
 
 def stack_root_command(command: AlfredCommand) -> None:
