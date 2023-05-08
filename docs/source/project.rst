@@ -11,8 +11,7 @@ Starting a project
 
 An alfred project can be initialized in any directory using ``alfred init`` command.
 
-This command creates a ``.alfred.toml`` configuration file and creates a ``alfred`` directory
-which contains the commands.
+This command creates a ``.alfred.toml`` configuration file and creates a ``alfred`` directory which contains the commands.
 
 .. code-block:: bash
     :caption: console
