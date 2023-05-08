@@ -1,7 +1,7 @@
 Installation
 ############
 
-Alfred s'installe avec pip
+Alfred is installed through pip
 
 .. code-block:: bash
 

@@ -26,7 +26,7 @@ def lookup(path: Optional[str] = None, search: bool = True) -> AlfredManifest:
 
     with io.open(alfred_manifest_path,  encoding="utf8") as file:
         alfred_configuration = toml.load(file)
-        return AlfredManifest(alfred_configuration)
+        return AlfredManifest(alfred_manifest_path, alfred_configuration)
 
 
 def lookup_project_dir(path: Optional[str] = None, search: bool = True) -> str:
@@ -92,7 +92,7 @@ def lookup_venv(project_dir: Optional[str] = None) -> Optional[str]:
     _default = None
 
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
     if 'alfred' not in configuration:
         return _default
 
@@ -139,7 +139,7 @@ def subprojects(project_dir: Optional[str] = None) -> List[str]:
     _default = []
 
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
 
     if 'alfred' not in configuration:
         return _default
@@ -157,7 +157,7 @@ def project_commands(project_dir: Optional[str] = None) -> List[str]:
     :return:
     """
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
 
     _default = ["alfred/*.py"]
     if 'alfred' not in configuration:
@@ -178,7 +178,7 @@ def project_commands(project_dir: Optional[str] = None) -> List[str]:
 
 def prefix(project_dir: Optional[str] = None) -> str:
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
 
     _default = ''
     if 'alfred' not in configuration:
@@ -192,7 +192,7 @@ def prefix(project_dir: Optional[str] = None) -> str:
 
 def python_path_project_root(project_dir: Optional[str] = None) -> Optional[bool]:
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
 
     _default = True
     if 'alfred' not in configuration:
@@ -207,23 +207,28 @@ def python_path_project_root(project_dir: Optional[str] = None) -> Optional[bool
     return configuration['alfred']['project']['python_path_project_root']
 
 
-def name(project_dir: Optional[str] = None) -> str:
+def name(project_dir: Optional[str] = None) -> Optional[str]:
+    """
+    Récupère le nom du projet depuis le manifest ``.alfred.toml``.
+
+    >>> project_name = manifest.name()
+
+    If the ``name`` parameter is missing from the manifest, the name of the parent folder is returned.
+    """
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
 
-    _default = ''
-    if 'alfred' not in configuration:
-        return _default
+    project_name = os.path.basename(alfred_manifest.project_directory)
+    if 'alfred' in configuration:
+        if 'name' in configuration['alfred']:
+            project_name = configuration['alfred']['name']
 
-    if 'name' not in configuration['alfred']:
-        return _default
-
-    return configuration['alfred']['name']
+    return project_name
 
 
 def description(project_dir: Optional[str] = None) -> str:
     alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration()
+    configuration = alfred_manifest.configuration
 
     _default = ''
     if 'alfred' not in configuration:

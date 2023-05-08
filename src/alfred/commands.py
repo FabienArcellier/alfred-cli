@@ -10,7 +10,7 @@ from typing import List
 import click
 from click import Context, Command
 
-from alfred import manifest
+from alfred import manifest, echo
 from alfred.domain.command import AlfredCommand
 from alfred.lib import list_python_modules, import_python
 
@@ -79,14 +79,7 @@ def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
         directories = glob.glob(subproject)
         for directory in directories:
             if os.path.isdir(directory) and manifest.contains_manifest(directory):
-                _subproject_manifest = manifest.lookup(directory)
-                command = AlfredCommand()
-                command.command = AlfredSubprojectCommand(name=manifest.name(directory),
-                                                          help=manifest.description(directory),
-                                                          path=os.path.realpath(directory))
-                command.path = os.path.realpath(directory)
-                command.project_dir = os.path.realpath(directory)
-                commands.append(command)
+                commands = _load_subproject(commands, directory)
 
     return commands
 
@@ -120,3 +113,20 @@ def lookup(command: str or List[str], project_dir: t.Optional[str] = None) -> t.
             return _command
 
     return None
+
+
+def _load_subproject(commands: list, directory: str) -> list:
+    _subproject_manifest = manifest.lookup(directory)
+    name = manifest.name(directory)
+    if ' ' in name:
+        echo.error(f"Subproject ignored: project name from {directory} cannot contain spaces, {name=}")
+    else:
+        command = AlfredCommand()
+        command.command = AlfredSubprojectCommand(name=name,
+                                                  help=manifest.description(directory),
+                                                  path=os.path.realpath(directory))
+        command.path = os.path.realpath(directory)
+        command.project_dir = os.path.realpath(directory)
+        commands.append(command)
+
+    return commands
