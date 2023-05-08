@@ -18,27 +18,19 @@ alfred publish
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
 - [Getting started](#getting-started)
-- [Documentation](#documentation)
+- [Links](#links)
 - [Cookbook](#cookbook)
   * [Add a new build command](#add-a-new-build-command)
 - [Behind the scene](#behind-the-scene)
 - [Why using alfred instead of Makefile or Bash scripts](#why-using-alfred-instead-of-makefile-or-bash-scripts)
 - [Why not using alfred](#why-not-using-alfred)
 - [The latest version](#the-latest-version)
-- [Reference](#reference)
-  * [`.Alfred.yml`](#alfredyml)
-    + [`Plugins` section](#plugins-section)
-    + [`Environment` section](#environment-section)
 - [Cookbook](#cookbook-1)
   * [Display the commands really executed behind the scene](#display-the-commands-really-executed-behind-the-scene)
   * [Customize a command for a specific OS](#customize-a-command-for-a-specific-os)
   * [Override environment variables](#override-environment-variables)
     + [Add directories into pythonpath](#add-directories-into-pythonpath)
 - [Developper guideline](#developper-guideline)
-  * [Install development environment](#install-development-environment)
-  * [Install production environment](#install-production-environment)
-  * [Initiate or update the library requirements](#initiate-or-update-the-library-requirements)
-  * [Activate the python environment](#activate-the-python-environment)
   * [Run the linter and the unit tests](#run-the-linter-and-the-unit-tests)
 - [Contributors](#contributors)
 - [License](#license)
@@ -71,7 +63,7 @@ A file `.alfred.yml` will be initialized at the root of the repository.
 
 ## Cookbook
 
-### Add a new build command
+### Add a new command
 
 You can add your command in a new module in `./alfred`.
 In this example we will add the command `alfred lint` :
@@ -135,47 +127,6 @@ You can find the latest version to ...
 
 ```bash
 git clone https://github.com/FabienArcellier/alfred-cli.git
-```
-
-## Reference
-
-### `.Alfred.yml`
-
-The configuration file supports several attributes to tune the behavior of
-Alfred. It is required to add
-
-#### `Plugins` section
-
-the `plugins` section tells Alfred where to look for commands to render
-accessible to the user. The pointed folder contains several python modules which
-are loaded one by one. The `__init __. Py` module is ignored.
-
-If you specify a prefix, the commands configured in the imported modules
-will be prefixed by this label in alfred. This feature is useful in a mono-repository
-when you want to have an .alfred.yml file for each project and an .alfred.yml file
-at the root of the project.
-
-```yaml
-plugins:
-    - path: alfred
-
-    - path: sofware1/alfred
-      prefix: "software1:"
-```
-
-#### `Environment` section
-
-`environment` section allows you to hard configure environment variables to load
-before executing a command.
-
-This feature facilitates the integration with `pipenv` for example which has a behavior
-different between mac and linux. In this case, it allows you to set the necessary flags
-to erase these differences.
-
-```yaml
-environment:
-    - "VAR=1"
-    - "VAR"
 ```
 
 ## Cookbook
@@ -265,8 +216,8 @@ def ci():
 ## Developper guideline
 
 ```bash
-pipenv install
-pipenv shell
+poetry install
+poetry shell
 ```
 
 ```
@@ -289,39 +240,6 @@ Commands:
   tests              validate alfred with all the automatic testing
   tests:acceptances  validate alfred with acceptances testing
   tests:units        validate alfred with unit testing
-```
-
-### Install development environment
-
-Use make to instanciate a python virtual environment in ./venv and install the
-python dependencies.
-
-```bash
-pipenv install --dev
-```
-
-### Install production environment
-
-```bash
-pipenv install
-```
-
-### Initiate or update the library requirements
-
-If you want to initiate or update all the requirements `install_requires` declared in `setup.py`
-and freeze a new `Pipfile.lock`, use this command
-
-```bash
-pipenv update
-```
-
-### Activate the python environment
-
-When you setup the requirements, a `venv` directory on python 3 is created.
-To activate the venv, you have to execute :
-
-```bash
-pipenv shell
 ```
 
 ### Run the linter and the unit tests
