@@ -12,6 +12,6 @@ def dist():
 
     >>> $ alfred dist
     """
-    python = alfred.sh("python", "python should be present")
+    python = alfred.sh("poetry", "python should be present")
     os.chdir(ROOT_DIR)
-    alfred.run(python, ['-m', 'build', '--no-isolation', '--wheel', '--sdist', '--outdir', 'dist'])
+    alfred.run(python, ['build'])
