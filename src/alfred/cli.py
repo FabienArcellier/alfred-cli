@@ -22,9 +22,11 @@ def init():
     if manifest.contains_manifest():
         exit_on_error("manifest .alfred.toml already exists in this directory")
 
-    os.makedirs('alfred')
     shutil.copy(os.path.join(ROOT_DIR, 'resources', '.alfred.toml'), '.alfred.toml')
-    shutil.copy(os.path.join(ROOT_DIR, 'resources', 'cmd.py'), os.path.join('alfred', 'cmd.py'))
+
+    if not os.path.isdir('alfred'):
+        os.makedirs('alfred', exist_ok=True)
+        shutil.copy(os.path.join(ROOT_DIR, 'resources', 'cmd.py'), os.path.join('alfred', 'cmd.py'))
 
 
 class AlfredCli(click.MultiCommand):

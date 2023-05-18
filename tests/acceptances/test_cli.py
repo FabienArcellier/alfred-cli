@@ -87,6 +87,26 @@ class TestCli(unittest.TestCase):
             self.assertEqual(0, exit_code)
             self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.toml")))
 
+    def test_init_should_ignore_alfred_directory_when_it_already_exists(self):
+
+        with fixtup.up('empty_directory'):
+            # Assign
+            cwd = os.path.realpath(os.getcwd())
+            os.mkdir(os.path.join(cwd, "alfred"))
+
+            # Acts
+            exit_code, _, _ = alfred_fixture.invoke(["init"])
+
+            # Assert
+            self.assertEqual(0, exit_code)
+            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.toml")))
+
+            """
+            As the default commands folder already exists, it is kept as it is and the cmd.py
+            module is not created.
+            """
+            assert os.path.isfile(os.path.join(cwd, "alfred", "cmd.py")) is False
+
     def test_pythonpath_decorator_on_command_should_append_alfred_project_directory_to_python_path(self):
 
         with fixtup.up('project'):
