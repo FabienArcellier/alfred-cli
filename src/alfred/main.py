@@ -216,7 +216,7 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand
     return shell_command
 
 
-def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
+def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
     """
     Most of the process run by alfred are supposed to stop
     if the excecution process is finishing with an exit code of 0
@@ -237,6 +237,9 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
     :param command: shell program to execute
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
+    if args is None:
+        args = []
+
     try:
         logger = get_logger()
         complete_command = command[args]

@@ -96,6 +96,8 @@ class AlfredCli(click.MultiCommand):
 
         if cmd_output is not None and alfred_ctx.should_use_external_venv():
             alfred_ctx.invoke_through_external_venv(args)
+
+
             return
 
         """

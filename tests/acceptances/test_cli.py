@@ -1,9 +1,12 @@
 import os
+import shutil
 import unittest
 
 import fixtup
+import plumbum
 
 from alfred import is_windows
+from alfred.interpreter import venv_python_path, venv_bin_path
 from tests.fixtures import alfred_fixture
 
 
@@ -197,6 +200,34 @@ class TestCli(unittest.TestCase):
                 expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'bin', 'python'))
 
             assert expected_python_executable in stdout
+
+
+    def test_alfred_is_using_virtualenv_and_is_able_to_load_binary_program_from_it(self):
+        """
+        When alfred uses a virtual environment, he must be able to use the programs
+        installed inside like mypy and pytest
+
+        """
+        with fixtup.up('project_with_venv'):
+            python_path = venv_python_path(os.path.join(os.getcwd(), '.venv'))
+            bin_path = venv_bin_path(os.path.join(os.getcwd(), '.venv'))
+            python = plumbum.local[python_path]
+
+            # Install alfred-cli itself in the virtualenv to be able to invoke command
+            root_dir = os.path.realpath(os.path.join(__file__, '..', '..', '..'))
+            python['-m', 'pip', 'install', '-e', root_dir]()
+
+            # If hello is not copied in the virtual env, this test will fail
+            shutil.copy(os.path.join(os.getcwd(), 'hello'), os.path.join(bin_path, 'hello'))
+
+            # Acts
+            exit_code, stdout, stderr = alfred_fixture.invoke(["hello"])
+
+            # Assert
+            assert exit_code == 0, f"{stdout=}\n{stderr=}"
+            assert stderr == ''
+            assert "hello" in stdout
+
 
 if __name__ == '__main__':
     unittest.main()

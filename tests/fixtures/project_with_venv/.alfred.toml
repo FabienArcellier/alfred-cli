@@ -1,0 +1,4 @@
+[alfred]
+
+[alfred.project]
+venv = ".venv"
