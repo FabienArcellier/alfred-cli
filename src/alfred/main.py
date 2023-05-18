@@ -1,16 +1,15 @@
 import contextlib
 import os
 from functools import wraps
-from typing import Optional, Union, List, Callable
+from typing import Union, List, Callable
 
 import click
 import plumbum
-from click import BaseCommand
 from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, manifest
+from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command
 from alfred.logger import get_logger
 
 
@@ -60,11 +59,8 @@ def project_directory() -> str:
     >>>     project_directory = alfred.project_directory()
     >>>     print(project_directory)
     """
-    alfred_ctx.assert_in_command("alfred.project_directory")
-
     current_cmd = alfred_ctx.current_command()
-    manifest_path = manifest.lookup_path(current_cmd.path)
-    return os.path.dirname(manifest_path)
+    return current_cmd.project_dir
 
 
 @contextlib.contextmanager
@@ -92,37 +88,46 @@ def env(**kwargs) -> None:
 
 
 @click.pass_context
-def invoke_command(ctx, command_label: str, **kwargs) -> None:
-    click_command = None
-    _commands = commands.list_all()
-    origin_alfred_command = None
-    for alfred_command in _commands:
-        if ctx.command.name == alfred_command.name:
-            origin_alfred_command = alfred_command
+def invoke_command(ctx, command: str or List[str], **kwargs) -> None:
+    """
+    Invokes a command as a subcommand.
 
-    plugin = origin_alfred_command.plugin
-    plugin_click_command=_lookup_plugin_command(_commands, command_label, plugin)
-    global_click_command=_lookup_global_command(_commands, command_label)
+    >>> alfred.invoke_command("test"])
 
-    available_plugins_commands = [command.original_name for command in _commands if command.plugin == plugin]
-    available_global_commands = [command.name for command in _commands]
-    if plugin_click_command is None and global_click_command is None:
-        message = [
-            f"command {command_label} does not exists.",
-            f"Available plugin commands for plugin `{plugin}`: {available_plugins_commands}",
-            f"Available global commands: {available_global_commands}",
-        ]
+    Command arguments are passed as named parameters.
 
-        raise click.ClickException("\n".join(message))
+    >>> alfred.invoke_command("hello_world", name="fabien"])
 
-    if plugin_click_command:
-        click_command = plugin_click_command
-    elif global_click_command:
-        click_command = global_click_command
+    To invoke a command from a sub-project, it is possible to pass the fullname of a command as
+    an array as an argument.
 
-    click.echo(click.style(f"$ alfred {click_command.name} : {click_command.help}", fg='green'))
-    with alfred_ctx.stack_subcommand(origin_alfred_command):
-        ctx.invoke(click_command, **kwargs)
+    >>> alfred.invoke_command(["product1", "hello_world"], name="fabien"])
+    """
+
+    _calling_commmand = alfred_ctx.current_command()
+    if _calling_commmand is not None:
+        project_dir = _calling_commmand.project_dir
+    else:
+        project_dir = manifest.lookup_project_dir()
+
+    _command = commands.lookup(command, project_dir)
+    if _command is None:
+        raise click.ClickException(f"command {command} does not exists.")
+
+
+    click_command = _command.command
+    if hasattr(click_command, "help"):
+        echo.subcommand(f"$ alfred {click_command.name} : {click_command.help}")
+    else:
+        echo.subcommand(f"$ alfred {click_command.name}")
+
+    with alfred_ctx.stack_subcommand(_command):
+        args = alfred_command.format_cli_arguments(_command, kwargs)
+        if alfred_ctx.should_use_external_venv():
+            alfred_ctx.invoke_through_external_venv(args)
+        else:
+            ctx.invoke(click_command, **kwargs)
+
 
 class pythonpath:  #pylint: disable=invalid-name
     """
@@ -170,31 +175,6 @@ class pythonpath:  #pylint: disable=invalid-name
                 return func(*args, **kwargs)
 
         return wrapper
-
-
-@contextlib.contextmanager
-def _pythonpath(directories: List[str] = None, append_project=True) -> None:
-    """
-    See the pythonpath class above which implements the pattern
-    to support a decorator and a context manager.
-    """
-    alfred_ctx.assert_in_command("alfred.pythonpath")
-
-    logger = get_logger()
-    if directories is None:
-        directories = []
-
-    _pythonpath = os.environ.get("PYTHONPATH", "").split(':')
-    root_directory = project_directory()
-    real_directories = [os.path.realpath(directory) for directory in directories]
-
-    if append_project:
-        real_directories += [root_directory]
-
-    override_pythonpath = ":".join(real_directories + _pythonpath)
-    logger.debug(f"env PYTHONPATH: {override_pythonpath}")
-    with env(PYTHONPATH=override_pythonpath):
-        yield
 
 
 def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
@@ -268,17 +248,24 @@ def run(command: LocalCommand, args: [str], exit_on_error=True) -> None:
             raise Exit(code=exception.retcode) from exception
 
 
-def _lookup_plugin_command(all_commands, command_label, plugin) -> Optional[BaseCommand]:
-    click_command = None
-    for alfred_command in all_commands:
-        if alfred_command.original_name == command_label and alfred_command.plugin == plugin:
-            click_command = alfred_command.command
-    return click_command
+@contextlib.contextmanager
+def _pythonpath(directories: List[str] = None, append_project=True) -> None:
+    """
+    See the pythonpath class above which implements the pattern
+    to support a decorator and a context manager.
+    """
+    alfred_ctx.assert_in_command("alfred.pythonpath")
 
+    if directories is None:
+        directories = []
 
-def _lookup_global_command(all_commands, command_label) -> Optional[BaseCommand]:
-    click_command = None
-    for alfred_command in all_commands:
-        if alfred_command.name == command_label:
-            click_command = alfred_command.command
-    return click_command
+    _pythonpath = os.environ.get("PYTHONPATH", "").split(':')
+    root_directory = project_directory()
+    real_directories = [os.path.realpath(directory) for directory in directories]
+
+    if append_project:
+        real_directories += [root_directory]
+
+    new_pythonpath = ":".join(real_directories + _pythonpath)
+    with lib.override_pythonpath(new_pythonpath):
+        yield

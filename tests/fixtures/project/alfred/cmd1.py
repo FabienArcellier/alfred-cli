@@ -1,4 +1,5 @@
 import os
+import sys
 
 import alfred
 
@@ -24,7 +25,18 @@ def pythonpath_src():
 @alfred.command("hello_world_2")
 @alfred.option("--name")
 def hello_world_2_command(name):
-    alfred.invoke_command("hello_world")
+    alfred.invoke_command("cmd:hello_world", name=name)
+
+
+@alfred.command("hello_world_3")
+@alfred.option("--name")
+def hello_world_3_command(name):
+    print(f"hello world 3, {name}")
+
+
+@alfred.command("print_python_exec")
+def print_python_exec():
+    print(sys.executable)
 
 
 @alfred.command("multicommand")

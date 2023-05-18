@@ -1,6 +1,52 @@
 import contextlib
+from collections import namedtuple
+from typing import List
 
+from click import BaseCommand
+from click.testing import CliRunner
+
+from alfred.cli import cli
 from alfred import commands, ctx
+
+CliResult = namedtuple('CliResult', ['exit_code', 'stdout', 'stderr'])
+
+
+def invoke(args: List[str]) -> CliResult:
+    """
+    simulates invoking alfred from the command line.
+
+    >>> exit_code, stdout, stderr = alfred_fixture.invoke(["--help"])
+
+    If the command line invocation raises an exception, this fixture also throws it.
+    """
+    runner = CliRunner(mix_stderr=False)
+    result = runner.invoke(cli, args)
+    if result.exception is not None and not isinstance(result.exception, SystemExit):
+        raise result.exception
+
+    return CliResult(result.exit_code, result.stdout, result.stderr)
+
+
+def invoke_click(command: BaseCommand, args: List[str] = None) -> CliResult:
+    """
+    Invokes a click command. This fixture allows to test features of alfred which need to be executed
+    through click to work properly like alfred.invoke_command.
+
+    >>> @click.command
+    >>> def click_wrapper():
+    >>>     print("hello world")
+    >>>
+    >>> exit_code, stdout, stderr = alfred_fixture.invoke_click(click_wrapper)
+
+    If the command line invocation raises an exception, this fixture also throws it.
+    """
+    runner = CliRunner(mix_stderr=False)
+    result = runner.invoke(command, args)
+
+    if result.exception is not None and not isinstance(result.exception, SystemExit):
+        raise result.exception
+
+    return CliResult(result.exit_code, result.stdout, result.stderr)
 
 
 def setup_context():
@@ -51,5 +97,5 @@ def use_new_context():
     """
     sets up a new independent execution context for a test
     """
-    with ctx.use_new_context(), commands.use_new_context():
+    with ctx.use_new_context():
         yield

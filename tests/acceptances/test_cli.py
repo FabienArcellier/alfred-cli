@@ -2,9 +2,8 @@ import os
 import unittest
 
 import fixtup
-from click.testing import CliRunner
 
-from alfred.cli import cli
+from alfred import is_windows
 from tests.fixtures import alfred_fixture
 
 
@@ -26,15 +25,12 @@ class TestCli(unittest.TestCase):
         does not contains alfred.ini. It triggered if the user run ``alfred``
         """
         with fixtup.up('empty_directory'):
-            # Assign
-            runner = CliRunner()
-
             # Acts
-            result = runner.invoke(cli, [])
+            exit_code, stdout, _ = alfred_fixture.invoke([])
 
             # Assert
-            self.assertEqual(2, result.exit_code, result.stdout)
-            self.assertIn("not an alfred project (or any of the parent directories)", result.stdout)
+            self.assertEqual(2, exit_code, stdout)
+            self.assertIn("not an alfred project (or any of the parent directories)", stdout)
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred_for_option_help(self):
         """
@@ -44,122 +40,143 @@ class TestCli(unittest.TestCase):
 
         with fixtup.up('empty_directory'):
             # Assign
-            runner = CliRunner()
 
             # Acts
-            result = runner.invoke(cli, ["--help"])
+            exit_code, stdout, _ = alfred_fixture.invoke(["--help"])
 
             # Assert
-            self.assertEqual(2, result.exit_code, result.stdout)
-            self.assertIn("not an alfred project (or any of the parent directories)", result.stdout)
+            self.assertEqual(2, exit_code, stdout)
+            self.assertIn("not an alfred project (or any of the parent directories)", stdout)
 
-    def test_cli_should_list_command_with_prefix(self):
+    def test_cli_should_list_commands_with_prefix(self):
+        """
+        The alfred --help command should list the commands with the prefix defined in the project manifest.
+        In this test, the prefix is ``cmd:``.
+        """
 
         with fixtup.up('project'):
             # Assign
-            runner = CliRunner()
-
             # Acts
-            result = runner.invoke(cli, [])
+            exit_code, stdout, _ = alfred_fixture.invoke(["--help"])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
-            self.assertIn("cmd:hello_world", result.stdout)
+            self.assertEqual(0, exit_code)
+            self.assertIn("cmd:hello_world", stdout)
 
     def test_cli_should_invoke_command_with_prefix(self):
 
         with fixtup.up('project'):
             # Assign
-            runner = CliRunner()
-
             # Acts
-            result = runner.invoke(cli, ["cmd:hello_world_2"])
+            exit_code, stdout, _ = alfred_fixture.invoke(["cmd:hello_world_2"])
 
             # Assert
-            self.assertEqual(0, result.exit_code, result.stdout)
-            self.assertIn("hello world", result.stdout)
+            self.assertEqual(0, exit_code, stdout)
+            self.assertIn("hello world", stdout)
 
     def test_init_should_create_alfred_directory_and_files(self):
 
         with fixtup.up('empty_directory'):
             # Assign
             cwd = os.path.realpath(os.getcwd())
-            runner = CliRunner()
 
             # Acts
-            result = runner.invoke(cli, ["init"])
+            exit_code, _, _ = alfred_fixture.invoke(["init"])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
-            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.yml")))
+            self.assertEqual(0, exit_code)
+            self.assertTrue(os.path.isfile(os.path.join(cwd, ".alfred.toml")))
 
-    def test_pythonpath_should_work_as_decorator(self):
+    def test_pythonpath_decorator_on_command_should_append_alfred_project_directory_to_python_path(self):
 
         with fixtup.up('project'):
             # Assign
             cwd = os.path.realpath(os.getcwd())
-            runner = CliRunner()
 
             # Acts
-            result = runner.invoke(cli, ["cmd:pythonpath"])
+            exit_code, stdout, _ = alfred_fixture.invoke(["cmd:pythonpath"])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
-            assert cwd in result.stdout
+            self.assertEqual(0, exit_code)
+            assert cwd in stdout
 
-    def test_pythonpath_should_add_src_as_decorator(self):
+    def test_pythonpath_decorator_on_command_should_append_src_directory_to_python_path(self):
 
         with fixtup.up('project'):
             # Assign
             cwd = os.path.realpath(os.getcwd())
-            runner = CliRunner()
 
             # Acts
-            result = runner.invoke(cli, ["cmd:pythonpath_src"])
+            exit_code, stdout, _ = alfred_fixture.invoke(["cmd:pythonpath_src"])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
-            assert os.path.join(cwd, 'src')  in result.stdout
-
+            self.assertEqual(0, exit_code)
+            assert os.path.join(cwd, 'src')  in stdout
 
     def test_sh_should_work_with_multicommand(self):
 
         with fixtup.up('project'):
             # Assign
-            runner = CliRunner()
-
             # Acts
-            result = runner.invoke(cli, ["cmd:multicommand"])
+            exit_code, _, _ = alfred_fixture.invoke(["cmd:multicommand"])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
+            self.assertEqual(0, exit_code)
 
     def test_sh_should_not_work_with_wrong_multicommand_for_posix(self):
 
         with fixtup.up('project'):
             # Assign
-            runner = CliRunner()
-
             # Acts
-            result = runner.invoke(cli, ["cmd:wrong_multicommand"])
+            exit_code, _, stderr = alfred_fixture.invoke(["cmd:wrong_multicommand"])
 
             # Assert
-            self.assertEqual(1, result.exit_code)
-            self.assertIn("Error: unknow command [\'@@@@\', \'@@@@@\']", result.stdout, result.stdout)
+            self.assertEqual(1, exit_code)
+            self.assertIn("Error: unknow command [\'@@@@\', \'@@@@@\']", stderr, stderr)
 
 
-    def test_wrong_commands_should_show_explicit_messages(self):
+    def test_command_invocation_on_command_that_does_not_exists_should_show_explicit_messages(self):
 
         with fixtup.up('wrong_command_module'):
             # Assign
-            runner = CliRunner()
 
             # Acts
-            result = runner.invoke(cli, [])
+            exit_code, _, stderr = alfred_fixture.invoke([""])
 
             # Assert
-            self.assertEqual(0, result.exit_code)
+            self.assertEqual(2, exit_code)
+            assert "Error: No such command" in stderr
 
+    def test_alfred_invocation_use_project_directory_in_pythonpath(self):
+        with fixtup.up('project_with_pythonpath_dependency'):
+            _, stdout, _ = alfred_fixture.invoke(["hello_world"])
+
+            assert "invocation through pythonpath" in stdout
+
+    def test_alfred_invocation_not_use_project_directory(self):
+        """
+        If alfred's project manifest declares that the project path is not added to the pythonpath,
+        then python cannot resolve the dependency on a project module.
+
+        """
+        with fixtup.up('project_without_pythonpath_dependency'):
+
+            try:
+                alfred_fixture.invoke(["hello_world"])
+            except ModuleNotFoundError as exception:
+                assert "No module named 'utils'" in str(exception)
+
+
+    def test_alfred_subproject_should_invoke_in_its_own_venv(self):
+        with fixtup.up('multiproject', keep_mounted_fixture=True):
+            _, stdout, _ = alfred_fixture.invoke(["product1", "print_python_exec"])
+
+            if is_windows():
+                expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'Scripts', 'python.exe'))
+            else:
+                expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'bin', 'python'))
+
+            assert expected_python_executable in stdout
 
 if __name__ == '__main__':
     unittest.main()

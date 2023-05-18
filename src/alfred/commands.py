@@ -1,37 +1,43 @@
 """
-This module performs column loading operations from the manifest definition.
+Ce module fournit des fonctions pour charger les commandes d'un projet
+alfred et de ses sous projets.
 """
-import contextlib
-import dataclasses
-from typing import List, Dict
+import glob
+import os
+import typing as t
+from typing import List
 
-from alfred import manifest
+import click
+from click import Context, Command
+
+from alfred import manifest, echo
 from alfred.domain.command import AlfredCommand
-from alfred.lib import list_python_modules, import_python, InvalidPythonModule, print_error
+from alfred.lib import list_python_modules, import_python
 
 
-@dataclasses.dataclass
-class Commands:
-    commands: List[AlfredCommand] = dataclasses.field(default_factory=list)
+class AlfredSubprojectCommand(click.MultiCommand):
 
-    @property
-    def loaded(self) -> bool:
-        return len(self.commands) > 0
+    def __init__(self, *args, **attrs: t.Any):
+        if "path" in attrs:
+            self.path = attrs["path"]
+            del attrs["path"]
+
+        super().__init__(*args, **attrs)
+
+    def list_commands(self, ctx: Context) -> t.List[str]:
+        all_commands = list_all(self.path)
+        return [command.name for command in all_commands]
+
+    def get_command(self, ctx: Context, cmd_name: str) -> t.Optional[Command]:
+        all_commands = list_all(self.path)
+        for _command in all_commands:
+            if _command.name == cmd_name:
+                return _command.command
+
+        return None
 
 
-_commands = Commands()
-
-
-def list_all() -> List[AlfredCommand]:
-    if _commands.loaded:
-        return _commands.commands
-
-    load_commands()
-
-    return _commands.commands
-
-
-def load_commands() -> None:
+def list_all(project_dir: t.Optional[str] = None) -> List[AlfredCommand]:
     """
     Loads all commands available in the project. This function retrieves the .alfred.yml manifest,
     analyzes the plugins present and loads the commands.
@@ -39,44 +45,88 @@ def load_commands() -> None:
     The search for the manifest is done from the current directory. If the manifest is not found, the search continues
     and goes back to the parent folder.
 
-    Once the commands are loaded, they are available in the ALFRED_COMMANDS global variable.
+    Once the commands are loaded, they are available in _commands global variable.
 
     >>> from alfred import commands
-    >>> commands.load_commands()
+    >>> commands.list_all()
     """
-    _commands.commands = []
-    for plugin in list_plugins_folder():
-        folder_path = plugin["path"]
-        for python_path in list_python_modules(folder_path):
-            prefix = "" if "prefix" not in plugin else plugin['prefix']
-            try:
-                result = import_python(python_path)
-                list_commands = [elt for elt in result.values() if isinstance(elt, AlfredCommand)]
-                for command in list_commands:
-                    command.plugin = folder_path
-                    command.path = folder_path
+    subproject = None
+    main_project_dir = manifest.lookup_project_dir()
+    if project_dir is None:
+        project_dir = main_project_dir
+
+    if main_project_dir != project_dir:
+        subproject = manifest.name(project_dir)
+
+    commands = []
+    for pattern in manifest.project_commands(project_dir):
+        pattern_path = os.path.join(project_dir, pattern)
+        prefix = manifest.prefix(project_dir)
+        for python_module in list_python_modules(pattern_path):
+            module_path = os.path.join(project_dir, python_module)
+            module = import_python(module_path)
+            for command in module.values():
+                if isinstance(command, AlfredCommand):
+                    command.module = python_module
+                    command.path = os.path.realpath(python_module)
+                    command.project_dir = os.path.realpath(project_dir)
                     command.command.name = f"{prefix}{command.name}"
-                    _commands.commands.append(command)
-            except InvalidPythonModule as exception:
-                print_error(str(exception))
+                    command.subproject = subproject
+                    commands.append(command)
+
+    subprojects_glob = manifest.subprojects(project_dir)
+    for subproject in subprojects_glob:
+        directories = glob.glob(subproject)
+        for directory in directories:
+            if os.path.isdir(directory) and manifest.contains_manifest(directory):
+                commands = _load_subproject(commands, directory)
+
+    return commands
 
 
-def list_plugins_folder() -> List[Dict[str, str]]:
-    alfred_configuration = manifest.lookup()
-    return alfred_configuration.plugins()
-
-
-@contextlib.contextmanager
-def use_new_context() -> None:
+def lookup(command: str or List[str], project_dir: t.Optional[str] = None) -> t.Optional[AlfredCommand]:
     """
-    This context manager is dedicated to unit testing. It allows to reset the
-    context to its initial state.
+    Searches for a command by its name.
 
-    >>> with commands.use_new_context():
-    >>>     pass
+    >>> _command = commands.lookup('build')
+    >>> print(_command.project_dir)
+
+    Searches for an order based on its project and its name.
+
+    >>> _command = commands.lookup(["product1", 'build'])
     """
-    global _commands # pylint: disable=global-statement
-    previous_context = _commands
-    _commands = Commands()
-    yield
-    _commands = previous_context
+    if isinstance(command, str):
+        command = [command]
+
+    all_commands = list_all(project_dir)
+    for _command in all_commands:
+        if _command.name == command[0]:
+            if isinstance(_command.command, AlfredSubprojectCommand):
+                if len(command) == 1:
+                    return _command
+
+                subcommands = list_all(_command.project_dir)
+                for subcommand in subcommands:
+                    if subcommand.name == command[1]:
+                        return subcommand
+
+            return _command
+
+    return None
+
+
+def _load_subproject(commands: list, directory: str) -> list:
+    _subproject_manifest = manifest.lookup(directory)
+    name = manifest.name(directory)
+    if ' ' in name:
+        echo.error(f"Subproject ignored: project name from {directory} cannot contain spaces, {name=}")
+    else:
+        command = AlfredCommand()
+        command.command = AlfredSubprojectCommand(name=name,
+                                                  help=manifest.description(directory),
+                                                  path=os.path.realpath(directory))
+        command.path = os.path.realpath(directory)
+        command.project_dir = os.path.realpath(directory)
+        commands.append(command)
+
+    return commands
