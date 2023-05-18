@@ -5,10 +5,6 @@ from alfred.main import call, invoke_command, run, sh, env, project_directory, p
 from alfred.os import is_posix, is_windows, is_linux, is_macos
 
 """
-version number follow semantic versioning : https://semver.org/
-
-* MAJOR version when you make incompatible API changes, except for 0 that means beta product
-* MINOR version when you add functionality in a backwards compatible manner
-* PATCH version when you make backwards compatible bug fixes.
+https://peps.python.org/pep-0440/
 """
-__version__ = "1.2.0"
+__version__ = "2.0.0b1"
