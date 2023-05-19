@@ -4,6 +4,7 @@ from typing import Optional, List, Tuple, Union
 
 import plumbum
 from plumbum import local
+from plumbum.commands.modifiers import _TEE
 
 from alfred.os import is_windows
 from alfred.exceptions import AlfredException
@@ -47,7 +48,7 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
 
     with local.env(VIRTUAL_ENV=venv, PATH=global_path):
         python_args = ['-m', module] + args
-        exit_code, stdout, stderr = python[python_args].run(retcode=None)
+        exit_code, stdout, stderr = python[python_args] & _TEE(retcode=None)
         return exit_code, stdout, stderr
 
 
