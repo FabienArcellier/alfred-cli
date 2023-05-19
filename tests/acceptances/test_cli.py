@@ -4,6 +4,7 @@ import unittest
 import fixtup
 import plumbum
 
+import alfred
 from alfred import is_windows
 from alfred.interpreter import venv_python_path
 from tests.fixtures import alfred_fixture
@@ -33,6 +34,14 @@ class TestCli(unittest.TestCase):
             # Assert
             self.assertEqual(2, exit_code, stdout)
             self.assertIn("not an alfred project (or any of the parent directories)", stdout)
+
+    def test_cli_should_show_version_when_version_flag_is_given(self):
+        _, stdout, _ = alfred_fixture.invoke(["--version"])
+        assert alfred.__version__ in stdout
+
+    def test_cli_should_show_version_when_short_version_flag_is_given(self):
+        _, stdout, _ = alfred_fixture.invoke(["-v"])
+        assert alfred.__version__ in stdout
 
     def test_cli_should_show_dedicated_help_to_the_user_when_the_directory_is_not_alfred_for_option_help(self):
         """
