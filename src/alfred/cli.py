@@ -6,7 +6,9 @@ import sys
 from typing import List, Any, Generator
 
 import click
+from click.exceptions import Exit
 
+import alfred
 from alfred import ctx as alfred_ctx, manifest, echo, project_directory
 from alfred import commands
 from alfred.ctx import Context
@@ -92,13 +94,16 @@ class AlfredCli(click.MultiCommand):
         From the command, if it is played with the wrong interpreter, alfred restarts itself with the target interpreter.
         """
         args = [*ctx.protected_args, *ctx.args]
-        cmd_output = self.resolve_command(ctx, args)
+        if ctx.params['version'] is True:
+            echo.message(f"{alfred.__version__}")
+            raise Exit(code=0)
 
-        if cmd_output is not None and alfred_ctx.should_use_external_venv():
-            alfred_ctx.invoke_through_external_venv(args)
+        if len(args) > 0:
+            cmd_output = self.resolve_command(ctx, args)
 
-
-            return
+            if cmd_output is not None and alfred_ctx.should_use_external_venv():
+                alfred_ctx.invoke_through_external_venv(args)
+                return
 
         """
         The command is executed by click normally.
@@ -109,7 +114,8 @@ class AlfredCli(click.MultiCommand):
 @click.command(cls=AlfredCli,
                help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
 @click.option("-d", "--debug", is_flag=True, help="display debug information like command runned and working directory")
-def cli(debug: bool):
+@click.option("-v", "--version", is_flag=True, help="display the version of alfred")
+def cli(debug: bool, version: bool):  # pylint: disable=unused-argument
     if debug:
         logger.setLevel(logging.DEBUG)
 

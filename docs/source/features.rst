@@ -29,5 +29,7 @@ Projects
 * discover commands in subprojects as multi command ``alfred {project} {command}``
 * execute a command from a virtual environment associated with the project
 
+Utilities
+*********
 
-
+* show the installed alfred version with ``alfred --version``
