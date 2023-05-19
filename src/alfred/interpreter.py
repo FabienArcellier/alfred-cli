@@ -48,7 +48,16 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
 
     with local.env(VIRTUAL_ENV=venv, PATH=global_path):
         python_args = ['-m', module] + args
-        exit_code, stdout, stderr = python[python_args] & _TEE(retcode=None)
+        if is_windows():
+            # windows does not support streaming through plumbum.
+            # the publication is done at the end of the call.
+            #
+            # I don't know how to do better.
+            exit_code, stdout, stderr = python[python_args].run(retcode=None)
+            print(stdout)
+            print(stderr)
+        else:
+            exit_code, stdout, stderr = python[python_args] & _TEE(retcode=None)
         return exit_code, stdout, stderr
 
 
