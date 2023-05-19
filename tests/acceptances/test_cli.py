@@ -1,12 +1,11 @@
 import os
-import shutil
 import unittest
 
 import fixtup
 import plumbum
 
 from alfred import is_windows
-from alfred.interpreter import venv_python_path, venv_bin_path
+from alfred.interpreter import venv_python_path
 from tests.fixtures import alfred_fixture
 
 
@@ -205,12 +204,11 @@ class TestCli(unittest.TestCase):
     def test_alfred_is_using_virtualenv_and_is_able_to_load_binary_program_from_it(self):
         """
         When alfred uses a virtual environment, he must be able to use the programs
-        installed inside like mypy and pytest
+        installed inside like mypy and pytest.
 
         """
         with fixtup.up('project_with_venv'):
             python_path = venv_python_path(os.path.join(os.getcwd(), '.venv'))
-            bin_path = venv_bin_path(os.path.join(os.getcwd(), '.venv'))
             python = plumbum.local[python_path]
 
             # Install alfred-cli itself in the virtualenv to be able to invoke command
@@ -218,7 +216,7 @@ class TestCli(unittest.TestCase):
             python['-m', 'pip', 'install', '-e', root_dir]()
 
             # If hello is not copied in the virtual env, this test will fail
-            shutil.copy(os.path.join(os.getcwd(), 'hello'), os.path.join(bin_path, 'hello'))
+            python['-m', 'pip', 'install', "cowsay"]()
 
             # Acts
             exit_code, stdout, stderr = alfred_fixture.invoke(["hello"])
