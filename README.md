@@ -1,14 +1,18 @@
 ## Alfred
 
 Alfred is an extensible building tool that can replace a Makefile or Fabric.
-Writing commands in python is done in a few minutes, even in the case of a mono-repository.
+
+It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using the best of both worlds, shell and python.
+
+Want to try and look for inspiration, here are examples of commands that I implement in my projects :
 
 ```bash
-# use alfred to run continuous integration process
-alfred ci
-
-# use alfred to publish a package on pypi
-alfred publish
+alfred ci # run your own continuous integration process
+alfred publish # publish a package on pypi
+alfred run # run your app
+alfred db:init # initialize a database
+alfred db:migrate # plays your migrations on your database
+...
 ```
 
 [![version](https://img.shields.io/pypi/v/alfred-cli.svg?label=version)](https://pypi.org/project/alfred-cli/) [![MIT](https://img.shields.io/badge/license-MIT-007EC7.svg)](LICENSE.md)
@@ -20,13 +24,17 @@ alfred publish
 - [Getting started](#getting-started)
 - [Links](#links)
 - [Cookbook](#cookbook)
-  * [Add a new build command](#add-a-new-build-command)
+  * [Write your first command](#write-your-first-command)
+  * [Write your first workflow](#write-your-first-workflow)
+- [Benefits](#benefits)
+  * [Alfred scales with your team](#alfred-scales-with-your-team)
+  * [Alfred likes mono-repository](#alfred-likes-mono-repository)
 - [Behind the scene](#behind-the-scene)
-- [Why using alfred instead of Makefile or Bash scripts](#why-using-alfred-instead-of-makefile-or-bash-scripts)
+  * [Why using alfred instead of Makefile or Bash scripts](#why-using-alfred-instead-of-makefile-or-bash-scripts)
 - [Why not using alfred](#why-not-using-alfred)
 - [The latest version](#the-latest-version)
 - [Cookbook](#cookbook-1)
-  * [Display the commands really executed behind the scene](#display-the-commands-really-executed-behind-the-scene)
+  * [Display the commands really executed](#display-the-commands-really-executed)
   * [Customize a command for a specific OS](#customize-a-command-for-a-specific-os)
   * [Override environment variables](#override-environment-variables)
     + [Add directories into pythonpath](#add-directories-into-pythonpath)
@@ -46,13 +54,13 @@ pip3 install alfred-cli
 alfred init
 ```
 
-A hello_world command was created for the example:
+Une première commande a été crée pour vous. Elle vous permet de tester alfred.
 
 ```bash
 alfred hello_world --name "Fabien"
 ```
 
-A file `.alfred.yml` will be initialized at the root of the repository.
+A file `.alfred.toml` will be initialized at the root of the repository.
 
 ## Links
 
@@ -63,26 +71,42 @@ A file `.alfred.yml` will be initialized at the root of the repository.
 
 ## Cookbook
 
-### Add a new command
+### Write your first command
 
 You can add your command in a new module in `./alfred`.
 In this example we will add the command `alfred lint` :
 
+*alfred/lint.py*
 ```python
-import os
-
 import alfred
 
-ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
-
-@alfred.command('lint', help="validate alfred using pylint on the package alfred")
+@alfred.command('lint', help="validate your product using mypy")
 def lint():
-    # get the command pylint in the user system or show error message if it's missing
-    pylint = alfred.sh('pylint', "pylint is not installed")
-
-    # behind the scene, it invokes the command `pylint alfred`
+    pylint = alfred.sh('mypy', "mypy is not installed")
     alfred.run(pylint, ["src/alfred"])
 ```
+
+### Write your first workflow
+
+*alfred/ci.py*
+```python
+import alfred
+
+@alfred.command('ci', help="execute continuous integration process")
+def ci(verbose: bool):
+    alfred.invoke_command('lint')
+    alfred.invoke_command('tests')
+```
+
+## Benefits
+
+### Alfred scales with your team
+
+Alfred grows with your team. You can start with one command and then add more. When you feel that your command file is too crowded, you can restructure it into several files, or even separate it into several subfolders. Alfred is able to search all your orders by scanning a folder and its subfolders. It's all configurable.
+
+### Alfred likes mono-repository
+
+Alfred is built with the idea of being usable in a mono-repository which brings together several python, react, node projects in the same code repository. You can create several alfred sub-projects. At the root of the project, you will have access to all the commands of all the subprojects using the subproject name ``alfred project1 ci``.
 
 ## Behind the scene
 
@@ -91,35 +115,21 @@ Alfred rely heavily on click and plumblum :
 * [click](https://click.palletsprojects.com/en/8.0.x/)
 * [plumblum](https://plumbum.readthedocs.io/en/latest/)
 
-## Why using alfred instead of Makefile or Bash scripts
+### Why using alfred instead of Makefile or Bash scripts
 
-One of the advantages of `bash` and `Makefile` is their native presence in many environments.
-By default, a `Makefile` allows you to segment these commands efficiently. Autocompletion is first-citizen
-feature. Alfred doesn't have it yet.
+One of the advantages of `bash` and `Makefile` is their native presence in many environments. By default, a `Makefile` allows you to segment these commands efficiently. Autocompletion is first-citizen  feature. Alfred doesn't have it yet.
 
-Alfred allows you to create more complex commands than with Make. From the start, you benefit from a
-formatted documentation for each of your orders. It is easy to create one command per file  thanks
-to auto discovery. You can see an implementation in this repository in [`alfred_cmd/`](alfred/).
+Alfred allows you to create more complex commands than with Make. From the start, you benefit from a formatted documentation for each of your orders. It is easy to create one command per file  thanks to auto discovery. You can see an implementation in this repository in [`alfred_cmd/`](alfred/).
 
-Thanks to the power of Click, it's easy to add options to your commands.
-They allow for example to implement flags for your CI process which
-offer you an execution for the frontend.
+Alfred allows you to mix shell code with python instructions. In some cases, it allows you to perform efficient processing on API calls. You can use either the cli (for git, ...) or pythons libraries depending on the nature of the treatment you want to perform.
 
-Alfred allows you to mix shell code with python instructions. In some cases, it allows you
-to perform efficient processing on API calls. You can use either the cli (for git, ...) or
-pythons libraries depending on the nature of the treatment you want to perform.
-
-In our development process, we frequently need to operate on application with several process (frontend in react,
-server in flask, two external service in flask). To mount those process, we use `honcho` with alfred
-to load `Procfile` that will manage those process.
+In our development process, we frequently need to operate on application with several process (frontend in react, server in flask, two external service in flask). To mount those process, we use `honcho` with alfred to load `Procfile` that will manage those process.
 
 ## Why not using alfred
 
-If you want to create a cli you will distribute, alfred is not designed for that. I won't recommand
-as well to use it to build a data application even if you can use python and many library.
+If you want to create a cli you will distribute, alfred is not designed for that. I won't recommand as well to use it to build a data application even if you can use python and many library.
 
-Alfred command can import only installed library. You can't use relative import. That makes difficult to
-share code between your commands.
+Alfred command can import only installed library. You can't use relative import. That makes difficult to share code between your commands.
 
 ## The latest version
 
@@ -131,7 +141,7 @@ git clone https://github.com/FabienArcellier/alfred-cli.git
 
 ## Cookbook
 
-### Display the commands really executed behind the scene
+### Display the commands really executed
 
 You can display the commands really executed, either to debug the arguments,
 either to run in your terminal again with other attributes.
