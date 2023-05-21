@@ -5,6 +5,10 @@ Alfred is an extensible automation tool. It allows you to build your **continuou
 
 Want to try and look for inspiration, here are examples of commands that I implement in my projects :
 
+.. raw:: html
+
+    <script async id="asciicast-i7YVDmQBRYVKAq1k74n9oYp0x" src="https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x.js"></script>
+
 .. code-block:: bash
 
     alfred ci # run your own continuous integration process

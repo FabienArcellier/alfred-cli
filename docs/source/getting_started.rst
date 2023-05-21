@@ -4,6 +4,7 @@ Getting started
 To configure a python project to use alfred, here is the procedure:
 
 .. code-block:: bash
+
     pip install alfred-cli
     alfred init
 
