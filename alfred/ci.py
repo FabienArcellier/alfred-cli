@@ -10,3 +10,5 @@ def ci(verbose: bool):
         print("linter is not supported on non posix platform as windows")
 
     alfred.invoke_command('tests', verbose=verbose)
+
+

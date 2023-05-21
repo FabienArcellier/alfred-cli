@@ -10,7 +10,7 @@ To configure a python project to use alfred, here is the procedure:
 
 You can run alfred to see the available commands.
 
-.. code-block::bash
+.. code-block:: bash
 
     alfred
 
@@ -42,3 +42,5 @@ The "hello_world" command is created automatically during initialization. It ser
 
 
     Would you want to start ? (y, n) [n]
+
+Click **Next** when you are read to write your first command !

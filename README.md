@@ -1,8 +1,6 @@
 ## Alfred
 
-Alfred is an extensible building tool that can replace a Makefile or Fabric.
-
-It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using the best of both worlds, shell and python.
+Alfred is an extensible automation tool. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
 
 Want to try and look for inspiration, here are examples of commands that I implement in my projects :
 
@@ -87,8 +85,8 @@ import alfred
 
 @alfred.command('lint', help="validate your product using mypy")
 def lint():
-    pylint = alfred.sh('mypy', "mypy is not installed")
-    alfred.run(pylint, ["src/alfred"])
+    mypy = alfred.sh('mypy', "mypy is not installed")
+    alfred.run(mypy, ["src/alfred"])
 ```
 
 ### Write your first workflow
@@ -109,7 +107,7 @@ def ci(verbose: bool):
 
 Alfred grows with your team. You can start with one command and then add more. When you feel that your command file is too crowded, you can restructure it into several files, or even separate it into several subfolders. Alfred is able to search all your orders by scanning a folder and its subfolders. It's all configurable.
 
-### Alfred likes mono-repository
+### Alfred loves mono-repository
 
 Alfred is built with the idea of being usable in a mono-repository which brings together several python, react, node projects in the same code repository. You can create several alfred sub-projects. At the root of the project, you will have access to all the commands of all the subprojects using the subproject name ``alfred project1 ci``.
 
@@ -132,9 +130,9 @@ In our development process, we frequently need to operate on application with se
 
 ## Why not using alfred
 
-If you want to create a cli you will distribute, alfred is not designed for that. I won't recommand as well to use it to build a data application even if you can use python and many library.
+Alfred is not designed to build a cli you will distribute on pypi. You should use [click](https://click.palletsprojects.com/en/8.0.x/) for that.
 
-Alfred command can import only installed library. You can't use relative import. That makes difficult to share code between your commands.
+Alfred command can import only installed library. You can't use relative import in command module. You have to extend python path to share function between commands.
 
 ## The latest version
 
@@ -146,9 +144,9 @@ git clone https://github.com/FabienArcellier/alfred-cli.git
 
 ## Cookbook
 
-### Display the commands really executed
+### Use debug mode
 
-You can display the commands really executed, either to debug the arguments,
+You can display the shell commands really executed, either to debug the arguments,
 either to run in your terminal again with other attributes.
 
 The option `d` / `--debug` display all the shell commands that are executed by
@@ -197,19 +195,7 @@ def ci():
 
 #### Add directories into pythonpath
 
-Adding a folder in the pythonpath variable allows you to expose packages without declaring them in the manifest.
-
-This pattern is useful with poetry to be able to reuse the code of the package tests in this one for example.
-
-The ``alfred.pythonpath`` decorator adds the project root. You can save specific folders here.
-
-```python
-@alfred.command('ci', help="execute continuous integration process of alfred")
-@alfred.pythonpath()
-def ci():
-    bash = alfred.sh("bash")
-    alfred.run(bash, ["-c" "echo $SCREEN"])
-```
+Adding a folder in the pythonpath variable allows you to expose packages without declaring them in ``pyproject.toml``.
 
 ```python
 @alfred.command('ci', help="execute continuous integration process of alfred")
@@ -227,6 +213,15 @@ def ci():
         alfred.run(bash, ["-c", "echo $SCREEN"])
 ```
 
+The ``alfred.pythonpath`` decorator adds the project root. You can save specific folders here. It's useful if you have deactivate ``python_path_project_root`` in ``.alfred.toml``, otherwise, it's already imported.
+
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+@alfred.pythonpath()
+def ci():
+    bash = alfred.sh("bash")
+    alfred.run(bash, ["-c" "echo $SCREEN"])
+```
 
 ## Developper guideline
 
