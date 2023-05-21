@@ -7,6 +7,9 @@ class AlfredException(Exception):
     def __str__(self):
         return self.message
 
+class InvalidCommandModule(AlfredException):
+    pass
+
 
 class NotInitialized(AlfredException):
     pass

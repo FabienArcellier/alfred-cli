@@ -5,6 +5,7 @@ from typing import List
 from click import BaseCommand
 from click.testing import CliRunner
 
+import alfred
 from alfred.cli import cli
 from alfred import commands, ctx
 
@@ -19,6 +20,8 @@ def invoke(args: List[str]) -> CliResult:
 
     If the command line invocation raises an exception, this fixture also throws it.
     """
+    alfred.commands.cache_clear()
+
     runner = CliRunner(mix_stderr=False)
     result = runner.invoke(cli, args)
     if result.exception is not None and not isinstance(result.exception, SystemExit):
@@ -78,6 +81,8 @@ def use_command_context(command_name: str):
     :param command_name: The name of the command to use.
     :return: A context manager that will use the context of the command.
     """
+    alfred.commands.cache_clear()
+
     with use_new_context():
         _commands = commands.list_all()
         command_exist = False

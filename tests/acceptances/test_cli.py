@@ -184,6 +184,23 @@ class TestCli(unittest.TestCase):
 
             assert "invocation through pythonpath" in stdout
 
+    def test_alfred_invocation_should_ignore_command_module_in_error(self):
+        with fixtup.up('project_with_invalid_commands'):
+            _, stdout, stderr = alfred_fixture.invoke([])
+
+            assert "hello_world" in stdout
+            assert 'invalid_cmd.py" is not valid.' in stderr
+            assert "SyntaxError" in stderr
+
+
+    def test_alfred_invocation_should_not_displayed_error_on_invalid_command_when_running_one_command(self):
+        with fixtup.up('project_with_invalid_commands'):
+            _, stdout, stderr = alfred_fixture.invoke(['hello_world', '--name', 'fabien'])
+
+            assert "hello world, fabien" in stdout
+            assert '' in stderr
+
+
     def test_alfred_invocation_not_use_project_directory(self):
         """
         If alfred's project manifest declares that the project path is not added to the pythonpath,
