@@ -1,7 +1,7 @@
 Project
 #######
 
-An alfred project is a set of commands and sub-projects linked by a `.alfred.toml` configuration file.
+An alfred project is a set of commands and sub-projects linked by a `.alfred.toml` manifest file.
 
 .. contents::
   :backlinks: top
@@ -11,7 +11,7 @@ Starting a project
 
 An alfred project can be initialized in any directory using ``alfred init`` command.
 
-This command creates a ``.alfred.toml`` configuration file and creates a ``alfred`` directory which contains the commands.
+This command creates a ``.alfred.toml`` manifest file and creates a ``alfred`` directory which contains the commands.
 
 .. code-block:: bash
     :caption: console
@@ -19,7 +19,7 @@ This command creates a ``.alfred.toml`` configuration file and creates a ``alfre
     alfred init
 
 .. code-block:: text
-    :caption: example of an alfred project structure
+    :caption: example of an alfred structure
 
     $ tree
 
@@ -34,8 +34,8 @@ This command creates a ``.alfred.toml`` configuration file and creates a ``alfre
     └── .alfred.toml
 
 
-Setting up a project with .alfred.toml
-**************************************
+Project manifest
+****************
 
 .. code-block:: toml
     :caption: .alfred.toml
@@ -156,8 +156,8 @@ Section [alfred.project]
             For expressions that are relative paths, they are resolved from the folder that contains
             the corresponding .alfred.toml manifest.
 
-Organization of a mono-repository with sub-projects
-***************************************************
+Subproject : Organization of a mono-repository
+**********************************************
 
 In version-control systems, a monorepo ("mono" meaning 'single' and "repo" being short for 'repository') is a software-development strategy in which the code for a number of projects is stored in the same repository
 

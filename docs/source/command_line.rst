@@ -12,8 +12,8 @@ Start an alfred project
 ``alfred init`` will create a ``./.alfred.toml``, the manifest about the project, and a ``./alfred`` folder which
 contains a first command you should tune.
 
-Discovery of commands
-=====================
+Discovers commands
+==================
 
 If you type ``alfred`` in a project from a terminal, the list of available commands will be displayed in the terminal.
 
@@ -32,12 +32,12 @@ If you type ``alfred`` in a project from a terminal, the list of available comma
       ...
 
 Execute a command
-=====================
+=================
 
 ``alfred {command}`` executes a command. For example, ``alfred lint`` will execute the command ``lint``.
 
-Interactive documentation of an order
-========================================
+Display inline documentation
+============================
 
 ``alfred {command} --help`` displays the help of the command. For example, ``alfred lint --help`` will display the
 arguments of the command ``lint``.
@@ -53,9 +53,25 @@ arguments of the command ``lint``.
       -v, --verbose
       --help         Show this message and exit.
 
-
-Debug commands
+Advanced usage
 ==============
+
+Show the version
+----------------
+
+.. code-block:: bash
+
+    alfred --version
+
+
+Execute in debug mode
+---------------------
+
+.. code-block:: bash
+
+    alfred --debug {command}
+
+    alfred --debug {subproject} {command}
 
 If you run ``alfred`` with the ``--debug`` option, the detail of the execution will be displayed with each shell instruction executed
 with the command that is launched, the arguments that are passed to it and the execution folder .
