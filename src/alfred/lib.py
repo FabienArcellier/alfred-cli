@@ -7,13 +7,10 @@ from typing import List, Iterator
 
 from plumbum import local
 
+from alfred.exceptions import InvalidCommandModule
 from alfred.logger import get_logger
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, '..'))
-
-
-class InvalidPythonModule(Exception):
-    pass
 
 
 def import_python(python_path: str) -> dict:
@@ -24,15 +21,19 @@ def import_python(python_path: str) -> dict:
         try:
             code = compile(content, python_path, 'exec')
             eval(code, module, module)  # pylint: disable=eval-used
-        except Exception as exception:
+        except Exception as exception: # pylint: disable=broad-except
             rows = content.split("\n")
             exc_type, _, exc_tb = sys.exc_info()
-            line = "N/D"
-            if hasattr(exc_tb, "tb_next"):
+            line = None
+            if hasattr(exc_tb, "tb_next") and hasattr(exc_tb.tb_next, "tb_lineno"):
                 line = exc_tb.tb_next.tb_lineno
-            raise InvalidPythonModule(f"""Invalid command module : "{python_path}", Line {line}
-  {rows[line - 1]}\n
-  {exc_type.__name__} : {exception}\n""") from exception
+
+            if line is not None:
+                content = rows[line - 1]
+                raise InvalidCommandModule(f"""command module "{python_path}" is not valid at line {line} : {content}.\n {exc_type.__name__} : {exception}\n""") from exception
+
+            raise InvalidCommandModule(f"""command module "{python_path}" is not valid.\n {exc_type.__name__} : {exception}\n""") from exception
+
 
     return module
 

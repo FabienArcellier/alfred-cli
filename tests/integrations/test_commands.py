@@ -3,6 +3,7 @@ import os
 
 import fixtup
 
+import alfred
 from alfred import commands
 
 
@@ -22,6 +23,8 @@ def test_lookup_should_return_an_alfred_command_from_current_project():
 
 def test_lookup_should_return_an_alfred_command_from_sub_project():
     with fixtup.up('multiproject'):
+        alfred.commands.cache_clear()
+
         path = os.path.realpath(os.getcwd())
 
         _command = commands.lookup(['product1', 'print_python_exec'])
