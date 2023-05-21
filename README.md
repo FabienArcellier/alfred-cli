@@ -50,17 +50,22 @@ alfred db:migrate # plays your migrations on your database
 To configure a python project to use alfred, here is the procedure:
 
 ```bash
-pip3 install alfred-cli
+pip install alfred-cli
 alfred init
 ```
 
-Une première commande a été crée pour vous. Elle vous permet de tester alfred.
+You can run alfred to see the available commands.
 
 ```bash
-alfred hello_world --name "Fabien"
+alfred
 ```
 
-A file `.alfred.toml` will be initialized at the root of the repository.
+The "hello_world" command is created automatically during initialization. It serves as an introduction to Alfred.
+
+
+```bash
+alfred hello_world
+```
 
 ## Links
 
