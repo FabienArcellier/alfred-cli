@@ -1,7 +1,7 @@
 Alfred
 ======
 
-Alfred is an extensible building tool that can replace a Makefile or Fabric. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
+Alfred is an extensible automation tool. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
 
 Want to try and look for inspiration, here are examples of commands that I implement in my projects :
 
@@ -19,9 +19,11 @@ Want to try and look for inspiration, here are examples of commands that I imple
 
    installation
    getting_started
+   command
    features
    command_line
    project
+   toolkit
 
 
 Alfred scales with your team
@@ -29,7 +31,7 @@ Alfred scales with your team
 
 Alfred grows with your team. You can start with one command and then add more. When you feel that your command file is too crowded, you can restructure it into several files, or even separate it into several subfolders. Alfred is able to search all your orders by scanning a folder and its subfolders. It's all configurable.
 
-Alfred likes mono-repository
+Alfred loves mono-repository
 ----------------------------
 
 Alfred is built with the idea of being usable in a mono-repository which brings together several python, react, node projects in the same code repository. You can create several alfred sub-projects. At the root of the project, you will have access to all the commands of all the subprojects using the subproject name ``alfred project1 ci``.
