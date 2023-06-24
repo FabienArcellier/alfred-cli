@@ -143,7 +143,7 @@ def _load_subproject(commands: list, directory: str) -> list:
     _subproject_manifest = manifest.lookup(directory)
     name = manifest.name(directory)
     if ' ' in name:
-        echo.error(f"Subproject ignored: project name from {directory} cannot contain spaces, {name=}")
+        echo.error(f"Subproject ignored: project name from {directory} cannot contain spaces, name={name}")
     else:
         command = AlfredCommand()
         command.command = AlfredSubprojectCommand(name=name,

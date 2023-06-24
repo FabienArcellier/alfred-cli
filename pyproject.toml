@@ -40,7 +40,7 @@ fixtup = "^0.1.5"
 pylint = "^2.17.1"
 pytest = "^7.2.2"
 twine = "^4.0.2"
-sphinx = "^6.1.3"
+sphinx = "^5.0.0"
 sphinx-rtd-theme = "^1.2.0"
 
 [build-system]

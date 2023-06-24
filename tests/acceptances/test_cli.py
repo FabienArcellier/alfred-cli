@@ -254,7 +254,7 @@ class TestCli(unittest.TestCase):
             exit_code, stdout, stderr = alfred_fixture.invoke(["hello"])
 
             # Assert
-            assert exit_code == 0, f"{stdout=}\n{stderr=}"
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
             assert stderr == ''
             assert "hello" in stdout
 
