@@ -53,3 +53,7 @@ def test_project_commands_pattern_should_return_default_value():
 def test_project_commands_pattern_should_return_specified_values():
     with fixtup.up('project_with_command'):
         assert manifest.project_commands() == ["customdir/*.py"]
+
+def test_python_path_extends_should_return_a_list_of_directory():
+    with fixtup.up('pythonpath_extends'):
+        assert manifest.pythonpath_extends() == ["tests"]

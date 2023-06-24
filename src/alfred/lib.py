@@ -68,15 +68,16 @@ def override_pythonpath(pythonpath: str):
     * override pythonpath environment variable in plumbum
     * override sys.path
     """
+    pathsep = os.pathsep
     logger = get_logger()
     logger.debug(f"override PYTHONPATH: {pythonpath}")
 
     previous_pythonpath = os.getenv('PYTHONPATH', '')
     with local.env(PYTHONPATH=pythonpath):
         os.environ['PYTHONPATH'] = pythonpath
-        sys.path = pythonpath.split(':')
+        sys.path = pythonpath.split(pathsep)
         try:
             yield
         finally:
             os.environ['PYTHONPATH'] = previous_pythonpath
-            sys.path = previous_pythonpath.split(':')
+            sys.path = previous_pythonpath.split(pathsep)
