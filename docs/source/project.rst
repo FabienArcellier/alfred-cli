@@ -117,7 +117,7 @@ Section [alfred.project]
             For expressions that are relative paths, they are resolved from the folder that contains
             the corresponding .alfred.toml manifest.
 
-    python_path_project_root (optional)
+    pythonpath_project_root (optional)
 
         Default value: ``python_path_project_root = true``
 
@@ -125,22 +125,23 @@ Section [alfred.project]
 
         This parameter corresponds to the option **Add content root to PYTHONPATH** in PyCharm.
 
-    python_path_extends (optional)
+    pythonpath_extends (optional)
 
         Default value: ``python_path_extends = []``
 
-        Une liste de dossier à ajouter au path python. Ce paramètre permet d'enregistrer votre dossier de tests comme
-        racine pour résoudre des imports sans l'installer au dans un environnement virtuel.
+        A list of folders to add to the python path. This option allows you to resolve modules from a folder without installing it in the virtual environment. This is useful for reusing code from tests.
+
 
         .. code-block::
 
             [alfred.project]
             python_path_extends = [ "tests" ]
 
+        This option emulates the Add source root to PYTHONPATH option of PyCharm.
+
         .. note::
 
-            For expressions that are relative paths, they are resolved from the folder that contains
-            the corresponding .alfred.toml manifest.
+            For expressions that are relative paths, they are resolved from the folder that contains the corresponding .alfred.toml manifest.
 
     venv (optional)
 

@@ -179,10 +179,16 @@ class TestCli(unittest.TestCase):
             assert "Error: No such command" in stderr
 
     def test_alfred_invocation_use_project_directory_in_pythonpath(self):
-        with fixtup.up('project_with_pythonpath_dependency'):
+        with fixtup.up('pythonpath_project_root'):
             _, stdout, _ = alfred_fixture.invoke(["hello_world"])
 
             assert "invocation through pythonpath" in stdout
+
+    def test_alfred_invocation_apply_pythonpath_extends(self):
+        with fixtup.up('pythonpath_extends'):
+            _, stdout, _ = alfred_fixture.invoke(["hello_world"])
+
+            assert "invocation through extended pythonpath" in stdout
 
     def test_alfred_invocation_should_ignore_command_module_in_error(self):
         with fixtup.up('project_with_invalid_commands'):

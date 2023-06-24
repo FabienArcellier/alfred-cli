@@ -1,0 +1,4 @@
+[alfred]
+
+[alfred.project]
+pythonpath_extends = [ "tests" ]

@@ -190,7 +190,7 @@ def prefix(project_dir: Optional[str] = None) -> str:
     return configuration['alfred']['prefix']
 
 
-def python_path_project_root(project_dir: Optional[str] = None) -> Optional[bool]:
+def pythonpath_project_root(project_dir: Optional[str] = None) -> Optional[bool]:
     alfred_manifest = lookup(project_dir)
     configuration = alfred_manifest.configuration
 
@@ -201,10 +201,42 @@ def python_path_project_root(project_dir: Optional[str] = None) -> Optional[bool
     if 'project' not in configuration['alfred']:
         return _default
 
-    if 'python_path_project_root' not in configuration['alfred']['project']:
+    official_parameter = 'pythonpath_project_root'
+    if official_parameter in configuration['alfred']['project']:
+        return configuration['alfred']['project'][official_parameter]
+
+    legacy_parameters = ['python_path_project_root']
+    for legacy_parameter in legacy_parameters:
+        if legacy_parameter in configuration['alfred']['project']:
+            logger.warning(f"project parameter {legacy_parameter} is deprecated in {project_dir}, use {official_parameter} instead")
+            return configuration['alfred']['project'][legacy_parameter]
+
+    return _default
+
+
+def pythonpath_extends(project_dir: Optional[str] = None) -> List[str]:
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration
+
+    _default = []
+    if 'alfred' not in configuration:
         return _default
 
-    return configuration['alfred']['project']['python_path_project_root']
+    if 'project' not in configuration['alfred']:
+        return _default
+
+    official_parameter = 'pythonpath_extends'
+    if official_parameter in configuration['alfred']['project']:
+        return configuration['alfred']['project'][official_parameter]
+
+
+    legacy_parameters = ['python_path_extends']
+    for legacy_parameter in legacy_parameters:
+        if legacy_parameter in configuration['alfred']['project']:
+            logger.warning(f"project parameter {legacy_parameter} is deprecated in {project_dir}, use {official_parameter} instead")
+            return configuration['alfred']['project'][legacy_parameter]
+
+    return _default
 
 
 def name(project_dir: Optional[str] = None) -> Optional[str]:

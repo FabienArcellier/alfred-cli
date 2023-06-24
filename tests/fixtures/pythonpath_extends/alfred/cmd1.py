@@ -1,7 +1,11 @@
+import sys
+
 import alfred
 
 
 @alfred.command("hello_world")
 def hello_world_command():
-    from utils import invoke
-    invoke()
+    print(sys.path)
+
+    import utils2
+    utils2.invoke()

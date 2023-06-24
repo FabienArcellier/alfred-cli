@@ -152,12 +152,25 @@ def _context_middleware() -> Generator[None, None, None]:
     the context code is executed before executing
     the user's target command.
     """
+    pathsep = os.pathsep
     pythonpath = os.environ.get("PYTHONPATH", "")
-    if manifest.python_path_project_root():
-        _pythonpath = pythonpath.split(':')
+    if manifest.pythonpath_project_root():
+        _pythonpath = pythonpath.split(pathsep)
         root_directory = project_directory()
         _pythonpath.append(root_directory)
-        pythonpath = ":".join(_pythonpath)
+        pythonpath = pathsep.join(_pythonpath)
+
+    extensions = manifest.pythonpath_extends()
+    if len(extensions) > 0:
+        _pythonpath = pythonpath.split(pathsep)
+        root_directory = project_directory()
+        for extension in extensions:
+            if os.path.isabs(extension):
+                _pythonpath.append(extension)
+            else:
+                _pythonpath.append(os.path.join(root_directory, extension))
+
+        pythonpath = pathsep.join(_pythonpath)
 
     with override_pythonpath(pythonpath):
         yield
