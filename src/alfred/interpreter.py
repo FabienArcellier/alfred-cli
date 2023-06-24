@@ -41,10 +41,10 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
         raise AlfredException(f"python interpreter not found in venv: {venv}")
 
     if not os.path.isdir(bin_path):
-        raise AlfredException(f"bin folder not found in venv: {venv}, {bin_path=}")
+        raise AlfredException(f"bin folder not found in venv: {venv}, bin_path={bin_path}")
 
     python = plumbum.local[python_path]
-    logger.debug(f"alfred interpreter - switch to python: {python_path} : {args=}")
+    logger.debug(f"alfred interpreter - switch to python: {python_path} : args={args}")
 
     with local.env(VIRTUAL_ENV=venv, PATH=global_path):
         python_args = ['-m', module] + args
