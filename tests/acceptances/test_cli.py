@@ -223,14 +223,14 @@ class TestCli(unittest.TestCase):
 
     def test_alfred_subproject_should_invoke_in_its_own_venv(self):
         with fixtup.up('multiproject', keep_mounted_fixture=True):
-            _, stdout, _ = alfred_fixture.invoke(["product1", "print_python_exec"])
+            _, stdout, stderr = alfred_fixture.invoke(["product1", "print_python_exec"])
 
             if is_windows():
                 expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'Scripts', 'python.exe'))
             else:
                 expected_python_executable = os.path.realpath(os.path.join(os.getcwd(), 'products', 'product1', '.venv', 'bin', 'python'))
 
-            assert expected_python_executable in stdout
+            assert expected_python_executable in stdout, f"{stdout}, stderr: {stderr}"
 
 
     def test_alfred_is_using_virtualenv_and_is_able_to_load_binary_program_from_it(self):
@@ -257,6 +257,18 @@ class TestCli(unittest.TestCase):
             assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
             assert stderr == ''
             assert "hello" in stdout
+
+
+    def test_alfred_is_loading_system_dependencies_at_runtime(self):
+        """
+        Libraries compiled in the system runtime like sqlite3 can be dynamically loaded inside an alfred command.
+        """
+        with fixtup.up('loading_compiled_dependencies'):
+            # Acts
+            exit_code, stdout, stderr = alfred_fixture.invoke(["load_sqlite"])
+
+            # Assert
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
 
 
 if __name__ == '__main__':
