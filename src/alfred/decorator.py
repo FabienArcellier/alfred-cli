@@ -60,8 +60,8 @@ def option(option: str, option_alias: Optional[str] = None, help: str = '', defa
     :param help: inline documentation
     :param default: default value if option is not provided (None by default)
     :param allow to use any click supported attributes (see https://click.palletsprojects.com/en/latest/api/), support is not garanteed in long term
-    """
 
+    """
     def option_decorated(func):
         if option_alias is None:
             decorator = click.option(option, help=help, default=default, **attrs)
