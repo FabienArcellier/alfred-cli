@@ -6,10 +6,8 @@ import sys
 from typing import List, Any, Generator
 
 import click
-from click.exceptions import Exit
 
-import alfred
-from alfred import ctx as alfred_ctx, manifest, echo, project_directory
+from alfred import ctx as alfred_ctx, manifest, echo, project_directory, self_command
 from alfred import commands
 from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
@@ -101,18 +99,10 @@ class AlfredCli(click.MultiCommand):
         display_obsolete_manifests()
 
         if ctx.params['version'] is True:
-            echo.message(f"{alfred.__version__}")
-            raise Exit(code=0)
+            self_command.version()
 
         if ctx.params['check'] is True:
-            logger.debug("Checking commands integrity...")
-            is_ok = commands.check_integrity()
-            if is_ok is True:
-                logger.debug("Commands integrity is ok")
-                raise Exit(code=0)
-            else:
-                echo.error("Fail to load some commands")
-                raise Exit(code=1)
+            self_command.check()
 
         if len(args) > 0:
             cmd_output = self.resolve_command(ctx, args)

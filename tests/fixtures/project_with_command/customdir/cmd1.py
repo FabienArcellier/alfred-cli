@@ -37,3 +37,8 @@ def multicommand_posix():
 def wrong_multicommand():
     echo = alfred.sh(["@@@@", "@@@@@"])
     alfred.run(echo, ["multicommand", "is", "working"])
+
+
+@alfred.command("invoke_check")
+def invoke_check():
+    alfred.invoke_itself(["--check"])

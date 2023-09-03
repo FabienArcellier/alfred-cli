@@ -14,7 +14,7 @@ def test_list_all_should_get_current_project_first():
 
         # Asserts
         assert all_projects[0].name == 'project'
-        assert all_projects[0].directory == os.getcwd()
+        assert all_projects[0].directory == os.path.realpath(os.getcwd())
 
 def test_list_all_should_get_current_project_and_all_subproject():
     # Arrange
@@ -25,5 +25,7 @@ def test_list_all_should_get_current_project_and_all_subproject():
         all_projects = project.list_all()
 
         # Asserts
-        assert all_projects[0].directory == os.getcwd()
-        assert all_projects[1].name == "product1"
+        assert all_projects[0].directory == os.path.realpath(os.getcwd())
+        project_names = [project.name for project in all_projects]
+        assert "product1" in project_names
+        assert "product2" in project_names

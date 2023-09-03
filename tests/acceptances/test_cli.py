@@ -284,5 +284,19 @@ class TestCli(unittest.TestCase):
             assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
 
 
+    def test_alfred_invokeitself_should_invoke_check_command(self):
+        with fixtup.up('project_with_command'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--debug", "invoke_check"])
+
+            assert exit_code == 0
+
+
+    def test_alfred_invokeitself_should_invoke_check_command_on_project_with_wrong_command(self):
+        with fixtup.up('project_with_invalid_commands'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--debug", "invoke_check"])
+
+            assert exit_code == 1
+
+
 if __name__ == '__main__':
     unittest.main()
