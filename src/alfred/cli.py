@@ -153,7 +153,8 @@ def _context_middleware() -> Generator[None, None, None]:
     the user's target command.
     """
     pathsep = os.pathsep
-    pythonpath = os.environ.get("PYTHONPATH", "")
+
+    pythonpath = pathsep.join(sys.path)
     if manifest.pythonpath_project_root():
         _pythonpath = pythonpath.split(pathsep)
         root_directory = project_directory()

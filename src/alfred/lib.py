@@ -72,7 +72,8 @@ def override_pythonpath(pythonpath: str):
     logger = get_logger()
     logger.debug(f"override PYTHONPATH: {pythonpath}")
 
-    previous_pythonpath = os.getenv('PYTHONPATH', '')
+    previous_pythonpath = os.environ.get('PYTHONPATH', '')
+    previous_syspath = sys.path
     with local.env(PYTHONPATH=pythonpath):
         os.environ['PYTHONPATH'] = pythonpath
         sys.path = pythonpath.split(pathsep)
@@ -80,4 +81,4 @@ def override_pythonpath(pythonpath: str):
             yield
         finally:
             os.environ['PYTHONPATH'] = previous_pythonpath
-            sys.path = previous_pythonpath.split(pathsep)
+            sys.path = previous_syspath
