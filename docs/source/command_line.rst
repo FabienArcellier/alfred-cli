@@ -88,3 +88,16 @@ with the command that is launched, the arguments that are passed to it and the e
 
         echo = alfred.sh("echo")
         alfred.run(echo, ["hello", "world"])
+
+Check command integrity
+-----------------------
+
+``alfred --check`` checks the integrity of the commands. It verifies that the command files are interpretable in the main project and in all subprojects.
+
+.. code-block:: bash
+
+    alfred --check
+
+.. note:: it's recommanded to run ``alfred --check`` in your continuous integration process.
+
+.. warning:: ``alfred --check`` don't check the parameters of the command and the code inside commands.
