@@ -28,6 +28,7 @@ Want to try and look for inspiration, here are examples of commands that I imple
    command_line
    project
    toolkit
+   advanced
 
 
 Alfred scales with your team
