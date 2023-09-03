@@ -1,0 +1,13 @@
+# This flag control if a fixture stay up and running between every test. The fixture is stop and
+# unmount when the test process stop
+#
+# This attribute allow to start a database only once and stop the container only when unittest has finished to run
+# the test suite. It may be interested to improve the performance if your start and stop process is too slow
+keep_up: false
+
+# This flag control if a fixture is mount in temporary directory or if it's mounted in place in the fixture template
+# directory directly.
+#
+# When a test mount 2 fixtures, only one need to be mounted as working directory. This flag allow to mount the other
+# directly in the template directory.
+mount_in_place: false

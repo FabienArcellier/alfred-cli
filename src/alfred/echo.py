@@ -8,11 +8,11 @@ def subcommand(text: str):
     """
     click.echo(click.style(text, fg="green", bold=True))
 
-def message(text: str):
+def message(text: str, newline: bool = True):
     """
     Prints a message to the console.
     """
-    click.echo(click.style(text))
+    click.echo(click.style(text), nl=newline)
 
 
 def warning(text: str):

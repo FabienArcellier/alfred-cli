@@ -57,7 +57,8 @@ def lookup_project_dir(path: Optional[str] = None, search: bool = True) -> str:
         if not alfred_configuration_path:
             raise AlfredException(f"{path} is not an alfred project")
 
-    logger.debug(f"alfred project directory : {project_directory}")
+    if path != project_directory:
+        logger.debug(f"alfred project directory : {project_directory}")
     return project_directory
 
 

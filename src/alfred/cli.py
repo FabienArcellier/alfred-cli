@@ -15,7 +15,7 @@ from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
 from alfred.lib import ROOT_DIR, override_pythonpath
-from alfred.logger import logger
+from alfred import logger
 
 
 @click.command('init')
@@ -94,9 +94,25 @@ class AlfredCli(click.MultiCommand):
         From the command, if it is played with the wrong interpreter, alfred restarts itself with the target interpreter.
         """
         args = [*ctx.protected_args, *ctx.args]
+        if ctx.params['debug'] is True:
+            _logger = logger.get_logger()
+            _logger.setLevel(logging.DEBUG)
+
+        display_obsolete_manifests()
+
         if ctx.params['version'] is True:
             echo.message(f"{alfred.__version__}")
             raise Exit(code=0)
+
+        if ctx.params['check'] is True:
+            logger.debug("Checking commands integrity...")
+            is_ok = commands.check_integrity()
+            if is_ok is True:
+                logger.debug("Commands integrity is ok")
+                raise Exit(code=0)
+            else:
+                echo.error("Fail to load some commands")
+                raise Exit(code=1)
 
         if len(args) > 0:
             cmd_output = self.resolve_command(ctx, args)
@@ -115,11 +131,9 @@ class AlfredCli(click.MultiCommand):
                help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
 @click.option("-d", "--debug", is_flag=True, help="display debug information like command runned and working directory")
 @click.option("-v", "--version", is_flag=True, help="display the version of alfred")
-def cli(debug: bool, version: bool):  # pylint: disable=unused-argument
-    if debug:
-        logger.setLevel(logging.DEBUG)
-
-    display_obsolete_manifests()
+@click.option("-c", "--check", is_flag=True, help="check the command integrity")
+def cli(debug: bool, version: bool, check):  # pylint: disable=unused-argument
+    pass
 
 
 def display_obsolete_manifests():

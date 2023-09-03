@@ -30,3 +30,25 @@ def test_lookup_should_return_an_alfred_command_from_sub_project():
         _command = commands.lookup(['product1', 'print_python_exec'])
         assert _command.fullname == "product1 print_python_exec"
         assert _command.project_dir == os.path.join(path, 'products', 'product1')
+
+def test_check_integrity_should_detect_syntax_error():
+    # Arrange
+    with fixtup.up('project_with_invalid_commands'):
+        alfred.commands.cache_clear()
+
+        # Act
+        is_ok = commands.check_integrity()
+
+        # Assert
+        assert is_ok is False
+
+def test_check_integrity_should_detect_syntax_error_in_subproject():
+    # Arrange
+    with fixtup.up('project_with_invalid_commands'):
+        alfred.commands.cache_clear()
+
+        # Act
+        is_ok = commands.check_integrity()
+
+        # Assert
+        assert is_ok is False

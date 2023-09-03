@@ -11,7 +11,7 @@ from typing import List
 import click
 from click import Context, Command
 
-from alfred import manifest, echo
+from alfred import manifest, echo, project, logger
 from alfred.domain.command import AlfredCommand
 from alfred.lib import list_python_modules, import_python, InvalidCommandModule
 
@@ -117,7 +117,7 @@ def lookup(command: str or List[str], project_dir: t.Optional[str] = None) -> t.
     return None
 
 
-def _load_commands(commands: list, pattern: str, project_dir: str, subproject: str, show_error: bool):
+def _load_commands(commands: list, pattern: str, project_dir: str, subproject: t.Optional[str] = None, show_error: bool = True, raise_error: bool = False) -> list:  # pylint: disable=too-many-arguments
     pattern_path = os.path.join(project_dir, pattern)
     prefix = manifest.prefix(project_dir)
     for python_module in list_python_modules(pattern_path):
@@ -136,21 +136,48 @@ def _load_commands(commands: list, pattern: str, project_dir: str, subproject: s
             if show_error:
                 echo.error(str(exception))
 
+            if raise_error:
+                raise
+
     return commands
 
 
 def _load_subproject(commands: list, directory: str) -> list:
     _subproject_manifest = manifest.lookup(directory)
     name = manifest.name(directory)
-    if ' ' in name:
-        echo.error(f"Subproject ignored: project name from {directory} cannot contain spaces, name={name}")
-    else:
-        command = AlfredCommand()
-        command.command = AlfredSubprojectCommand(name=name,
-                                                  help=manifest.description(directory),
-                                                  path=os.path.realpath(directory))
-        command.path = os.path.realpath(directory)
-        command.project_dir = os.path.realpath(directory)
-        commands.append(command)
+    # if ' ' in name:
+    #     echo.error(f"Subproject ignored: project name from {directory} cannot contain spaces, name={name}")
+    # else:
+    command = AlfredCommand()
+    command.command = AlfredSubprojectCommand(name=name,
+                                              help=manifest.description(directory),
+                                              path=os.path.realpath(directory))
+    command.path = os.path.realpath(directory)
+    command.project_dir = os.path.realpath(directory)
+    commands.append(command)
 
     return commands
+
+
+def check_integrity(project_dir: t.Optional[str] = None) -> bool:
+    """
+    Verifies the integrity of orders for all projects.
+
+    :return: True if no errors were detected, False otherwise.
+    """
+    has_error = False
+    commands = []
+
+    all_projects = project.list_all(project_dir)
+    for _project in all_projects:
+        for pattern in manifest.project_commands(_project.directory):
+            try:
+                logger.debug(f"Checking commands integrity of project '{_project.name}'")
+                commands = _load_commands(commands, pattern, _project.directory, None, True, raise_error=True)
+            except InvalidCommandModule:
+                has_error = True
+            except BaseException as exception:  # pylint: disable=broad-exception-caught
+                echo.error(str(exception))
+                has_error = True
+
+    return not has_error

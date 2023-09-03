@@ -1,0 +1,3 @@
+[alfred]
+prefix = "cmd:"
+subprojects = ["products/*"]
