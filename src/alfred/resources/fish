@@ -1,0 +1,8 @@
+execute the following statement to activate completion.
+
+>>> eval "$(_ALFRED_COMPLETE=fish_source alfred | source)"
+
+alfred has detected you are using fish ({shell}).
+
+You have to add this statement to a completion file to install completion permanently.
+Configuring completion in fish should be done in ~/.config/fish/completions/alfred.fish
