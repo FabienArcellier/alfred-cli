@@ -258,6 +258,19 @@ class TestCli(unittest.TestCase):
             assert stderr == ''
             assert "hello" in stdout
 
+    def test_alfred_check_should_exit_with_one_when_alfred_command_are_corrupted(self):
+        with fixtup.up('project_with_invalid_commands'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--check"])
+
+            assert exit_code == 1
+
+
+    def test_alfred_check_should_exit_with_zero_when_alfred_command_are_ok(self):
+        with fixtup.up('project'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--check"])
+
+            assert exit_code == 0
+
 
     def test_alfred_is_loading_system_dependencies_at_runtime(self):
         """
@@ -269,6 +282,20 @@ class TestCli(unittest.TestCase):
 
             # Assert
             assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+
+
+    def test_alfred_invokeitself_should_invoke_check_command(self):
+        with fixtup.up('project_with_command'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--debug", "invoke_check"])
+
+            assert exit_code == 0
+
+
+    def test_alfred_invokeitself_should_invoke_check_command_on_project_with_wrong_command(self):
+        with fixtup.up('project_with_invalid_commands'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--debug", "invoke_check"])
+
+            assert exit_code == 1
 
 
 if __name__ == '__main__':

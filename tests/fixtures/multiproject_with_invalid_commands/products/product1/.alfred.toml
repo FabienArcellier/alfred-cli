@@ -1,0 +1,6 @@
+[alfred]
+name = "product1"
+description = "build commands for product1"
+
+[alfred.project]
+venv = ".venv"

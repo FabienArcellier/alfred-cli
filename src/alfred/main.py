@@ -128,7 +128,6 @@ def invoke_command(ctx, command: str or List[str], **kwargs) -> None:
         else:
             ctx.invoke(click_command, **kwargs)
 
-
 class pythonpath:  #pylint: disable=invalid-name
     """
     Add the project folder, i.e. the root folder which corresponds to the alfred command used,
@@ -249,6 +248,30 @@ def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
     except ProcessExecutionError as exception:
         if exit_on_error:
             raise Exit(code=exception.retcode) from exception
+
+
+def invoke_itself(args) -> None:
+    """
+    invoke one of alfred's own commands from alfred himself
+
+    >>> alfred.invoke_itself(['--c'])
+    >>> alfred.invoke_itself(['--check'])
+    >>> alfred.invoke_itself(['--version'])
+    :return:
+    """
+    try:
+        from alfred import self_command  # pylint: disable=import-outside-toplevel
+        if '--version' in args or '-v' in args:
+            self_command.version()
+        if '--check' in args or '-c' in args:
+            self_command.check()
+    except Exit as exception:
+        if exception.exit_code == 0:
+            return
+
+        raise
+    except BaseException as exception:
+        raise Exit(code=1) from exception
 
 
 @contextlib.contextmanager

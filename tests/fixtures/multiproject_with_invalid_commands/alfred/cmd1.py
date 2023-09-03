@@ -1,4 +1,5 @@
 import os
+import sys
 
 import alfred
 
@@ -7,6 +8,11 @@ import alfred
 @alfred.option("--name")
 def hello_world_command(name):
     print(f"hello world, {name}")
+
+
+@alfred.command("print_python_exec")
+def print_python_exec():
+    print(sys.executable)
 
 
 @alfred.command("pythonpath")
@@ -37,8 +43,3 @@ def multicommand_posix():
 def wrong_multicommand():
     echo = alfred.sh(["@@@@", "@@@@@"])
     alfred.run(echo, ["multicommand", "is", "working"])
-
-
-@alfred.command("invoke_check")
-def invoke_check():
-    alfred.invoke_itself(["--check"])
