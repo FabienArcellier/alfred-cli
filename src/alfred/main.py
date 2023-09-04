@@ -12,6 +12,23 @@ from plumbum.machines import LocalCommand
 from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command
 from alfred.logger import get_logger
 
+def CMD_RUNNING():  #pylint: disable=invalid-name
+    """
+    Isolates heavy dependencies to speed up command discovery on ``alfred`` and ``alfred --help``.
+
+    They are loaded when the user executes a module module command.
+
+    >>> if alfred.CMD_RUNNING()
+    >>>     import torch
+    >>>
+    >>> @alfred.command("use_torch")
+    >>> def use_torch():
+    >>>     example_list = [1,2,3]
+    >>>     x = torch.tensor(example_list)
+    >>>     print(x)
+    """
+    return alfred_ctx.command_run()
+
 
 def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylint: disable=inconsistent-return-statements
     """

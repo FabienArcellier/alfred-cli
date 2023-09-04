@@ -8,15 +8,21 @@ from typing import List, Optional
 
 from click.exceptions import Exit
 
-from alfred import interpreter
+
+from alfred import interpreter, logger
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInCommand
-from alfred.logger import get_logger
 
+
+class Mode:
+    ListCommands = "list_commands"
+    RunCommand = "run_command"
+    Unknown = "unknown"
 
 @dataclasses.dataclass
 class Context:
     commands_stack: List[AlfredCommand] = dataclasses.field(default_factory=list)
+    mode: str = Mode.Unknown
 
     @property
     def running(self) -> bool:
@@ -43,6 +49,17 @@ def current_command() -> Optional[AlfredCommand]:
     :return:
     """
     return _context.commands_stack[0] if _context.running else None
+
+
+def command_run() -> bool:
+    return _context.mode == Mode.RunCommand
+
+def mode_unknown() -> str:
+    return _context.mode == Mode.Unknown
+
+def mode_set(mode: str) -> None:
+    logger.debug(f"mode set {mode} - from {_context.mode}")
+    _context.mode = mode
 
 
 def invoke_through_external_venv(args: List[str]) -> None:
@@ -78,9 +95,8 @@ def should_use_external_venv() -> bool:
         venv = interpreter.venv_lookup(alfred_cmd.project_dir)
 
         if venv is not None and interpreter.venv_get() != venv:
-            _logger = get_logger()
-            _logger.debug(f"alfred interpreter - current venv: {interpreter.venv_get()}")
-            _logger.debug(f"alfred interpreter - expected venv: {venv}")
+            logger.debug(f"alfred interpreter - current venv: {interpreter.venv_get()}")
+            logger.debug(f"alfred interpreter - expected venv: {venv}")
             return True
 
     return False

@@ -15,6 +15,8 @@ The following methods are used to set up a command that you can use through alfr
 
 .. autofunction:: option
 
+.. autofunction:: CMD_RUNNING
+
 Workflow control
 ****************
 

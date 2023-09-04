@@ -39,6 +39,7 @@ class AlfredCli(click.MultiCommand):
     def list_commands(self, ctx):
         try:
             _list_commands = []
+            alfred_ctx.mode_set(alfred_ctx.Mode.ListCommands)
             project_dir = manifest.lookup_project_dir()
             _commands = commands.list_all(project_dir)
             for command in _commands:
@@ -58,6 +59,9 @@ class AlfredCli(click.MultiCommand):
     def get_command(self, ctx, cmd_name: str):
         if cmd_name == 'init':
             return init
+
+        if alfred_ctx.mode_unknown():
+            alfred_ctx.mode_set(alfred_ctx.Mode.RunCommand)
 
         project_dir = manifest.lookup_project_dir()
         _command = commands.lookup(cmd_name, project_dir=project_dir)
