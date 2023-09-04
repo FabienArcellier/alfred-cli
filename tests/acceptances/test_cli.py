@@ -297,6 +297,28 @@ class TestCli(unittest.TestCase):
 
             assert exit_code == 1
 
+    def test_alfred_cmdrunning_ignore_code_section_on_help(self):
+        with fixtup.up('project_with_cmd_running'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--help"])
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+            assert "command is running" not in stdout
+            assert "list command is in progress" in stdout
+
+
+    def test_alfred_cmdrunning_ignore_code_section_on_listing_call(self):
+        with fixtup.up('project_with_cmd_running'):
+            exit_code, stdout, stderr = alfred_fixture.invoke([])
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+            assert "command is running" not in stdout
+            assert "list command is in progress" in stdout
+
+
+    def test_alfred_cmdrunning_run_code_section_on_command_run(self):
+        with fixtup.up('project_with_cmd_running'):
+            exit_code, stdout, stderr = alfred_fixture.invoke(["hello_world"])
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+            assert "command is running" in stdout
+            assert "list command is in progress" not in stdout
 
 if __name__ == '__main__':
     unittest.main()
