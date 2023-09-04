@@ -265,6 +265,8 @@ def invoke_itself(args) -> None:
             self_command.version()
         if '--check' in args or '-c' in args:
             self_command.check()
+        if '--completion' in args:
+            self_command.completion()
     except Exit as exception:
         if exception.exit_code == 0:
             return

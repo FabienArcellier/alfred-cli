@@ -1,0 +1,8 @@
+execute the following statement to activate completion.
+
+>>> eval "$(_ALFRED_COMPLETE=zsh_source alfred)"
+
+alfred has detected you are using zsh ({shell}).
+
+You have to add this statement to your profile to install completion permanently.
+The profile file for zsh is ~/.zshrc

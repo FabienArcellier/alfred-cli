@@ -101,6 +101,9 @@ class AlfredCli(click.MultiCommand):
         if ctx.params['version'] is True:
             self_command.version()
 
+        if ctx.params['completion'] is True:
+            self_command.completion()
+
         if ctx.params['check'] is True:
             self_command.check()
 
@@ -122,7 +125,8 @@ class AlfredCli(click.MultiCommand):
 @click.option("-d", "--debug", is_flag=True, help="display debug information like command runned and working directory")
 @click.option("-v", "--version", is_flag=True, help="display the version of alfred")
 @click.option("-c", "--check", is_flag=True, help="check the command integrity")
-def cli(debug: bool, version: bool, check):  # pylint: disable=unused-argument
+@click.option("--completion", is_flag=True, help="display instructions to enable completion for your shell")
+def cli(debug: bool, version: bool, check: bool, completion: bool):  # pylint: disable=unused-argument
     pass
 
 

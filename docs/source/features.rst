@@ -32,4 +32,6 @@ Projects
 Utilities
 *********
 
+* configure the shell completion with ``alfred --completion``
+* check the alfred commands for continuous integration with ``alfred --check``
 * show the installed alfred version with ``alfred --version``

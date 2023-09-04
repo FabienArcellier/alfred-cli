@@ -1,0 +1,8 @@
+Execute the following statement to activate completion.
+
+>>> eval "$(_ALFRED_COMPLETE=bash_source alfred)"
+
+alfred has detected you are using bash ({shell}).
+
+You have to add this statement to your profile to install completion permanently.
+The profile file for bash is ~/.bashrc

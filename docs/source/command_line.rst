@@ -56,6 +56,9 @@ arguments of the command ``lint``.
 Advanced usage
 ==============
 
+.. contents::
+  :local:
+
 Show the version
 ----------------
 
@@ -63,6 +66,18 @@ Show the version
 
     alfred --version
 
+Configure autocompletion
+------------------------
+
+The ``alfred --completion`` command details the configuration to put in place to activate autocompletion in your shell.
+
+.. code-block:: bash
+
+    alfred --completion
+
+.. warning:: ``alfred --completion`` is available for bash, zsh and fish.
+
+    Configuring autocomplete relies on `click <https://click.palletsprojects.com/en/8.1.x/shell-completion/>`__. If you are using another shell and click supports it, open an issue with details for us to add support.
 
 Execute in debug mode
 ---------------------
@@ -89,8 +104,8 @@ with the command that is launched, the arguments that are passed to it and the e
         echo = alfred.sh("echo")
         alfred.run(echo, ["hello", "world"])
 
-Check command integrity
------------------------
+Check the alfred commands
+-------------------------
 
 ``alfred --check`` checks the integrity of the commands. It verifies that the command files are interpretable in the main project and in all subprojects.
 
