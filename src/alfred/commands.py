@@ -73,7 +73,7 @@ def list_all(project_dir: t.Optional[str] = None, show_error: bool = True) -> Li
         subproject = manifest.name(project_dir)
 
     commands = []
-    for pattern in manifest.project_commands(project_dir):
+    for pattern in manifest.lookup_parameter_project('command', project_dir):
         commands = _load_commands(commands, pattern, project_dir, subproject, show_error)
 
     subprojects_glob = manifest.subprojects(project_dir)
@@ -170,7 +170,7 @@ def check_integrity(project_dir: t.Optional[str] = None) -> bool:
 
     all_projects = project.list_all(project_dir)
     for _project in all_projects:
-        for pattern in manifest.project_commands(_project.directory):
+        for pattern in manifest.lookup_parameter_project('command', _project.directory):
             try:
                 logger.debug(f"Checking commands integrity of project '{_project.name}'")
                 commands = _load_commands(commands, pattern, _project.directory, None, True, raise_error=True)

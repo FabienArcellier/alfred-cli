@@ -50,6 +50,7 @@ Project manifest
     python_path_project_root = true # optional
     python_path_extends = [] # optional
     venv = "src/.." # optional
+    venv_dotvenv_ignore = false # optional
 
 Section [alfred]
 ================
@@ -147,7 +148,7 @@ Section [alfred.project]
 
         The virtual environment that is used to run the commands for this project. If this parameter is absent, the interpreter used to invoke the parent is used.
 
-        .. code-block::
+        .. code-block:: toml
 
             [alfred.project]
             venv = ".venv"
@@ -156,6 +157,15 @@ Section [alfred.project]
 
             For expressions that are relative paths, they are resolved from the folder that contains
             the corresponding .alfred.toml manifest.
+
+    venv_dotvenv_ignore (optional)
+
+        ignore the ``./.venv`` folder when searching for a virtual environment.
+
+        .. code-block:: toml
+
+            [alfred.project]
+            venv_dotvenv_ignore = true
 
 Subproject : Organization of a mono-repository
 **********************************************

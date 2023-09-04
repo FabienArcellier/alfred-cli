@@ -436,7 +436,8 @@ disable=raw-checker-failed,
         logging-fstring-interpolation,
         too-few-public-methods,
         no-else-raise,
-        cyclic-import
+        cyclic-import,
+        no-else-return
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

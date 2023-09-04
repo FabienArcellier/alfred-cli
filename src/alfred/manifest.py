@@ -1,11 +1,11 @@
 import io
 import os
-from typing import Optional, List
+from typing import Optional, List, Any
 
 import toml
 
 from alfred import echo
-from alfred.domain.manifest import AlfredManifest
+from alfred.domain.manifest import AlfredManifest, ManifestParameter
 from alfred.exceptions import NotInitialized, AlfredException
 from alfred.lib import list_hierarchy_directory
 from alfred.logger import logger
@@ -81,30 +81,51 @@ def lookup_obsolete_manifests(path: Optional[str] = None) -> List[str]:
 
     return obsolete_manifests
 
+def _format_command(project_dir: str, value: Any) -> List[str]:  # pylint: disable=unused-argument
+    parameter_def = [p for p in PROJECT_PARAMETERS if p.parameter == 'command'][0]
 
-def lookup_venv(project_dir: Optional[str] = None) -> Optional[str]:
+    if not isinstance(value, list):
+        echo.warning(f"The command in the manifest must be a list of string, use {parameter_def.default} instead")
+        return parameter_def.default
+
+    return value
+
+PROJECT_PARAMETERS = [
+    ManifestParameter('pythonpath_extends', section='project', default=[], legacy_aliases=['python_path_extends']),
+    ManifestParameter('pythonpath_project_root', section='project', default=True, legacy_aliases=['python_path_project_root']),
+    ManifestParameter('command', section='project', default=["alfred/*.py"], formatter=_format_command),
+    ManifestParameter('venv', section='project', default=None, formatter=lambda projectdir, value: os.path.realpath(os.path.join(projectdir, value))),
+    ManifestParameter('venv_dotvenv_ignore', section='project', default=False),
+]
+
+def lookup_parameter_project(parameter: str, project_dir: Optional[str] = None) -> Any:
     """
-    Get the venv from the alfred project manifest or the project manifest in the directory folder
+    Retrieves a setting from the project section in the manifest.
 
-    If directory is empty, we get the current manifest.
-
-    :return: the path to the venv
+    >>> from alfred import manifest
+    >>>
+    >>> pythonpath_extend = manifest.lookup_parameter_project('pythonpath_extends')
+    >>> venv_dotvenv_ignore = manifest.lookup_parameter_project('venv_dotvenv_ignore', project_dir='~/myprojects/project1')
     """
-    _default = None
+    parameter_defs = [p for p in PROJECT_PARAMETERS if p.parameter == parameter]
+    if len(parameter_defs) == 0:
+        raise AlfredException(f"Unknown project parameter {parameter}")
 
-    alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration
-    if 'alfred' not in configuration:
-        return _default
+    if project_dir is None:
+        project_dir = lookup_project_dir()
 
-    if 'project' not in configuration['alfred']:
-        return _default
+    parameter_def = parameter_defs[0]
+    value = _lookup_project_section(project_dir, parameter, default=parameter_def.default)
+    if value != parameter_def.default:
+        return parameter_def.formatter(project_dir, value)
+    else:
+        for alias in parameter_def.legacy_aliases:
+            value = _lookup_project_section(project_dir, alias, default=parameter_def.default)
+            if value != parameter_def.default:
+                echo.warning(f"Use of legacy parameter {alias}, please use {parameter} instead")
+                return parameter_def.formatter(project_dir, value)
 
-    if 'venv' not in configuration['alfred']['project']:
-        return _default
-
-    return os.path.realpath(os.path.join(project_dir, configuration['alfred']['project']['venv']))
-
+        return value
 
 def contains_obsolete_manifest(project_dir: Optional[str] = None) -> Optional[str]:
     """
@@ -151,32 +172,6 @@ def subprojects(project_dir: Optional[str] = None) -> List[str]:
     return configuration['alfred']['subprojects']
 
 
-def project_commands(project_dir: Optional[str] = None) -> List[str]:
-    """
-    Retrieves the list of glob expression to scan alfred commands.
-
-    :return:
-    """
-    alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration
-
-    _default = ["alfred/*.py"]
-    if 'alfred' not in configuration:
-        return _default
-
-    if 'project' not in configuration['alfred']:
-        return _default
-
-    if 'command' not in configuration['alfred']['project']:
-        return _default
-
-    command = configuration['alfred']['project']['command']
-    if not isinstance(command, list):
-        echo.warning(f"The command in the manifest must be a list of string, use {_default} instead")
-        return _default
-
-    return command
-
 def prefix(project_dir: Optional[str] = None) -> str:
     alfred_manifest = lookup(project_dir)
     configuration = alfred_manifest.configuration
@@ -189,56 +184,6 @@ def prefix(project_dir: Optional[str] = None) -> str:
         return _default
 
     return configuration['alfred']['prefix']
-
-
-def pythonpath_project_root(project_dir: Optional[str] = None) -> Optional[bool]:
-    alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration
-
-    _default = True
-    if 'alfred' not in configuration:
-        return _default
-
-    if 'project' not in configuration['alfred']:
-        return _default
-
-    official_parameter = 'pythonpath_project_root'
-    if official_parameter in configuration['alfred']['project']:
-        return configuration['alfred']['project'][official_parameter]
-
-    legacy_parameters = ['python_path_project_root']
-    for legacy_parameter in legacy_parameters:
-        if legacy_parameter in configuration['alfred']['project']:
-            logger.warning(f"project parameter {legacy_parameter} is deprecated in {project_dir}, use {official_parameter} instead")
-            return configuration['alfred']['project'][legacy_parameter]
-
-    return _default
-
-
-def pythonpath_extends(project_dir: Optional[str] = None) -> List[str]:
-    alfred_manifest = lookup(project_dir)
-    configuration = alfred_manifest.configuration
-
-    _default = []
-    if 'alfred' not in configuration:
-        return _default
-
-    if 'project' not in configuration['alfred']:
-        return _default
-
-    official_parameter = 'pythonpath_extends'
-    if official_parameter in configuration['alfred']['project']:
-        return configuration['alfred']['project'][official_parameter]
-
-
-    legacy_parameters = ['python_path_extends']
-    for legacy_parameter in legacy_parameters:
-        if legacy_parameter in configuration['alfred']['project']:
-            logger.warning(f"project parameter {legacy_parameter} is deprecated in {project_dir}, use {official_parameter} instead")
-            return configuration['alfred']['project'][legacy_parameter]
-
-    return _default
-
 
 def name(project_dir: Optional[str] = None) -> Optional[str]:
     """
@@ -279,3 +224,22 @@ def _is_manifest_directory(directory: str) -> Optional[str]:
         return alfred_configuration_path
 
     return None
+
+
+def _lookup_project_section(project_dir: str, key: str, default: Optional[Any] = None):
+    """
+    searches for a parameter in the alfred.project section.
+
+    If the section does not exist or the parameter does not exist, we return the default value.
+    """
+    alfred_manifest = lookup(project_dir)
+    configuration = alfred_manifest.configuration
+    if 'alfred' not in configuration:
+        return default
+    if 'project' not in configuration['alfred']:
+        return default
+    if key not in configuration['alfred']['project']:
+        return default
+
+    value = configuration['alfred']['project'][key]
+    return value
