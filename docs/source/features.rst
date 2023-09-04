@@ -28,6 +28,7 @@ Projects
 * discovers commands in multiple locations
 * discover commands in subprojects as multi command ``alfred {project} {command}``
 * execute a command from a virtual environment associated with the project
+* detect automatically virtual environment in ``.venv`` directory
 
 Utilities
 *********

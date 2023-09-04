@@ -163,13 +163,13 @@ def _context_middleware() -> Generator[None, None, None]:
     pathsep = os.pathsep
 
     pythonpath = pathsep.join(sys.path)
-    if manifest.pythonpath_project_root():
+    if manifest.lookup_parameter_project('pythonpath_project_root'):
         _pythonpath = pythonpath.split(pathsep)
         root_directory = project_directory()
         _pythonpath.append(root_directory)
         pythonpath = pathsep.join(_pythonpath)
 
-    extensions = manifest.pythonpath_extends()
+    extensions = manifest.lookup_parameter_project('pythonpath_extends')
     if len(extensions) > 0:
         _pythonpath = pythonpath.split(pathsep)
         root_directory = project_directory()

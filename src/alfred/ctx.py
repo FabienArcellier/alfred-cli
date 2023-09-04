@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from click.exceptions import Exit
 
-from alfred import manifest, interpreter
+from alfred import interpreter
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInCommand
 from alfred.logger import get_logger
@@ -51,7 +51,7 @@ def invoke_through_external_venv(args: List[str]) -> None:
 
     """
     alfred_cmd = current_command()
-    venv = manifest.lookup_venv(alfred_cmd.project_dir)
+    venv = interpreter.venv_lookup(alfred_cmd.project_dir)
     exit_code, _, _ = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
 
     if exit_code != 0:
@@ -75,11 +75,11 @@ def should_use_external_venv() -> bool:
     """
     alfred_cmd = current_command()
     if alfred_cmd is not None:
-        venv = manifest.lookup_venv(alfred_cmd.project_dir)
+        venv = interpreter.venv_lookup(alfred_cmd.project_dir)
 
-        if venv is not None and interpreter.get_venv() != venv:
+        if venv is not None and interpreter.venv_get() != venv:
             _logger = get_logger()
-            _logger.debug(f"alfred interpreter - current venv: {interpreter.get_venv()}")
+            _logger.debug(f"alfred interpreter - current venv: {interpreter.venv_get()}")
             _logger.debug(f"alfred interpreter - expected venv: {venv}")
             return True
 

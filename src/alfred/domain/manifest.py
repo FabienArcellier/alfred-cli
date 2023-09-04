@@ -1,6 +1,8 @@
+import dataclasses
 import logging
 import os.path
-from typing import List
+from typing import List, Optional, Any, Callable
+
 
 class Environment:  # pylint: disable=too-few-public-methods
 
@@ -8,6 +10,13 @@ class Environment:  # pylint: disable=too-few-public-methods
         self.key = key
         self.value = value
 
+@dataclasses.dataclass
+class ManifestParameter:
+    parameter: str
+    section: Optional[str] = None
+    default: Optional[Any] = None
+    formatter: Callable[[str, Any], Any] = lambda projectdir, value: value
+    legacy_aliases: List[str] = dataclasses.field(default_factory=list)
 
 class AlfredManifest:
 
