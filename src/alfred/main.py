@@ -69,7 +69,7 @@ def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylin
 def project_directory() -> str:
     """
     Returns the project directory of alfred relative to the current command.
-    This is the first parent where the `.alfred.yml` file is present.
+    This is the first parent where the `.alfred.toml` file is present.
 
     >>> @alfred.command("project_directory")
     >>> def project_directory_command():
@@ -83,14 +83,11 @@ def project_directory() -> str:
 @contextlib.contextmanager
 def env(**kwargs) -> None:
     """
-    Assign environment variables in a build command
+    Assign environment variables in a command
 
     >>> with alfred.env(ENV="prod"):
     >>>     echo = alfred.sh("echo")
     >>>     echo("hello world")
-
-    This instruction should update the python environment and the environment
-     from plumbum.
     """
     previous_environ = os.environ.copy()
     try:
@@ -195,17 +192,16 @@ class pythonpath:  #pylint: disable=invalid-name
 
 def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
     """
-    Load a shell program from the local system. If the command does not exists, it
+    Load an executable program from the local system. If the command does not exists, it
     will show an error `fail_message` to the console.
+
+    >>> echo = alfred.sh("echo", "echo is missing on your system")
+    >>> alfred.run(echo, ["hello", "world"])
 
     If many commands are provided as command name, it will try the command one by one
     until one of them is present on the system. This behavior is require when you target
     different platform for example (Ubuntu is using `open` to open an url, when MacOs support `xdg-open`
     with the same behavior)
-
-    >>> echo = alfred.sh("echo", "echo is missing on your system")
-    >>> alfred.run(echo, ["hello", "world"])
-
 
     >>> open = alfred.sh(["open", "xdg-open"], "Either open, either xdg-open is missing on your system. Are you using a compatible platform ?")  # pylint: disable=line-too-long
     >>> alfred.run(open, "http://www.github.com")
@@ -243,7 +239,9 @@ def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
     >>> echo = alfred.sh("echo", "echo is missing on your system")
     >>> alfred.run(echo, ["hello", "world"])
 
-    The flag exitè
+    The flag ``exit_on_error`` is set to True by default. If you want to ignore the exit code
+    and continue the execution even if the execution has failed, you can set it to False.
+
     >>> ls = alfred.sh("ls", "ls is missing on your system")
     >>> mv = alfred.sh("mv", "mv is missing on your system")
     >>> alfred.run(ls, ["/var/yolo"], exit_on_error=False)
