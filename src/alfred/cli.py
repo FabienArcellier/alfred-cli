@@ -131,7 +131,7 @@ class AlfredCli(click.MultiCommand):
 @click.option("-c", "--check", is_flag=True, help="check the command integrity")
 @click.option("--completion", is_flag=True, help="display instructions to enable completion for your shell")
 def cli(debug: bool, version: bool, check: bool, completion: bool):  # pylint: disable=unused-argument
-    pass
+    alfred_ctx.flag_set('--debug', debug)
 
 
 def display_obsolete_manifests():

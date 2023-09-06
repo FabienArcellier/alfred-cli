@@ -43,3 +43,8 @@ def multicommand_posix():
 def wrong_multicommand():
     echo = alfred.sh(["@@@@", "@@@@@"])
     alfred.run(echo, ["multicommand", "is", "working"])
+
+
+@alfred.command("product1_print_python_exec")
+def product1_print_python_exec():
+    alfred.invoke_command(["product1", "print_python_exec"])

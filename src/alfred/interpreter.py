@@ -7,7 +7,7 @@ from plumbum import local
 from plumbum.commands.modifiers import _TEE
 
 import alfred.os
-from alfred import manifest
+from alfred import manifest, ctx
 from alfred.os import is_windows
 from alfred.exceptions import AlfredException
 from alfred.logger import logger
@@ -32,6 +32,7 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
     """
     run alfred in another virtual environment with same commands.
 
+    >>> interpreter.run_module(module='alfred.cli', venv=venv, args=['hello_world'])
     """
     global_path = os.getenv('PATH', '')
     python_path = venv_python_path(venv)
@@ -45,6 +46,7 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
         raise AlfredException(f"bin folder not found in venv: {venv}, bin_path={bin_path}")
 
     python = plumbum.local[python_path]
+    args = ctx.flags() + args
     logger.debug(f"alfred interpreter - switch to python: {python_path} : args={args}")
 
     with local.env(VIRTUAL_ENV=venv, PATH=global_path):
