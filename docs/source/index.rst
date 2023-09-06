@@ -1,6 +1,25 @@
 Alfred
 ======
 
+.. image:: https://img.shields.io/pypi/v/alfred-cli.svg?label=Version
+    :target: https://pypi.org/project/alfred-cli/
+
+.. image:: https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci.yml
+
+.. image:: https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci-windows.yml/badge.svg
+    :target: https://github.com/FabienArcellier/alfred-cli/actions/workflows/ci-windows.yml
+
+.. image:: https://readthedocs.org/projects/alfred-cli/badge/?version=latest
+    :target: https://alfred-cli.readthedocs.io/en/latest/?badge=latest
+
+.. image:: https://img.shields.io/badge/discord-alfred-5865F2?logo=discord&logoColor=white
+    :target: https://discord.gg/nMn9YPRGSY
+
+.. image:: https://img.shields.io/badge/license-MIT-007EC7.svg
+    :target: https://github.com/FabienArcellier/alfred-cli/blob/master/LICENSE
+
+
 Alfred is an extensible automation tool. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
 
 Want to try and look for inspiration, here are examples of commands that I implement in my projects :
