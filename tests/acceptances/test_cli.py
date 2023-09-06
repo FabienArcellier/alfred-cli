@@ -1,3 +1,4 @@
+import logging
 import os
 import unittest
 
@@ -319,6 +320,14 @@ class TestCli(unittest.TestCase):
             assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
             assert "command is running" in stdout
             assert "list command is in progress" not in stdout
+
+
+def test_alfred_invoke_command_forward_debug_flag_to_command(caplog):
+    with fixtup.up('multiproject'), caplog.at_level(logging.DEBUG):
+        alfred_fixture.invoke([ '--debug', "cmd:product1_print_python_exec"])
+
+        execute_child_interpreter = [record.message for record in caplog.records if ' switch to python' in record.message]
+        assert '--debug' in execute_child_interpreter[0]
 
 if __name__ == '__main__':
     unittest.main()

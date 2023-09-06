@@ -23,6 +23,7 @@ class Mode:
 class Context:
     commands_stack: List[AlfredCommand] = dataclasses.field(default_factory=list)
     mode: str = Mode.Unknown
+    flags: List[str] = dataclasses.field(default_factory=list)
 
     @property
     def running(self) -> bool:
@@ -54,11 +55,25 @@ def current_command() -> Optional[AlfredCommand]:
 def command_run() -> bool:
     return _context.mode == Mode.RunCommand
 
+
+def flag_set(flag: str, enable: bool) -> None:
+    """
+    configure flag to forward to interpreter when invoking a command
+    """
+    if enable and flag not in _context.flags:
+        _context.flags.append(flag)
+
+
+def flags() -> List[str]:
+    return _context.flags
+
+
 def mode_unknown() -> str:
     return _context.mode == Mode.Unknown
 
+
 def mode_set(mode: str) -> None:
-    logger.debug(f"mode set {mode} - from {_context.mode}")
+    logger.debug(f"mode set '{mode}' - previous '{_context.mode}'")
     _context.mode = mode
 
 
@@ -100,7 +115,6 @@ def should_use_external_venv() -> bool:
             return True
 
     return False
-
 
 def stack_root_command(command: AlfredCommand) -> None:
     """
