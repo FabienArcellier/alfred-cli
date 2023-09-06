@@ -107,7 +107,7 @@ def env(**kwargs) -> None:
 @click.pass_context
 def invoke_command(ctx, command: str or List[str], **kwargs) -> None:
     """
-    Invokes a command as a subcommand.
+    Invokes an existing command as a subcommand. This instruction offer the perfect way to build pipelines
 
     >>> alfred.invoke_command("test"])
 
