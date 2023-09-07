@@ -18,7 +18,7 @@ def CMD_RUNNING():  #pylint: disable=invalid-name
 
     They are loaded when the user executes a module module command.
 
-    >>> if alfred.CMD_RUNNING()
+    >>> if alfred.CMD_RUNNING():
     >>>     import torch
     >>>
     >>> @alfred.command("use_torch")
