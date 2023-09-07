@@ -1,7 +1,7 @@
 import contextlib
 import os
 from functools import wraps
-from typing import Union, List, Callable
+from typing import Union, List, Callable, Optional
 
 import click
 import plumbum
@@ -228,7 +228,7 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand
     return shell_command
 
 
-def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
+def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_error=True) -> None:
     """
     Most of the process run by alfred are supposed to stop
     if the excecution process is finishing with an exit code of 0
@@ -247,8 +247,16 @@ def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
     >>> alfred.run(ls, ["/var/yolo"], exit_on_error=False)
     >>> alfred.run(mv, ["/var/yolo", "/var/yolo1"], exit_on_error=False)
 
+    A text command can be used directly with alfred.run. The text command is parsed and the execute is extracted from first
+    element in text. The arguments are extracted from the other elements.
 
-    :param command: shell program to execute
+    >>> alfred_command.run("echo hello world")
+    >>> alfred_command.run('cp "/home/fabien/hello world" /tmp', exit_on_error=False)
+
+    Shell operations are not supported &, |, &&, ||, etc... You can not use for example `echo hello world | grep hello` or
+    `echo hello world > file.txt`. If you use it an error will be raised.
+
+    :param command: command or text program to execute
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
     if args is None:
