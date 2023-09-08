@@ -47,6 +47,14 @@ def lint():
     alfred.run(mypy, ["src/alfred"])
 ```
 
+## Related
+
+``alfred`` exists thanks to this 2 amazing open source projects.
+
+* [click](https://github.com/pallets/click/)
+* [plumbum](https://github.com/tomerfiliba/plumbum>)
+
+
 ## License
 
 MIT License

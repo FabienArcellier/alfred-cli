@@ -67,3 +67,11 @@ Links
 * PyPI Release : https://pypi.org/project/alfred-cli
 * Source code: https://github.com/FabienArcellier/alfred-cli
 * Chat: https://discord.gg/nMn9YPRGSY
+
+Related
+-------
+
+Alfred-cli exists thanks to this 2 open source projects.
+
+* `click <https://github.com/pallets/click/>`__
+* `plumbum <https://github.com/tomerfiliba/plumbum>`__
