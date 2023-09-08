@@ -1,3 +1,4 @@
+import ast
 import contextlib
 import os
 import shlex
@@ -263,10 +264,10 @@ def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_e
     if args is None:
         args = []
 
-    if isinstance(command, str):
-        command, args = _parse_text_command(command)
-
     try:
+        if isinstance(command, str):
+            command, args = _parse_text_command(command)
+
         logger = get_logger()
         complete_command = command[args]
         working_directory = os.getcwd()
@@ -344,11 +345,20 @@ def _parse_text_command(command: str) -> Tuple[LocalCommand, List[str]]:
     cmd_parser = shlex.shlex(command, punctuation_chars=True)
     cmd_parser.whitespace_split = True
     cmd_parts = list(cmd_parser)
+    for index, part in enumerate(cmd_parts):
+        if part.startswith("'") and part.endswith("'"):
+            cmd_parts[index] = _parse_text_command_interpret_literal(part)
+        elif part.startswith('"') and part.endswith('"'):
+            cmd_parts[index] = _parse_text_command_interpret_literal(part)
+
     contain_shell = any(True for part in cmd_parts if part in ['&', '|', '&&', '||', '>', '>>', '<', '<<'])
     if contain_shell:
         exception = click.ClickException(f"shell operations are not supported: `{command}`")
         exception.exit_code = 1
         raise exception
-    executable = LocalCommand(cmd_parts[0])
+    executable = sh(cmd_parts[0])
     args = cmd_parts[1:]
     return executable, args
+
+def _parse_text_command_interpret_literal(quoted_string: str):
+    return ast.literal_eval(quoted_string)

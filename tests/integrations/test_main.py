@@ -93,8 +93,9 @@ def test_invoke_command_should_invoke_command_in_subproject():
     ("echo -n 'hello world'", is_posix),
     ("echo --version", is_posix),
     ("echo --version", is_posix),
+    ("python --version", lambda: True),
 ])
-def test_run_should_execute_text_command(cmd: str, for_platform: Callable[[], bool]):
+def test_run_should_execute_text_command(cmd: str, for_platform: Callable[[], bool], capsys):
     """
     the alfred.run function executes a command within the same project.
     """
@@ -106,7 +107,7 @@ def test_run_should_execute_text_command(cmd: str, for_platform: Callable[[], bo
 
 
 @pytest.mark.parametrize('cmd,for_platform', [
-    ("xcopy.exe /Y file.txt file2.txt", is_windows),
+    ("python -c \"import os;os.rename('file.txt', 'file2.txt');\"", lambda: True),
     ("cp -f file.txt file2.txt", is_posix),
     ("cp --force file.txt file2.txt", is_posix),
 ])
@@ -118,7 +119,7 @@ def test_run_should_copy_file_with_text_command(cmd: str, for_platform: Callable
         # Acts & Assert
         if for_platform():
             alfred.run(cmd)
-            assert os.path.exists("file2.txt")
+            assert os.path.isfile("file2.txt")
         else:
             pytest.skip("not supported on this platform")
 
