@@ -1,5 +1,6 @@
 import contextlib
 import os
+import shlex
 from functools import wraps
 from typing import Union, List, Callable, Optional
 
@@ -261,6 +262,21 @@ def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_e
     """
     if args is None:
         args = []
+
+    if isinstance(command, str):
+        cmd_parser = shlex.shlex(command, punctuation_chars=True)
+        cmd_parser.whitespace_split = True
+        cmd_parts = list(cmd_parser)
+        contain_shell = any(True for part in cmd_parts if part in ['&', '|', '&&', '||', '>', '>>', '<', '<<'])
+        if contain_shell:
+            exception = click.ClickException(f"shell operations are not supported: `{command}`")
+            exception.exit_code = 1
+            raise exception
+
+        command = LocalCommand(cmd_parts[0])
+        args = cmd_parts[1:]
+
+
 
     try:
         logger = get_logger()

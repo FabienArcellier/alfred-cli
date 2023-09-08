@@ -43,8 +43,7 @@ import alfred
 
 @alfred.command('lint', help="validate your product using mypy")
 def lint():
-    mypy = alfred.sh('mypy', "mypy is not installed")
-    alfred.run(mypy, ["src/alfred"])
+    alfred.run("mypy src/alfred")
 ```
 
 ## Related

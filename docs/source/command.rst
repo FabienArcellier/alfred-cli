@@ -16,6 +16,18 @@ The command is the basic element to create a task to be executed.
         mypy = alfred.sh('mypy', "mypy is not installed")
         alfred.run(mypy, ["src/alfred"])
 
+.. note::
+
+    You can use write a command in full text. This pattern is a shortcut to avoid instantiating the utility.
+    The code runs the same way as above.
+
+    It's not run in a shell. Operations like ">" or ">>" are not supported
+
+    .. code-block:: python
+
+        @alfred.command('lint', help="validate your product using mypy")
+        def lint():
+            alfred.run("mypy src/alfred")
 
 Write your first workflow
 *************************
