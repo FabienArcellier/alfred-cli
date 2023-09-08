@@ -88,8 +88,8 @@ def test_invoke_command_should_invoke_command_in_subproject():
 
 
 @pytest.mark.parametrize('cmd,for_platform', [
-    ('echo hello world', lambda: True),
-    ("echo 'hello world'", lambda: True),
+    ('echo hello world', is_posix),
+    ("echo 'hello world'", is_posix),
     ("echo -n 'hello world'", is_posix),
     ("echo --version", is_posix),
     ("echo --version", is_posix),
@@ -106,7 +106,7 @@ def test_run_should_execute_text_command(cmd: str, for_platform: Callable[[], bo
 
 
 @pytest.mark.parametrize('cmd,for_platform', [
-    ("copy /Y file.txt file2.txt", is_windows),
+    ("xcopy.exe /Y file.txt file2.txt", is_windows),
     ("cp -f file.txt file2.txt", is_posix),
     ("cp --force file.txt file2.txt", is_posix),
 ])

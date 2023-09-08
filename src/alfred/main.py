@@ -2,7 +2,7 @@ import contextlib
 import os
 import shlex
 from functools import wraps
-from typing import Union, List, Callable, Optional
+from typing import Union, List, Callable, Optional, Tuple
 
 import click
 import plumbum
@@ -214,19 +214,19 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand
     if isinstance(command, str):
         command = [command]
 
-    shell_command = None
+    executable_command = None
     for _command in command:
         try:
-            shell_command = plumbum.local[_command]
+            executable_command = plumbum.local[_command]
             break
         except CommandNotFound:
             continue
 
-    if not shell_command:
+    if not executable_command:
         complete_fail_message = f" - {fail_message}" if fail_message is not None else ""
         raise click.ClickException(f"unknow command {command}{complete_fail_message}")
 
-    return shell_command
+    return executable_command
 
 
 def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_error=True) -> None:
@@ -264,19 +264,7 @@ def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_e
         args = []
 
     if isinstance(command, str):
-        cmd_parser = shlex.shlex(command, punctuation_chars=True)
-        cmd_parser.whitespace_split = True
-        cmd_parts = list(cmd_parser)
-        contain_shell = any(True for part in cmd_parts if part in ['&', '|', '&&', '||', '>', '>>', '<', '<<'])
-        if contain_shell:
-            exception = click.ClickException(f"shell operations are not supported: `{command}`")
-            exception.exit_code = 1
-            raise exception
-
-        command = LocalCommand(cmd_parts[0])
-        args = cmd_parts[1:]
-
-
+        command, args = _parse_text_command(command)
 
     try:
         logger = get_logger()
@@ -336,3 +324,31 @@ def _pythonpath(directories: List[str] = None, append_project=True) -> None:
     new_pythonpath = ":".join(real_directories + _pythonpath)
     with lib.override_pythonpath(new_pythonpath):
         yield
+
+
+def _parse_text_command(command: str) -> Tuple[LocalCommand, List[str]]:
+    """
+    Parse a text command and return a LocalCommand and a list of arguments
+
+    >>> command, args = _parse_text_command("echo hello world")
+    >>> # command == LocalCommand("echo")
+    >>> # args == ["hello", "world"]
+    >>>
+
+    This function does not handle shell operations like `|`, `>`, `>>`, etc...
+    These operations depend on the user's shell.
+
+    :param command:
+    :return:
+    """
+    cmd_parser = shlex.shlex(command, punctuation_chars=True)
+    cmd_parser.whitespace_split = True
+    cmd_parts = list(cmd_parser)
+    contain_shell = any(True for part in cmd_parts if part in ['&', '|', '&&', '||', '>', '>>', '<', '<<'])
+    if contain_shell:
+        exception = click.ClickException(f"shell operations are not supported: `{command}`")
+        exception.exit_code = 1
+        raise exception
+    executable = LocalCommand(cmd_parts[0])
+    args = cmd_parts[1:]
+    return executable, args
