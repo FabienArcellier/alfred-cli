@@ -1,9 +1,7 @@
-import ast
 import contextlib
 import os
-import shlex
 from functools import wraps
-from typing import Union, List, Callable, Optional, Tuple
+from typing import Union, List, Callable, Optional
 
 import click
 import plumbum
@@ -11,7 +9,7 @@ from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command
+from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command, shparser
 from alfred.logger import get_logger
 
 def CMD_RUNNING():  #pylint: disable=invalid-name
@@ -266,7 +264,8 @@ def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_e
 
     try:
         if isinstance(command, str):
-            command, args = _parse_text_command(command)
+            executable, args = shparser.parse_text_command(command)
+            command = sh(executable)
 
         logger = get_logger()
         complete_command = command[args]
@@ -325,40 +324,3 @@ def _pythonpath(directories: List[str] = None, append_project=True) -> None:
     new_pythonpath = ":".join(real_directories + _pythonpath)
     with lib.override_pythonpath(new_pythonpath):
         yield
-
-
-def _parse_text_command(command: str) -> Tuple[LocalCommand, List[str]]:
-    """
-    Parse a text command and return a LocalCommand and a list of arguments
-
-    >>> command, args = _parse_text_command("echo hello world")
-    >>> # command == LocalCommand("echo")
-    >>> # args == ["hello", "world"]
-    >>>
-
-    This function does not handle shell operations like `|`, `>`, `>>`, etc...
-    These operations depend on the user's shell.
-
-    :param command:
-    :return:
-    """
-    cmd_parser = shlex.shlex(command, punctuation_chars=True)
-    cmd_parser.whitespace_split = True
-    cmd_parts = list(cmd_parser)
-    for index, part in enumerate(cmd_parts):
-        if part.startswith("'") and part.endswith("'"):
-            cmd_parts[index] = _parse_text_command_interpret_literal(part)
-        elif part.startswith('"') and part.endswith('"'):
-            cmd_parts[index] = _parse_text_command_interpret_literal(part)
-
-    contain_shell = any(True for part in cmd_parts if part in ['&', '|', '&&', '||', '>', '>>', '<', '<<'])
-    if contain_shell:
-        exception = click.ClickException(f"shell operations are not supported: `{command}`")
-        exception.exit_code = 1
-        raise exception
-    executable = sh(cmd_parts[0])
-    args = cmd_parts[1:]
-    return executable, args
-
-def _parse_text_command_interpret_literal(quoted_string: str):
-    return ast.literal_eval(quoted_string)
