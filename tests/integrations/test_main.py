@@ -1,11 +1,13 @@
 import os
 import sys
+from typing import Callable
 
 import click
 import fixtup
+import pytest
 
 import alfred
-from alfred.os import is_windows
+from alfred.os import is_windows, is_posix
 from tests.fixtures import alfred_fixture
 
 
@@ -83,3 +85,52 @@ def test_invoke_command_should_invoke_command_in_subproject():
 
             assert exit_code == 0
             assert expected_python_exec in stdout
+
+
+@pytest.mark.parametrize('cmd,for_platform', [
+    ('echo hello world', is_posix),
+    ("echo 'hello world'", is_posix),
+    ("echo -n 'hello world'", is_posix),
+    ("echo --version", is_posix),
+    ("echo --version", is_posix),
+    ("python --version", lambda: True),
+])
+def test_run_should_execute_text_command(cmd: str, for_platform: Callable[[], bool], capsys):
+    """
+    the alfred.run function executes a command within the same project.
+    """
+    # Acts & Assert
+    if for_platform():
+        alfred.run(cmd)
+    else:
+        pytest.skip("not supported on this platform")
+
+
+@pytest.mark.parametrize('cmd,for_platform', [
+    ("python -c \"import os;os.rename('file.txt', 'file2.txt');\"", lambda: True),
+    ("cp -f file.txt file2.txt", is_posix),
+    ("cp --force file.txt file2.txt", is_posix),
+])
+def test_run_should_copy_file_with_text_command(cmd: str, for_platform: Callable[[], bool]):
+    """
+    the alfred.run function shoud copy a file with a command using flags
+    """
+    with fixtup.up("directory_with_content"):
+        # Acts & Assert
+        if for_platform():
+            alfred.run(cmd)
+            assert os.path.isfile("file2.txt")
+        else:
+            pytest.skip("not supported on this platform")
+
+
+@pytest.mark.parametrize('cmd,for_platform', [
+    ("echo 'hello world' > file.txt", lambda: True),
+    ("echo 'hello world' > /dev/null", is_posix),
+])
+def test_run_should_not_handle_shell_instruction(cmd: str, for_platform: Callable[[], bool]):
+    if is_posix():
+        try:
+            alfred.run("echo 'hello world' > /dev/null")
+        except Exception as e:
+            assert str(e).startswith("shell operations are not supported")

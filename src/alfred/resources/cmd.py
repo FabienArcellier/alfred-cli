@@ -23,9 +23,11 @@ def hello_world(name):
     value = click.prompt("Would you want to start ?", type=Choice(['y', 'n']), show_choices=True, default='n')
     if value == 'y':
         command_module = os.path.relpath(__file__, os.getcwd())
-        alfred.run(echo, f"Let's code your first command in '{command_module}' !")
+        alfred.run(f"echo Let's code your first command in '{command_module}' !")
 
         value = click.prompt("Should I open it for you ?", type=Choice(['y', 'n']), show_choices=True, default='n')
         if value == 'y':
             edit = alfred.sh("edit", f"edit alias is not available, you have to open '{command_module}' yourself.")
             alfred.run(edit, command_module)
+    else:
+        alfred.run("echo ok, see you later !")

@@ -1,7 +1,7 @@
 import contextlib
 import os
 from functools import wraps
-from typing import Union, List, Callable
+from typing import Union, List, Callable, Optional
 
 import click
 import plumbum
@@ -9,7 +9,7 @@ from click.exceptions import Exit
 from plumbum import CommandNotFound, ProcessExecutionError, FG, local
 from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command
+from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command, shparser
 from alfred.logger import get_logger
 
 def CMD_RUNNING():  #pylint: disable=invalid-name
@@ -213,22 +213,22 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand
     if isinstance(command, str):
         command = [command]
 
-    shell_command = None
+    executable_command = None
     for _command in command:
         try:
-            shell_command = plumbum.local[_command]
+            executable_command = plumbum.local[_command]
             break
         except CommandNotFound:
             continue
 
-    if not shell_command:
+    if not executable_command:
         complete_fail_message = f" - {fail_message}" if fail_message is not None else ""
         raise click.ClickException(f"unknow command {command}{complete_fail_message}")
 
-    return shell_command
+    return executable_command
 
 
-def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
+def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_error=True) -> None:
     """
     Most of the process run by alfred are supposed to stop
     if the excecution process is finishing with an exit code of 0
@@ -247,14 +247,26 @@ def run(command: LocalCommand, args: [str] = None, exit_on_error=True) -> None:
     >>> alfred.run(ls, ["/var/yolo"], exit_on_error=False)
     >>> alfred.run(mv, ["/var/yolo", "/var/yolo1"], exit_on_error=False)
 
+    A text command can be used directly with alfred.run. The text command is parsed and the execute is extracted from first
+    element in text. The arguments are extracted from the other elements.
 
-    :param command: shell program to execute
+    >>> alfred_command.run("echo hello world")
+    >>> alfred_command.run('cp "/home/fabien/hello world" /tmp', exit_on_error=False)
+
+    Shell operations are not supported &, |, &&, ||, etc... You can not use for example `echo hello world | grep hello` or
+    `echo hello world > file.txt`. If you use it an error will be raised.
+
+    :param command: command or text program to execute
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
     if args is None:
         args = []
 
     try:
+        if isinstance(command, str):
+            executable, args = shparser.parse_text_command(command)
+            command = sh(executable)
+
         logger = get_logger()
         complete_command = command[args]
         working_directory = os.getcwd()
