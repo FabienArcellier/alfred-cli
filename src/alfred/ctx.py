@@ -9,7 +9,7 @@ from typing import List, Optional
 from click.exceptions import Exit
 
 
-from alfred import interpreter, logger
+from alfred import interpreter, logger, echo
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInCommand
 
@@ -84,9 +84,10 @@ def invoke_through_external_venv(args: List[str]) -> None:
     """
     alfred_cmd = current_command()
     venv = interpreter.venv_lookup(alfred_cmd.project_dir)
-    exit_code, _, _ = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
+    exit_code, _, stderr = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
 
     if exit_code != 0:
+        echo.error(stderr)
         raise Exit(exit_code)
 
 
