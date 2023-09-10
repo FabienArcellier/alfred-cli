@@ -9,18 +9,38 @@
 
 Alfred is an extensible automation tool. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
 
+### Demo
+
 [![asciicast](https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x.svg)](https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x)
 **introductory video on using alfred**
 
-Want to try and look for inspiration, here are examples of commands that I implement in my projects :
+### Quick-start
+
+Commands of the code base are documented when you run ``alfred`` in a terminal.
 
 ```bash
-alfred ci # run your own continuous integration process
-alfred publish # publish a package on pypi
-alfred run # run your app
-alfred db:init # initialize a database
-alfred db:migrate # plays your migrations on your database
-...
+Usage: alfred [OPTIONS] COMMAND [ARGS]...
+
+  alfred is a building tool to make engineering tasks easier to develop and to
+  maintain
+
+Commands:
+  ci                  execute continuous integration process of alfred
+  docs:html           build documentation in html format
+  lint                validate the source code using pylint
+  publish             tag a new release and trigger pypi publication
+  tests               validate alfred with all the automatic testing
+```
+
+the commands are implemented in python in modules in the subdirectory ``./alfred``.
+
+*./alfred/ci.py*
+```python
+@alfred.command('ci', help="execute continuous integration process of alfred")
+@alfred.option('-v', '--verbose', is_flag=True)
+def ci(verbose: bool):
+    alfred.invoke_command('lint', verbose=verbose)
+    alfred.invoke_command('tests', verbose=verbose)
 ```
 
 ## Links
@@ -29,22 +49,6 @@ alfred db:migrate # plays your migrations on your database
 * PyPI Release : https://pypi.org/project/alfred-cli
 * Source code: https://github.com/FabienArcellier/alfred-cli
 * Chat: https://discord.gg/nMn9YPRGSY
-
-## Cookbook
-
-### Write your first command
-
-You can add your command in a new module in `./alfred`.
-In this example we will add the command `alfred lint` :
-
-*alfred/lint.py*
-```python
-import alfred
-
-@alfred.command('lint', help="validate your product using mypy")
-def lint():
-    alfred.run("mypy src/alfred")
-```
 
 ## Related
 

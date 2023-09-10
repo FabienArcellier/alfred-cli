@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "alfred-cli"
 version = "2.2.0"
-description = "alfred is an extensible building tool that can replace a Makefile or Fabric. Writing commands in python is done in minutes."
+description = "Alfred is an extensible automation tool. It allows you to build your continuous integration scripts in python, and much more. You can replace any scripts using the best of both worlds, shell and python."
 authors = ["Fabien Arcellier <fabien.arcellier@gmail.com>"]
 license = "MIT"
 readme = "README.md"

@@ -6,8 +6,8 @@ They aim to make your commands easy to read, write and maintain.
 
 .. module:: alfred
 
-Program command
-***************
+API to write command
+********************
 
 The following methods are used to set up a command that you can use through alfred.
 
@@ -27,8 +27,8 @@ The following methods are used to set up a command that you can use through alfr
 
 .. autofunction:: env
 
-Check the environment
-*********************
+API to check environment
+************************
 
 .. autofunction:: is_posix
 

@@ -22,20 +22,47 @@ Alfred
 
 Alfred is an extensible automation tool. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
 
-Want to try and look for inspiration, here are examples of commands that I implement in my projects :
+Demo
+----
 
 .. raw:: html
 
     <script async id="asciicast-i7YVDmQBRYVKAq1k74n9oYp0x" src="https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x.js"></script>
 
-.. code-block:: bash
+Quick start
+-----------
 
-    alfred ci # run your own continuous integration process
-    alfred publish # publish a package on pypi
-    alfred run # run your app
-    alfred db:init # initialize a database
-    alfred db:migrate # plays your migrations on your database
-    ...
+Commands of the code base are documented when you run ``alfred`` in a terminal.
+
+.. code-block:: bash
+    :caption: alfred
+
+    Usage: alfred [OPTIONS] COMMAND [ARGS]...
+
+      alfred is a building tool to make engineering tasks easier to develop and to
+      maintain
+
+    Commands:
+      ci                  execute continuous integration process of alfred
+      docs:html           build documentation in html format
+      lint                validate the source code using pylint
+      publish             tag a new release and trigger pypi publication
+      tests               validate alfred with all the automatic testing
+    ```
+
+the commands are implemented in python in modules in the subdirectory ``./alfred``.
+
+.. code-block:: python
+    :caption: ./alfred/ci.py
+
+    @alfred.command('ci', help="execute continuous integration process of alfred")
+    @alfred.option('-v', '--verbose', is_flag=True)
+    def ci(verbose: bool):
+        alfred.invoke_command('lint', verbose=verbose)
+        alfred.invoke_command('tests', verbose=verbose)
+
+Documentation
+-------------
 
 .. toctree::
    :maxdepth: 1
@@ -47,18 +74,8 @@ Want to try and look for inspiration, here are examples of commands that I imple
    command_line
    project
    toolkit
+   benefits
    advanced
-
-
-Alfred scales with your team
-----------------------------
-
-Alfred grows with your team. You can start with one command and then add more. When you feel that your command file is too crowded, you can restructure it into several files, or even separate it into several subfolders. Alfred is able to search all your orders by scanning a folder and its subfolders. It's all configurable.
-
-Alfred loves mono-repository
-----------------------------
-
-Alfred is built with the idea of being usable in a mono-repository which brings together several python, react, node projects in the same code repository. You can create several alfred sub-projects. At the root of the project, you will have access to all the commands of all the subprojects using the subproject name ``alfred project1 ci``.
 
 Links
 -----
