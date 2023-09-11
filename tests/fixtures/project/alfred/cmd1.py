@@ -44,6 +44,11 @@ def print_cwd():
     print(os.getcwd())
 
 
+@alfred.command("execution_directory")
+def execution_directory():
+    print(alfred.execution_directory())
+
+
 @alfred.command("multicommand")
 def multicommand_posix():
     echo = alfred.sh(["@@@@", "python"])

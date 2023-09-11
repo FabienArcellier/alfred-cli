@@ -330,8 +330,8 @@ def test_alfred_invoke_command_forward_debug_flag_to_command(caplog):
         assert '--debug' in execute_child_interpreter[0]
 
 
-def test_alfred_working_directory_is_the_root_of_the_project(caplog):
-    with fixtup.up('project'), caplog.at_level(logging.DEBUG):
+def test_alfred_working_directory_is_the_root_of_the_project():
+    with fixtup.up('project'):
         root_directory = os.getcwd()
 
         os.makedirs('src', exist_ok=True)
@@ -340,6 +340,18 @@ def test_alfred_working_directory_is_the_root_of_the_project(caplog):
 
         assert exit_code == 0
         assert stdout.strip() == root_directory
+
+
+def test_alfred_execution_directory_return_the_directory_where_invocation_is_done():
+    with fixtup.up('project'):
+        root_directory = os.getcwd()
+
+        os.makedirs('src', exist_ok=True)
+        os.chdir('src')
+        exit_code, stdout, _ = alfred_fixture.invoke(["cmd:execution_directory"])
+
+        assert exit_code == 0
+        assert stdout.strip() == os.path.join(root_directory, 'src')
 
 
 def test_alfred_working_directory_is_the_root_of_the_subproject():
@@ -352,6 +364,18 @@ def test_alfred_working_directory_is_the_root_of_the_subproject():
 
         assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
         assert stdout.strip() == os.path.join(root_directory, 'products', 'product1')
+
+
+def test_alfred_execution_directory_should_return_directory_where_command_has_been_invocked_on_subproject():
+    with fixtup.up('multiproject'):
+        directory_to_create = os.path.join('products', 'product1', 'src')
+        os.makedirs(directory_to_create, exist_ok=True)
+
+        root_directory = os.getcwd()
+        exit_code, stdout, stderr = alfred_fixture.invoke(["product1", "execution_directory"])
+
+        assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+        assert stdout.strip() == os.path.join(root_directory)
 
 if __name__ == '__main__':
     unittest.main()

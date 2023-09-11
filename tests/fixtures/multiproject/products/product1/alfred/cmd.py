@@ -12,3 +12,8 @@ def print_python_exec():
 @alfred.command("print_cwd")
 def print_cwd():
     print(os.getcwd())
+
+
+@alfred.command("execution_directory")
+def execution_directory():
+    print(alfred.execution_directory())

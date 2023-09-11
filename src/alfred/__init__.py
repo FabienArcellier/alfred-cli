@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from alfred.decorator import command, option
-from alfred.main import invoke_command, run, sh, env, project_directory, pythonpath, invoke_itself, CMD_RUNNING
+from alfred.main import invoke_command, run, sh, env, project_directory, pythonpath, invoke_itself, CMD_RUNNING, execution_directory
 from alfred.os import is_posix, is_windows, is_linux, is_macos
 
 """
