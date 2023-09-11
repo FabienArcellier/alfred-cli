@@ -123,6 +123,11 @@ class AlfredCli(click.MultiCommand):
         """
         super().invoke(ctx)
 
+    def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
+        if alfred_ctx.cli_args() is None:
+            alfred_ctx.cli_args_set(args)
+        return super().parse_args(ctx, args)
+
 
 @click.command(cls=AlfredCli,
                help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
@@ -130,8 +135,10 @@ class AlfredCli(click.MultiCommand):
 @click.option("-v", "--version", is_flag=True, help="display the version of alfred")
 @click.option("-c", "--check", is_flag=True, help="check the command integrity")
 @click.option("--completion", is_flag=True, help="display instructions to enable completion for your shell")
-def cli(debug: bool, version: bool, check: bool, completion: bool):  # pylint: disable=unused-argument
+@click.pass_context
+def cli(ctx, debug: bool, version: bool, check: bool, completion: bool):  # pylint: disable=unused-argument
     alfred_ctx.flag_set('--debug', debug)
+    alfred_ctx.directory_execution_set(os.getcwd())
 
 
 def display_obsolete_manifests():

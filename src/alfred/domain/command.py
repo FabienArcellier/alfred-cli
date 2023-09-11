@@ -1,5 +1,6 @@
 import contextlib
 import functools
+import os
 from typing import Optional, Callable, Generator
 
 from click import BaseCommand
@@ -63,7 +64,7 @@ class AlfredCommand:
     @contextlib.contextmanager
     def mount_context(self):
         """
-        Monte le context avant d'exécuter la commande click.
+        Mount the context before executing the click command.
 
         :return:
         """
@@ -74,11 +75,22 @@ class AlfredCommand:
             yield
 
 
-def make_context(alfred_command: AlfredCommand, func: Callable) -> Callable:
+def alfred_wrapper(alfred_command: AlfredCommand, func: Callable) -> Callable:
+    """
+    configure the context before executing the click command.
+
+    * configure the working folder
+    * configure the pythonpath
+    """
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         with alfred_command.mount_context():
-            return func(*args, **kwargs)
+            previous_directory = os.getcwd()
+            try:
+                os.chdir(alfred_command.project_dir)
+                return func(*args, **kwargs)
+            finally:
+                os.chdir(previous_directory)
 
     return wrapper

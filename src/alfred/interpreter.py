@@ -2,6 +2,7 @@ import os
 import sys
 from typing import Optional, List, Tuple, Union
 
+import click
 import plumbum
 from plumbum import local
 from plumbum.commands.modifiers import _TEE
@@ -46,7 +47,7 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
         raise AlfredException(f"bin folder not found in venv: {venv}, bin_path={bin_path}")
 
     python = plumbum.local[python_path]
-    args = ctx.flags() + args
+    args = ctx.invocation_options() + args
     logger.debug(f"alfred interpreter - switch to python: {python_path} : args={args}")
 
     with local.env(VIRTUAL_ENV=venv, PATH=global_path):
@@ -57,8 +58,8 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
             #
             # I don't know how to do better.
             exit_code, stdout, stderr = python[python_args].run(retcode=None)
-            print(stdout)
-            print(stderr)
+            click.echo(stdout)
+            click.echo(stderr, err=True)
         else:
             exit_code, stdout, stderr = python[python_args] & _TEE(retcode=None)
         return exit_code, stdout, stderr

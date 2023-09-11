@@ -3,7 +3,7 @@ from typing import Any, Optional
 import click
 
 
-from alfred.domain.command import AlfredCommand, make_context
+from alfred.domain.command import AlfredCommand, alfred_wrapper
 
 
 def command(name: str, help: str = '', **attrs: Any):  # pylint: disable=redefined-builtin
@@ -30,7 +30,7 @@ def command(name: str, help: str = '', **attrs: Any):  # pylint: disable=redefin
 
     def alfred_decorated(func):
         alfred_command = AlfredCommand()
-        func = make_context(alfred_command, func)
+        func = alfred_wrapper(alfred_command, func)
 
         click_decorator = click.command(name, help=help, **attrs)
         click_command = click_decorator(func)

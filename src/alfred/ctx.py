@@ -3,6 +3,7 @@ This module exposes functions that manage the execution context of a command,
 such as the current command, its parents, ...
 """
 import contextlib
+import copy
 import dataclasses
 from typing import List, Optional
 
@@ -13,23 +14,35 @@ from alfred import interpreter, logger, echo
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInCommand
 
-
 class Mode:
     ListCommands = "list_commands"
     RunCommand = "run_command"
     Unknown = "unknown"
 
 @dataclasses.dataclass
+class InvocationContext:
+    """
+    The invocation context represents Alfred's summon information.
+
+    Once written, its attributes, once written, remain constant. If alfred is invoked in a subproject, 7
+    the invocation context is loaded from a file written with the parent's pid.
+
+    Attributes must be primitive types to be serializable.
+    """
+    directory_execution: Optional[str] = None
+    args: Optional[List[str]] = None
+    mode: str = Mode.Unknown
+    flag: List[str] = dataclasses.field(default_factory=list)
+
+@dataclasses.dataclass
 class Context:
     commands_stack: List[AlfredCommand] = dataclasses.field(default_factory=list)
-    mode: str = Mode.Unknown
-    flags: List[str] = dataclasses.field(default_factory=list)
 
     @property
     def running(self) -> bool:
         return len(self.commands_stack) > 0
 
-
+_invocation_context = InvocationContext()
 _context = Context()
 
 def assert_in_command(instruction: str) -> None:
@@ -53,28 +66,45 @@ def current_command() -> Optional[AlfredCommand]:
 
 
 def command_run() -> bool:
-    return _context.mode == Mode.RunCommand
+    return _invocation_context.mode == Mode.RunCommand
 
+def cli_args_set(args: List[str]) -> None:
+    _invocation_context.args = copy.copy(args)
+
+
+def cli_args() -> Optional[List[str]]:
+    return _invocation_context.args
+
+def directory_execution_set(directory: str) -> None:
+    _invocation_context.directory_execution = directory
+
+
+def directory_execution() -> Optional[str]:
+    return _invocation_context.directory_execution
 
 def flag_set(flag: str, enable: bool) -> None:
     """
     configure flag to forward to interpreter when invoking a command
     """
-    if enable and flag not in _context.flags:
-        _context.flags.append(flag)
+    if enable and flag not in _invocation_context.flag:
+        _invocation_context.flag.append(flag)
 
+def invocation_options() -> List[str]:
+    """
+    recomposes the list of invocation options (flags + options).
 
-def flags() -> List[str]:
-    return _context.flags
+    Options management is missing because Alfred is not using it at the moment.
+    """
+    return _invocation_context.flag
 
 
 def mode_unknown() -> str:
-    return _context.mode == Mode.Unknown
+    return _invocation_context.mode == Mode.Unknown
 
 
 def mode_set(mode: str) -> None:
-    logger.debug(f"mode set '{mode}' - previous '{_context.mode}'")
-    _context.mode = mode
+    logger.debug(f"mode set '{mode}'")
+    _invocation_context.mode = mode
 
 
 def invoke_through_external_venv(args: List[str]) -> None:
@@ -133,8 +163,7 @@ def stack_root_command(command: AlfredCommand) -> None:
 @contextlib.contextmanager
 def stack_subcommand(command: AlfredCommand) -> None:
     """
-    Ajoute une nouvelle commande sur la pile des commandes en cours.
-    Une fois l'exécution
+    Adds a new command to the current command stack.
 
     >>> with ctx.stack_subcommand(command):
     >>>     pass
@@ -153,8 +182,13 @@ def use_new_context() -> None:
     >>> with ctx.use_new_context():
     >>>     pass
     """
-    global _context # pylint: disable=global-statement
+    global _context, _invocation_context # pylint: disable=global-statement
     previous_context = _context
-    _context = Context()
-    yield
-    _context = previous_context
+    previous_invocation_context = _invocation_context
+    try:
+        _context = Context()
+        _invocation_context = InvocationContext()
+        yield
+    finally:
+        _context = previous_context
+        _invocation_context = previous_invocation_context
