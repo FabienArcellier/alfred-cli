@@ -84,8 +84,10 @@ def execution_directory() -> str:
     """
     Returns the directory from which the command is executed.
 
-    The working folder is overloaded by alfred to be the project directory of the current command.
+    The working folder return by ``os.getcwd`` is set to the project directory inside a command.
     This allows to change the path in commands knowing where the working directory is.
+
+    The project directory is the first parent where the `.alfred.toml` file is present.
 
     >>> @alfred.command("execution_directory")
     >>> def execution_directory_command():

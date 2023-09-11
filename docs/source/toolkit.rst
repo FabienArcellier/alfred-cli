@@ -39,3 +39,5 @@ API to check environment
 .. autofunction:: is_macos
 
 .. autofunction:: project_directory
+
+.. autofunction:: execution_directory
