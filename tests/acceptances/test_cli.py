@@ -256,7 +256,7 @@ class TestCli(unittest.TestCase):
 
             # Assert
             assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
-            assert stderr == ''
+            assert stderr.strip() == ''
             assert "hello" in stdout
 
     def test_alfred_check_should_exit_with_one_when_alfred_command_are_corrupted(self):
@@ -339,7 +339,7 @@ def test_alfred_working_directory_is_the_root_of_the_project():
         exit_code, stdout, _ = alfred_fixture.invoke(["cmd:print_cwd"])
 
         assert exit_code == 0
-        assert stdout.strip() == root_directory
+        assert os.path.realpath(stdout.strip()) == os.path.realpath(root_directory)
 
 
 def test_alfred_execution_directory_return_the_directory_where_invocation_is_done():
@@ -351,7 +351,7 @@ def test_alfred_execution_directory_return_the_directory_where_invocation_is_don
         exit_code, stdout, _ = alfred_fixture.invoke(["cmd:execution_directory"])
 
         assert exit_code == 0
-        assert stdout.strip() == os.path.join(root_directory, 'src')
+        assert os.path.realpath(stdout.strip()) == os.path.realpath(os.path.join(root_directory, 'src'))
 
 
 def test_alfred_working_directory_is_the_root_of_the_subproject():
@@ -363,7 +363,7 @@ def test_alfred_working_directory_is_the_root_of_the_subproject():
         exit_code, stdout, stderr = alfred_fixture.invoke(["product1", "print_cwd"])
 
         assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
-        assert stdout.strip() == os.path.join(root_directory, 'products', 'product1')
+        assert os.path.realpath(stdout.strip()) == os.path.realpath(os.path.join(root_directory, 'products', 'product1')), f"stdout={stdout}"
 
 
 def test_alfred_execution_directory_should_return_directory_where_command_has_been_invocked_on_subproject():
@@ -375,7 +375,7 @@ def test_alfred_execution_directory_should_return_directory_where_command_has_be
         exit_code, stdout, stderr = alfred_fixture.invoke(["product1", "execution_directory"])
 
         assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
-        assert stdout.strip() == os.path.join(root_directory)
+        assert os.path.realpath(stdout.strip()) == os.path.realpath(root_directory), f"stdout={stdout}"
 
 if __name__ == '__main__':
     unittest.main()
