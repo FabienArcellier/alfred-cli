@@ -39,6 +39,11 @@ def print_python_exec():
     print(sys.executable)
 
 
+@alfred.command("print_cwd")
+def print_cwd():
+    print(os.getcwd())
+
+
 @alfred.command("multicommand")
 def multicommand_posix():
     echo = alfred.sh(["@@@@", "python"])

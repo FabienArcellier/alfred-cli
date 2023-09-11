@@ -329,5 +329,29 @@ def test_alfred_invoke_command_forward_debug_flag_to_command(caplog):
         execute_child_interpreter = [record.message for record in caplog.records if ' switch to python' in record.message]
         assert '--debug' in execute_child_interpreter[0]
 
+
+def test_alfred_working_directory_is_the_root_of_the_project(caplog):
+    with fixtup.up('project'), caplog.at_level(logging.DEBUG):
+        root_directory = os.getcwd()
+
+        os.makedirs('src', exist_ok=True)
+        os.chdir('src')
+        exit_code, stdout, _ = alfred_fixture.invoke(["cmd:print_cwd"])
+
+        assert exit_code == 0
+        assert stdout.strip() == root_directory
+
+
+def test_alfred_working_directory_is_the_root_of_the_subproject():
+    with fixtup.up('multiproject'):
+        directory_to_create = os.path.join('products', 'product1', 'src')
+        os.makedirs(directory_to_create, exist_ok=True)
+
+        root_directory = os.getcwd()
+        exit_code, stdout, stderr = alfred_fixture.invoke(["product1", "print_cwd"])
+
+        assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+        assert stdout.strip() == os.path.join(root_directory, 'products', 'product1')
+
 if __name__ == '__main__':
     unittest.main()

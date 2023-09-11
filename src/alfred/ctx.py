@@ -24,6 +24,7 @@ class Context:
     commands_stack: List[AlfredCommand] = dataclasses.field(default_factory=list)
     mode: str = Mode.Unknown
     flags: List[str] = dataclasses.field(default_factory=list)
+    directory_execution: str = ""
 
     @property
     def running(self) -> bool:
@@ -55,6 +56,13 @@ def current_command() -> Optional[AlfredCommand]:
 def command_run() -> bool:
     return _context.mode == Mode.RunCommand
 
+
+def directory_execution_set(directory: str) -> None:
+    _context.directory_execution = directory
+
+
+def directory_execution() -> Optional[str]:
+    return _context.directory_execution
 
 def flag_set(flag: str, enable: bool) -> None:
     """

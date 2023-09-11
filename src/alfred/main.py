@@ -80,6 +80,21 @@ def project_directory() -> str:
     return current_cmd.project_dir
 
 
+def execution_directory() -> str:
+    """
+    Returns the directory from which the command is executed.
+
+    The working folder is overloaded by alfred to be the project directory of the current command.
+    This allows to change the path in commands knowing where the working directory is.
+
+    >>> @alfred.command("execution_directory")
+    >>> def execution_directory_command():
+    >>>     execution_directory = alfred.execution_directory()
+    >>>     print(execution_directory)
+    """
+    return alfred_ctx.directory_execution()
+
+
 @contextlib.contextmanager
 def env(**kwargs) -> None:
     """
@@ -136,11 +151,16 @@ def invoke_command(ctx, command: str or List[str], **kwargs) -> None:
         echo.subcommand(f"$ alfred {click_command.name}")
 
     with alfred_ctx.stack_subcommand(_command):
+        os.chdir(project_dir)
         args = alfred_command.format_cli_arguments(_command, kwargs)
         if alfred_ctx.should_use_external_venv():
             alfred_ctx.invoke_through_external_venv(args)
         else:
-            ctx.invoke(click_command, **kwargs)
+            previous_directory = os.getcwd()
+            try:
+                ctx.invoke(click_command, **kwargs)
+            finally:
+                os.chdir(previous_directory)
 
 class pythonpath:  #pylint: disable=invalid-name
     """
