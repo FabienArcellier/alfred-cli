@@ -29,6 +29,7 @@ Projects
 * discover commands in subprojects as multi command ``alfred {project} {command}``
 * execute a command from a virtual environment associated with the project
 * detect automatically virtual environment in ``.venv`` directory
+* add pythonpath, path into the manifest to use external program or script more easily
 
 Utilities
 *********

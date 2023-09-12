@@ -43,13 +43,14 @@ Project manifest
     [alfred]
     name = "fixtup" # optional
     description = "str" # optional
-    subprojects = [ "product/*", "lib/*" ] # optional
+    subprojects = [ ] # optional
 
     [alfred.project]
     command = [ "alfred/*.py" ] # optional
+    path_extends = [ ] # optional
     python_path_project_root = true # optional
-    python_path_extends = [] # optional
-    venv = "src/.." # optional
+    python_path_extends = [ ] # optional
+    venv = null # optional
     venv_dotvenv_ignore = false # optional
 
 Section [alfred]
@@ -80,9 +81,16 @@ Section [alfred]
 
     a list of expressions to search for sub-projects in a mono-repository.
 
+    .. code-block:: toml
+        :caption: .alfred.toml
+
+        [alfred]
+        name = "fixtup" # optional
+        subprojects = [ "product/*", "lib/*" ] # optional
+
     .. note::
 
-        The `glob <https:docs.python.org3libraryglob.html>`_ module is used as an expression interpreter.
+        The `glob <https://docs.python.org/3/library/glob.html>`_ module is used as an expression interpreter.
         The wildcards ``*`` et ``**`` are allowed to search subfolders recursively.
 
     .. warning::
@@ -117,6 +125,19 @@ Section [alfred.project]
 
             For expressions that are relative paths, they are resolved from the folder that contains
             the corresponding .alfred.toml manifest.
+
+    path_extends (optional)
+
+        Default value: ``path_extends = []``
+
+        adds folders to the PATH to make executables more accessible. This makes it possible to make commands installed by nodejs accessible.
+        The relative paths are resolved from alfred's project folder.
+
+        .. code-block:: toml
+            :caption: .alfred.toml
+
+            [alfred.project]
+            path_extends = [ "frontend/node_modules/.bin" ]
 
     pythonpath_project_root (optional)
 
