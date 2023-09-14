@@ -15,7 +15,8 @@ class ManifestParameter:
     parameter: str
     section: Optional[str] = None
     default: Optional[Any] = None
-    formatter: Callable[[str, Any], Any] = lambda projectdir, value: value
+    formatter: Callable[[Any, str], Any] = lambda value, project_dir: value
+    checker: Callable[[Any], Optional[List[str]]] = lambda value: None
     legacy_aliases: List[str] = dataclasses.field(default_factory=list)
 
 class AlfredManifest:

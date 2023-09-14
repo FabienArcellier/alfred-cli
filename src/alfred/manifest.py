@@ -10,6 +10,20 @@ from alfred.exceptions import NotInitialized, AlfredException
 from alfred.lib import list_hierarchy_directory
 from alfred.logger import logger
 
+def manifest_definitions():
+    return [
+        ManifestParameter('name', section='alfred'),
+        ManifestParameter('description', section='alfred'),
+        ManifestParameter('prefix', section='alfred', default=""),
+        ManifestParameter('subprojects', section='alfred', default=[], formatter=_format_path_list, checker=_check_path_list),
+        ManifestParameter('pythonpath_extends', section='alfred.project', default=[], legacy_aliases=['python_path_extends'], formatter=_format_path_list, checker=_check_path_list),
+        ManifestParameter('pythonpath_project_root', section='alfred.project', default=True, legacy_aliases=['python_path_project_root']),
+        ManifestParameter('command', section='alfred.project', default=["alfred/*.py"], formatter=_format_path_list, checker=_check_path_list),
+        ManifestParameter('path_extends', section='alfred.project', default=[], formatter=_format_path_list, checker=_check_path_list),
+        ManifestParameter('venv', section='alfred.project', default=None, formatter=_format_path),
+        ManifestParameter('venv_dotvenv_ignore', section='alfred.project', default=False),
+    ]
+
 
 def lookup(path: Optional[str] = None, search: bool = True) -> AlfredManifest:
     """
@@ -81,22 +95,49 @@ def lookup_obsolete_manifests(path: Optional[str] = None) -> List[str]:
 
     return obsolete_manifests
 
-def _format_command(project_dir: str, value: Any) -> List[str]:  # pylint: disable=unused-argument
-    parameter_def = [p for p in PROJECT_PARAMETERS if p.parameter == 'command'][0]
+def lookup_parameter(parameter: str, section: Optional['str'] = 'alfred', project_dir: Optional[str] = None) -> Any:
+    """
+    Retrieves a setting from the manifest.
 
-    if not isinstance(value, list):
-        echo.warning(f"The command in the manifest must be a list of string, use {parameter_def.default} instead")
-        return parameter_def.default
+    >>> from alfred import manifest
+    >>> name = manifest.lookup_parameter('name')
+    >>> description = manifest.lookup_parameter('description')
+    >>> venv = manifest.lookup_parameter('venv', section='alfred.project')
 
-    return value
+    """
+    parameter_defs = [p for p in MANIFEST_PARAMETERS if p.parameter == parameter and p.section == section]
+    if len(parameter_defs) == 0:
+        raise AlfredException(f"Unknown project parameter {parameter} in {section}")
 
-PROJECT_PARAMETERS = [
-    ManifestParameter('pythonpath_extends', section='project', default=[], legacy_aliases=['python_path_extends']),
-    ManifestParameter('pythonpath_project_root', section='project', default=True, legacy_aliases=['python_path_project_root']),
-    ManifestParameter('command', section='project', default=["alfred/*.py"], formatter=_format_command),
-    ManifestParameter('venv', section='project', default=None, formatter=lambda projectdir, value: os.path.realpath(os.path.join(projectdir, value))),
-    ManifestParameter('venv_dotvenv_ignore', section='project', default=False),
-]
+    if project_dir is None:
+        project_dir = lookup_project_dir()
+
+    section_record = _lookup_manifest_section(project_dir, section)
+    parameter_def = parameter_defs[0]
+    value = section_record.get(parameter, parameter_def.default)
+    if value != parameter_def.default:
+        checks = parameter_def.checker(value)
+        if checks is not None:
+            for check in checks:
+                echo.error(f"error in '{parameter}' from '{section}': {check}")
+            return parameter_def.default
+
+        return parameter_def.formatter(value, project_dir)
+    else:
+        for alias in parameter_def.legacy_aliases:
+            value = section_record.get(alias, parameter_def.default)
+            if value != parameter_def.default:
+                echo.warning(f"Use of legacy parameter {alias}, please use {parameter} instead")
+                checks = parameter_def.checker(value)
+                if checks is not None:
+                    for check in checks:
+                        echo.error(f"error in '{parameter}' from '{section}': {check}")
+                    return parameter_def.default
+
+                return parameter_def.formatter(value, project_dir)
+
+        return value
+
 
 def lookup_parameter_project(parameter: str, project_dir: Optional[str] = None) -> Any:
     """
@@ -107,25 +148,8 @@ def lookup_parameter_project(parameter: str, project_dir: Optional[str] = None) 
     >>> pythonpath_extend = manifest.lookup_parameter_project('pythonpath_extends')
     >>> venv_dotvenv_ignore = manifest.lookup_parameter_project('venv_dotvenv_ignore', project_dir='~/myprojects/project1')
     """
-    parameter_defs = [p for p in PROJECT_PARAMETERS if p.parameter == parameter]
-    if len(parameter_defs) == 0:
-        raise AlfredException(f"Unknown project parameter {parameter}")
+    return lookup_parameter(parameter, section='alfred.project', project_dir=project_dir)
 
-    if project_dir is None:
-        project_dir = lookup_project_dir()
-
-    parameter_def = parameter_defs[0]
-    value = _lookup_project_section(project_dir, parameter, default=parameter_def.default)
-    if value != parameter_def.default:
-        return parameter_def.formatter(project_dir, value)
-    else:
-        for alias in parameter_def.legacy_aliases:
-            value = _lookup_project_section(project_dir, alias, default=parameter_def.default)
-            if value != parameter_def.default:
-                echo.warning(f"Use of legacy parameter {alias}, please use {parameter} instead")
-                return parameter_def.formatter(project_dir, value)
-
-        return value
 
 def contains_obsolete_manifest(project_dir: Optional[str] = None) -> Optional[str]:
     """
@@ -225,6 +249,23 @@ def _is_manifest_directory(directory: str) -> Optional[str]:
 
     return None
 
+def _lookup_manifest_section(project_dir: str, section: str) -> dict:
+    """
+    retrieves the section of the manifest that matches the requested section.
+
+    If the section is absent, this function returns an empty dictionary to be able to use it with get().
+
+    >>> section = _lookup_section(project_dir, 'alfred.project')
+    >>> param = section.get('pythonpath_extends')
+    """
+    alfred_manifest = lookup(project_dir)
+    section_parts = section.split('.')
+    configuration = alfred_manifest.configuration
+    for section_part in section_parts:
+        configuration = configuration.get(section_part, {})
+
+    return configuration
+
 
 def _lookup_project_section(project_dir: str, key: str, default: Optional[Any] = None):
     """
@@ -243,3 +284,39 @@ def _lookup_project_section(project_dir: str, key: str, default: Optional[Any] =
 
     value = configuration['alfred']['project'][key]
     return value
+
+def _check_path_list(value: Any) -> Optional[List[str]]:
+    if not isinstance(value, list):
+        return ["must be a list of string, use [] instead"]
+    result = []
+    for item in value:
+        if not isinstance(item, str):
+            result.append(f"item {item} must be a path")
+
+    if len(result) > 0:
+        return result
+
+    return None
+
+def _format_path_list(value: Any, project_dir: str) -> List[str]:
+    """
+    format a list of path read from the manifest to use the separator from the current OS.
+
+    """
+    values = []
+    for item in value:
+        path_parts = item.split('/')
+        values.append(os.path.join(*path_parts))
+
+    return values
+
+def _format_path(value: Any, project_dir: str) -> str:
+    """
+    format a path read from the manifest to use the separator from the current OS.
+
+    """
+    path_parts = value.split('/')
+    return os.path.realpath(os.path.join(project_dir, *path_parts))
+
+
+MANIFEST_PARAMETERS = manifest_definitions()

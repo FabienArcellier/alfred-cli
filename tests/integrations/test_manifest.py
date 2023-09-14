@@ -54,6 +54,17 @@ def test_project_commands_pattern_should_return_specified_values():
     with fixtup.up('project_with_command'):
         assert manifest.lookup_parameter_project('command') == ["customdir/*.py"]
 
+
 def test_python_path_extends_should_return_a_list_of_directory():
     with fixtup.up('pythonpath_extends'):
         assert manifest.lookup_parameter_project('pythonpath_extends') == ["tests"]
+
+
+def test_lookup_parameter_should_get_parameter_from_alfred_section():
+    with fixtup.up('project'):
+        assert manifest.lookup_parameter('prefix') == "cmd:"
+
+
+def test_lookup_parameter_should_get_parameter_from_specific_section():
+    with fixtup.up('pythonpath_extends'):
+        assert manifest.lookup_parameter('pythonpath_extends', section='alfred.project') == ["tests"]
