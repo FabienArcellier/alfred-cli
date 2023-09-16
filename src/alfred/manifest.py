@@ -16,7 +16,7 @@ def manifest_definitions():
         ManifestParameter('description', section='alfred'),
         ManifestParameter('prefix', section='alfred', default=""),
         ManifestParameter('subprojects', section='alfred', default=[], formatter=_format_path_list, checker=_check_path_list),
-        ManifestParameter('pythonpath_extends', section='alfred.project', default=[], legacy_aliases=['python_path_extends'], formatter=_format_path_list, checker=_check_path_list),
+        ManifestParameter('pythonpath_extends', section='alfred.project', default=[], legacy_aliases=['python_path_extends'], formatter=_format_path_list, checker=_check_path_list),  # pylint: disable=line-too-long
         ManifestParameter('pythonpath_project_root', section='alfred.project', default=True, legacy_aliases=['python_path_project_root']),
         ManifestParameter('command', section='alfred.project', default=["alfred/*.py"], formatter=_format_path_list, checker=_check_path_list),
         ManifestParameter('path_extends', section='alfred.project', default=[], formatter=_format_path_list, checker=_check_path_list),
@@ -298,7 +298,7 @@ def _check_path_list(value: Any) -> Optional[List[str]]:
 
     return None
 
-def _format_path_list(value: Any, project_dir: str) -> List[str]:
+def _format_path_list(value: Any, project_dir: str) -> List[str]:  # pylint: disable=unused-argument
     """
     format a list of path read from the manifest to use the separator from the current OS.
 

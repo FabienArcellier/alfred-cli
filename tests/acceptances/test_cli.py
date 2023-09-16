@@ -4,6 +4,7 @@ import unittest
 
 import fixtup
 import plumbum
+import pytest
 
 import alfred
 from alfred import is_windows
@@ -376,6 +377,17 @@ def test_alfred_execution_directory_should_return_directory_where_command_has_be
 
         assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
         assert os.path.realpath(stdout.strip()) == os.path.realpath(root_directory), f"stdout={stdout}"
+
+def test_alfred_sh_get_command_from_manifest_path_extension():
+    if alfred.os.is_windows():
+        pytest.skip('Windows does not support this test')
+
+    with fixtup.up('path_extends'):
+        exit_code, stdout, stderr = alfred_fixture.invoke(["hello_world"])
+
+        assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+        assert stdout.strip() == 'hello world', f"stdout={stdout}"
+
 
 if __name__ == '__main__':
     unittest.main()
