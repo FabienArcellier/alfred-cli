@@ -120,7 +120,10 @@ def lookup_parameter(parameter: str, section: Optional['str'] = 'alfred', projec
         if checks is not None:
             for check in checks:
                 echo.error(f"error in '{parameter}' from '{section}': {check}")
-            return parameter_def.default
+
+            # We use formatter on default value to get the correct value for windows
+            # environment for example.
+            return parameter_def.formatter(parameter_def.default, project_dir)
 
         return parameter_def.formatter(value, project_dir)
     else:
@@ -132,11 +135,15 @@ def lookup_parameter(parameter: str, section: Optional['str'] = 'alfred', projec
                 if checks is not None:
                     for check in checks:
                         echo.error(f"error in '{parameter}' from '{section}': {check}")
-                    return parameter_def.default
+
+
+                    # We use formatter on default value to get the correct value for windows
+                    # environment for example.
+                    return parameter_def.formatter(parameter_def.default, project_dir)
 
                 return parameter_def.formatter(value, project_dir)
 
-        return value
+        return parameter_def.formatter(value, project_dir)
 
 
 def lookup_parameter_project(parameter: str, project_dir: Optional[str] = None) -> Any:
@@ -310,11 +317,14 @@ def _format_path_list(value: Any, project_dir: str) -> List[str]:  # pylint: dis
 
     return values
 
-def _format_path(value: Any, project_dir: str) -> str:
+def _format_path(value: Any, project_dir: str) -> Optional[str]:
     """
     format a path read from the manifest to use the separator from the current OS.
 
     """
+    if value is None:
+        return None
+
     path_parts = value.split('/')
     return os.path.realpath(os.path.join(project_dir, *path_parts))
 
