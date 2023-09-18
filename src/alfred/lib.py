@@ -3,12 +3,12 @@ import glob
 import io
 import os
 import sys
-from typing import List, Iterator
+from typing import List, Iterator, ContextManager
 
 from plumbum import local
 
 from alfred.exceptions import InvalidCommandModule
-from alfred.logger import get_logger
+from alfred import logger
 
 ROOT_DIR = os.path.realpath(os.path.join(__file__, '..'))
 
@@ -58,9 +58,8 @@ def list_hierarchy_directory(workingdir: str) -> List[str]:
 
     return result
 
-
 @contextlib.contextmanager
-def override_pythonpath(pythonpath: str):
+def override_env_pythonpath(pythonpath: str) -> ContextManager[None]:
     """
     Override the pythonpath variable in a generalized way
 
@@ -68,17 +67,26 @@ def override_pythonpath(pythonpath: str):
     * override pythonpath environment variable in plumbum
     * override sys.path
     """
-    pathsep = os.pathsep
-    logger = get_logger()
     logger.debug(f"override PYTHONPATH: {pythonpath}")
-
     previous_pythonpath = os.environ.get('PYTHONPATH', '')
     previous_syspath = sys.path
     with local.env(PYTHONPATH=pythonpath):
         os.environ['PYTHONPATH'] = pythonpath
-        sys.path = pythonpath.split(pathsep)
+        sys.path = pythonpath.split(os.pathsep)
         try:
             yield
         finally:
             os.environ['PYTHONPATH'] = previous_pythonpath
             sys.path = previous_syspath
+
+
+@contextlib.contextmanager
+def override_env_path(path: str) -> ContextManager[None]:
+    logger.debug(f"override PATH: {path}")
+    previous_path = os.environ.get('PATH', '')
+    with local.env(PATH=path):
+        os.environ['PATH'] = path
+        try:
+            yield
+        finally:
+            os.environ['PATH'] = previous_path

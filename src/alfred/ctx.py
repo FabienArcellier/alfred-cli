@@ -5,12 +5,14 @@ such as the current command, its parents, ...
 import contextlib
 import copy
 import dataclasses
+import os
+import sys
 from typing import List, Optional
 
 from click.exceptions import Exit
 
 
-from alfred import interpreter, logger, echo
+from alfred import interpreter, logger, echo, manifest
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInCommand
 
@@ -192,3 +194,68 @@ def use_new_context() -> None:
     finally:
         _context = previous_context
         _invocation_context = previous_invocation_context
+
+
+def env_pythonpath(project_dir: Optional[str] = None) -> str:
+    """
+    Constructs the PYTHONPATH environment variable from project settings and interpreter info.
+
+    """
+    if project_dir is None:
+        project_dir = project_directory()
+
+    pythonpath_extensions = []
+    if manifest.lookup_parameter_project('pythonpath_project_root'):
+        pythonpath_extensions.append(project_dir)
+    pythonpath_extensions += manifest.lookup_parameter_project('pythonpath_extends')
+    pythonpath = os.pathsep.join(sys.path)
+    pythonpath = _include_path(pythonpath, pythonpath_extensions, project_dir)
+    return pythonpath
+
+
+def env_path(project_dir: Optional[str] = None):
+    """
+    Constructs the PATH environment variable from project settings and the os info.
+
+    """
+    if project_dir is None:
+        project_dir = project_directory()
+
+    path_extensions = manifest.lookup_parameter_project('path_extends', project_dir)
+    path = os.environ.get('PATH', '')
+    path = _include_path(path, path_extensions, project_dir)
+    return path
+
+def project_directory() -> str:
+    """
+    Returns the project directory of alfred relative to the current command.
+    This is the first parent where the `.alfred.toml` file is present.
+
+    >>> @alfred.command("project_directory")
+    >>> def project_directory_command():
+    >>>     project_directory = alfred.project_directory()
+    >>>     print(project_directory)
+    """
+    return current_command().project_dir
+
+
+def _include_path(path: str, path_extensions: List[str], root_directory: str) -> str:
+    """
+    Merges a path variable like the PATH or PYTHONPATH variable with an extension list.
+
+    Extensions can be absolute or relative paths to the project root directory.
+
+    >>> path = include_path('/usr/bin:/usr/local/bin', ['bin', '.venv/bin'])
+    """
+    if len(path_extensions) > 0:
+        _path = path.split(os.pathsep)
+        _path = list(reversed(_path))
+        for extension in path_extensions:
+            if os.path.isabs(extension):
+                _path.append(extension)
+            else:
+                _path.append(os.path.join(root_directory, extension))
+
+        _path = list(reversed(_path))
+        path = os.pathsep.join(_path)
+    return path

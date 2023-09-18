@@ -76,8 +76,7 @@ def project_directory() -> str:
     >>>     project_directory = alfred.project_directory()
     >>>     print(project_directory)
     """
-    current_cmd = alfred_ctx.current_command()
-    return current_cmd.project_dir
+    return alfred_ctx.project_directory()
 
 
 def execution_directory() -> str:
@@ -344,5 +343,5 @@ def _pythonpath(directories: List[str] = None, append_project=True) -> None:
         real_directories += [root_directory]
 
     new_pythonpath = ":".join(real_directories + _pythonpath)
-    with lib.override_pythonpath(new_pythonpath):
+    with lib.override_env_pythonpath(new_pythonpath):
         yield

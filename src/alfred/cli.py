@@ -1,18 +1,17 @@
-import contextlib
 import logging
 import os
 import shutil
 import sys
-from typing import List, Any, Generator
+from typing import List, Any
 
 import click
 
-from alfred import ctx as alfred_ctx, manifest, echo, project_directory, self_command
+from alfred import ctx as alfred_ctx, manifest, echo, self_command, middlewares
 from alfred import commands
 from alfred.ctx import Context
 from alfred.decorator import AlfredCommand
 from alfred.exceptions import NotInitialized
-from alfred.lib import ROOT_DIR, override_pythonpath
+from alfred.lib import ROOT_DIR
 from alfred import logger
 
 
@@ -72,7 +71,7 @@ class AlfredCli(click.MultiCommand):
         click_command = _command.command
         if click_command.name == cmd_name and isinstance(_command, AlfredCommand):
             alfred_ctx.stack_root_command(_command)
-            _command.register_context(_context_middleware)
+            _command.register_context(middlewares.command_middleware)
             return click_command
 
         if click_command.name == cmd_name and isinstance(_command, commands.AlfredSubprojectCommand):
@@ -163,37 +162,6 @@ def exit_on_error(message: str, exit_code: int = 1):
     exception = click.ClickException(message)
     exception.exit_code = exit_code
     raise exception
-
-
-@contextlib.contextmanager
-def _context_middleware() -> Generator[None, None, None]:
-    """
-    the context code is executed before executing
-    the user's target command.
-    """
-    pathsep = os.pathsep
-
-    pythonpath = pathsep.join(sys.path)
-    if manifest.lookup_parameter_project('pythonpath_project_root'):
-        _pythonpath = pythonpath.split(pathsep)
-        root_directory = project_directory()
-        _pythonpath.append(root_directory)
-        pythonpath = pathsep.join(_pythonpath)
-
-    extensions = manifest.lookup_parameter_project('pythonpath_extends')
-    if len(extensions) > 0:
-        _pythonpath = pythonpath.split(pathsep)
-        root_directory = project_directory()
-        for extension in extensions:
-            if os.path.isabs(extension):
-                _pythonpath.append(extension)
-            else:
-                _pythonpath.append(os.path.join(root_directory, extension))
-
-        pythonpath = pathsep.join(_pythonpath)
-
-    with override_pythonpath(pythonpath):
-        yield
 
 
 if __name__ == '__main__':
