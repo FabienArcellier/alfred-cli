@@ -7,4 +7,4 @@ from alfred.os import is_posix, is_windows, is_linux, is_macos
 """
 https://peps.python.org/pep-0440/
 """
-__version__ = "2.2.0"
+__version__ = "2.2.1"
