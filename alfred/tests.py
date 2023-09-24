@@ -1,9 +1,4 @@
-import os
-
 import alfred
-
-ROOT_DIR = os.path.realpath(os.path.join(__file__, "..", ".."))
-
 
 @alfred.command('tests', help="validate alfred with all the automatic testing")
 @alfred.option('-v', '--verbose', is_flag=True)

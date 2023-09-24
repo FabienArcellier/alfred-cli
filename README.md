@@ -34,6 +34,17 @@ Commands:
 
 the commands are implemented in python in modules in the subdirectory ``./alfred``.
 
+*./alfred/lint.py*
+```python
+@alfred.command('lint', help="validate the source code using pylint")
+@alfred.option('-v', '--verbose', is_flag=True, default=False)
+def lint(verbose: bool):
+    if verbose is False:
+        alfred.run('pylint src/alfred')
+    else:
+        alfred.run('pylint --verbose --reports y src/alfred')
+```
+
 *./alfred/ci.py*
 ```python
 @alfred.command('ci', help="execute continuous integration process of alfred")
