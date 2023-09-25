@@ -14,3 +14,13 @@ def debug(message: str):
     >>> logger.debug("hello world")
     """
     logger.debug(message, stacklevel=2)
+
+
+def warning(message: str):
+    """
+    log a warning message
+
+    >>> from alfred import logger
+    >>> logger.warning("hello world")
+    """
+    logger.warning(message, stacklevel=2)
