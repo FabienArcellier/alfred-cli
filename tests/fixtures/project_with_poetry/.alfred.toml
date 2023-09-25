@@ -1,0 +1,6 @@
+[alfred]
+
+[alfred.project]
+command = [
+    'customdir/*.py'
+]

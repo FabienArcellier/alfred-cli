@@ -22,6 +22,7 @@ def manifest_definitions():
         ManifestParameter('path_extends', section='alfred.project', default=[], formatter=_format_path_list, checker=_check_path_list),
         ManifestParameter('venv', section='alfred.project', default=None, formatter=_format_path),
         ManifestParameter('venv_dotvenv_ignore', section='alfred.project', default=False),
+        ManifestParameter('venv_poetry_ignore', section='alfred.project', default=False),
     ]
 
 

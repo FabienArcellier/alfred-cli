@@ -16,9 +16,12 @@ def venv_lookup(project_dir: str) -> Optional[str]:
         return None
 
     dotvenv_path = os.path.join(project_dir, '.venv')
-    if os.path.isdir(dotvenv_path) and venv_is_valid(dotvenv_path):
-        return dotvenv_path
-    elif os.path.isdir(dotvenv_path):
-        logger.debug(f"venv {dotvenv_path} is not valid")
+    if not os.path.isdir(dotvenv_path):
+        logger.debug(f"{project_dir} does not contains .venv directory")
+        return None
 
+    if venv_is_valid(dotvenv_path):
+        return dotvenv_path
+
+    logger.warning(f"virtual env in {dotvenv_path} is not valid. You should install / reinstall it")
     return None
