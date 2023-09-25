@@ -52,6 +52,7 @@ Project manifest
     python_path_extends = [ ] # optional
     venv = null # optional
     venv_dotvenv_ignore = false # optional
+    venv_poetry_ignore = false # optional
 
 Section [alfred]
 ================
@@ -188,10 +189,20 @@ Section [alfred.project]
             [alfred.project]
             venv_dotvenv_ignore = true
 
+
+    venv_poetry_ignore (optional)
+
+        ignores poetry's virtual environment when searching for a virtual environment.
+
+        .. code-block:: toml
+
+            [alfred.project]
+            venv_poetry_ignore = true
+
 Subproject : Organization of a mono-repository
 **********************************************
 
-In version-control systems, a monorepo ("mono" meaning 'single' and "repo" being short for 'repository') is a software-development strategy in which the code for a number of projects is stored in the same repository
+In version-control systems, a monorepo is a software-development strategy in which the code for a number of projects is stored in the same repository
 
 In the case where these are different applications, they can have their own manifest, therefore their own venv.
 Alfred allows them to be managed in a unified way thanks to the concept of sub-projects.
