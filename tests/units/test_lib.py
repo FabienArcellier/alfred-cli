@@ -1,7 +1,9 @@
 import unittest
 
-from alfred.lib import list_hierarchy_directory
+from alfred.lib import list_hierarchy_directory, override_envs
 from alfred.os import is_posix, is_windows
+
+import os
 
 
 class TestLib(unittest.TestCase):
@@ -35,6 +37,27 @@ class TestLib(unittest.TestCase):
         self.assertEqual("C:\\root\\path\\os\\file", parents_directory[0])
         self.assertEqual("C:\\root\\path\\os", parents_directory[1])
         self.assertEqual("\\", parents_directory[4])
+
+
+    def test_override_envs_should_override_environment_variables_in_with_block(self):
+        # Arrange
+        os.environ['TEST'] = '1'
+
+        with override_envs(TEST='2'):
+            assert os.getenv('TEST') == '2'
+
+        assert os.getenv('TEST') == '1'
+
+
+    def test_override_envs_should_create_environment_variables_in_with_block_then_remove_it(self):
+        # Arrange
+        assert os.getenv('TESTANYYOLO') is None, f"TESTANYYOLO is already defined with value { os.getenv('TESTANYYOLO') }"
+
+        with override_envs(TESTANYYOLO='2'):
+            assert os.getenv('TESTANYYOLO') == '2'
+
+        assert os.getenv('TESTANYYOLO') is None
+
 
 
 if __name__ == '__main__':

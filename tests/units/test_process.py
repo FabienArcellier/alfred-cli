@@ -2,7 +2,7 @@ from typing import Tuple, List
 
 import pytest
 
-from alfred import shparser
+from alfred import process
 
 
 @pytest.mark.parametrize('cmd,result', [
@@ -15,7 +15,7 @@ def test_parse_text_command_should_parse_text_command(cmd: str, result: Tuple[st
     tests the extraction of a command from a text string.
     """
     # Acts & Assert
-    assert shparser.parse_text_command(cmd) == result
+    assert process.parse_text_command(cmd) == result
 
 
 def test_parse_text_command_should_handle_litteral_string():
@@ -24,4 +24,4 @@ def test_parse_text_command_should_handle_litteral_string():
     expected_result = ('python', ['-c', 'import os;os.rename(\'file.txt\', \'file2.txt\');'])
 
     # Acts & Assert
-    assert shparser.parse_text_command(cmd) == expected_result
+    assert process.parse_text_command(cmd) == expected_result

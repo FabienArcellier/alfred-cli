@@ -2,15 +2,10 @@ import os
 import sys
 from typing import Optional, List, Tuple, Union
 
-import click
-import plumbum
-from plumbum import local
-from plumbum.commands.modifiers import _TEE
-
 import alfred.os
-from alfred import manifest, ctx
-from alfred.os import is_windows
+from alfred import manifest, ctx, process
 from alfred.exceptions import AlfredException
+from alfred.lib import override_envs
 from alfred.logger import logger
 
 
@@ -46,30 +41,21 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
     if not os.path.isdir(bin_path):
         raise AlfredException(f"bin folder not found in venv: {venv}, bin_path={bin_path}")
 
-    python = plumbum.local[python_path]
+    python = process.sh(python_path)
     args = ctx.invocation_options() + args
     logger.debug(f"alfred interpreter - switch to python: {python_path} : args={args}")
 
-    with local.env(VIRTUAL_ENV=venv, PATH=global_path):
+    with override_envs(VIRTUAL_ENV=venv, PATH=global_path):
         python_args = ['-m', module] + args
-        if is_windows():
-            # windows does not support streaming through plumbum.
-            # the publication is done at the end of the call.
-            #
-            # I don't know how to do better.
-            exit_code, stdout, stderr = python[python_args].run(retcode=None)
-            click.echo(stdout)
-            click.echo(stderr, err=True)
-        else:
-            exit_code, stdout, stderr = python[python_args] & _TEE(retcode=None)
-        return exit_code, stdout, stderr
+        process_result = process.run(python, python_args)
+        return process_result.return_code, process_result.stdout, process_result.stderr
 
 
 def venv_bin_path(venv: str) -> str:
     """
     Determines the path to the binary folder based on the OS and virtual environment path.
     """
-    if is_windows():
+    if alfred.os.is_windows():
         return os.path.join(venv, 'Scripts')
 
     return os.path.join(venv, 'bin')
@@ -117,7 +103,7 @@ def venv_python_path(venv: str) -> str:
     """
     Determines the path to the python interpreter based on the OS and virtual environment path.
     """
-    if is_windows():
+    if alfred.os.is_windows():
         return os.path.join(venv, 'Scripts', 'python.exe')
 
     return os.path.join(venv, 'bin', 'python')
@@ -134,7 +120,7 @@ def format_path_variable(initial_path: str, new_paths: Union[str, List[str]]):
     if isinstance(new_paths, str):
         new_paths = [new_paths]
 
-    if is_windows():
+    if alfred.os.is_windows():
         separator = ';'
     else:
         separator = ':'

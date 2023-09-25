@@ -23,8 +23,8 @@ def test_env_should_inject_environment_variable_in_subprocess():
 def test_env_should_inject_environment_variable_in_sh_invocation():
     with alfred.env(RANDOMVALUE="prod"):
         sh = alfred.sh("bash")
-        result = sh.run(["-c", "echo $RANDOMVALUE"])
-        assert result[1] == "prod\n"
+        _, stdout, _ = alfred.run(sh, ["-c", "echo $RANDOMVALUE"])
+        assert stdout == "prod\n"
 
 
 def test_env_should_release_environment_variable_after_context():

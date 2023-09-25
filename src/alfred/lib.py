@@ -5,8 +5,6 @@ import os
 import sys
 from typing import List, Iterator, ContextManager
 
-from plumbum import local
-
 from alfred.exceptions import InvalidCommandModule
 from alfred import logger
 
@@ -67,26 +65,41 @@ def override_env_pythonpath(pythonpath: str) -> ContextManager[None]:
     * override pythonpath environment variable in plumbum
     * override sys.path
     """
-    logger.debug(f"override PYTHONPATH: {pythonpath}")
-    previous_pythonpath = os.environ.get('PYTHONPATH', '')
     previous_syspath = sys.path
-    with local.env(PYTHONPATH=pythonpath):
-        os.environ['PYTHONPATH'] = pythonpath
+    with override_envs(PYTHONPATH=pythonpath):
         sys.path = pythonpath.split(os.pathsep)
         try:
             yield
         finally:
-            os.environ['PYTHONPATH'] = previous_pythonpath
             sys.path = previous_syspath
 
 
 @contextlib.contextmanager
 def override_env_path(path: str) -> ContextManager[None]:
-    logger.debug(f"override PATH: {path}")
-    previous_path = os.environ.get('PATH', '')
-    with local.env(PATH=path):
-        os.environ['PATH'] = path
-        try:
-            yield
-        finally:
-            os.environ['PATH'] = previous_path
+    with override_envs(PATH=path):
+        yield
+
+@contextlib.contextmanager
+def override_envs(**kwargs) -> ContextManager[None]:
+    """
+    Overriding environment variables
+
+    >>> with override_envs(PATH="/bin:/usr/bin"):
+    >>>     print(os.environ['PATH']) # /bin:/usr/bin
+    >>>
+    >>> print(os.environ['PATH']) # previous value
+    """
+    logger.debug(f"override envs: {kwargs}")
+    saved = {}
+    for key, value in kwargs.items():
+        saved[key] = os.environ.get(key)
+        os.environ[key] = value
+
+    try:
+        yield
+    finally:
+        for key, value in saved.items():
+            if value is None:
+                del os.environ[key]
+            else:
+                os.environ[key] = value

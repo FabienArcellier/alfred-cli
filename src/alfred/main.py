@@ -1,16 +1,12 @@
 import contextlib
 import os
 from functools import wraps
-from typing import Union, List, Callable, Optional
+from typing import Union, List, Callable, Optional, Tuple
 
 import click
-import plumbum
 from click.exceptions import Exit
-from plumbum import CommandNotFound, ProcessExecutionError, FG, local
-from plumbum.machines import LocalCommand
 
-from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command, shparser
-from alfred.logger import get_logger
+from alfred import ctx as alfred_ctx, commands, echo, lib, manifest, alfred_command, process
 
 def CMD_RUNNING():  #pylint: disable=invalid-name
     """
@@ -28,43 +24,6 @@ def CMD_RUNNING():  #pylint: disable=invalid-name
     >>>     print(x)
     """
     return alfred_ctx.command_run()
-
-
-def call(command: LocalCommand, args: [str], exit_on_error=True) -> str:  #pylint: disable=inconsistent-return-statements
-    """
-    Most of the process run by alfred are supposed to stop
-    if the excecution process is finishing with an exit code of 0
-
-    There is one or two exception as the execution of migration by alembic through honcho.
-    exit_on_error allow to manage them
-
-    >>> echo = alfred.sh("echo", "echo is missing on your system")
-    >>> output = alfred.call(echo, ["hello", "world"])
-    >>> print(output)
-    >>> # show `hello world`
-
-
-    :param command: shell program to execute
-    :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
-    """
-    try:
-        logger = get_logger()
-        complete_command = command[args]
-        working_directory = os.getcwd()
-        logger.debug(f'{complete_command} - wd: {working_directory}')
-        output = complete_command()
-
-        """
-        the output of the command is already parsed but the parsing is
-        not usable on some command. I prefer to have a full stdout and delegate the parsing of stdout
-        further
-        """
-        return "".join(output)
-    except ProcessExecutionError as exception:
-        if exit_on_error:
-            click.echo(exception.stdout)
-            raise Exit(code=exception.retcode) from exception
-
 
 def project_directory() -> str:
     """
@@ -105,16 +64,8 @@ def env(**kwargs) -> None:
     >>>     echo = alfred.sh("echo")
     >>>     echo("hello world")
     """
-    previous_environ = os.environ.copy()
-    try:
-        local.env.update(**kwargs)
-        os.environ.update(kwargs)
+    with lib.override_envs(**kwargs):
         yield
-    finally:
-        local.env.clear()
-        local.env.update(previous_environ)
-        os.environ.clear()
-        os.environ.update(previous_environ)
 
 
 @click.pass_context
@@ -211,7 +162,7 @@ class pythonpath:  #pylint: disable=invalid-name
         return wrapper
 
 
-def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand:  # pylint: disable=invalid-name
+def sh(command: Union[str, List[str]], fail_message: str = None) -> process.Command:  # pylint: disable=invalid-name
     """
     Load an executable program from the local system. If the command does not exists, it
     will show an error `fail_message` to the console.
@@ -231,25 +182,10 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> LocalCommand
     :param fail_message: failure message show to the user if no command has been found
     :return: a command you can use with alfred.run
     """
-    if isinstance(command, str):
-        command = [command]
-
-    executable_command = None
-    for _command in command:
-        try:
-            executable_command = plumbum.local[_command]
-            break
-        except CommandNotFound:
-            continue
-
-    if not executable_command:
-        complete_fail_message = f" - {fail_message}" if fail_message is not None else ""
-        raise click.ClickException(f"unknow command {command}{complete_fail_message}")
-
-    return executable_command
+    return process.sh(command, fail_message)
 
 
-def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_error=True) -> None:
+def run(command: Union[str, process.Command], args: Optional[List[str]] = None, exit_on_error=True) -> Tuple[int, str, str]:
     """
     Most of the process run by alfred are supposed to stop
     if the excecution process is finishing with an exit code of 0
@@ -271,31 +207,24 @@ def run(command: Union[str, LocalCommand], args: Optional[str] = None, exit_on_e
     A text command can be used directly with alfred.run. The text command is parsed and the execute is extracted from first
     element in text. The arguments are extracted from the other elements.
 
-    >>> alfred_command.run("echo hello world")
-    >>> alfred_command.run('cp "/home/fabien/hello world" /tmp', exit_on_error=False)
+    >>> alfred.run("echo hello world")
+    >>> alfred.run('cp "/home/fabien/hello world" /tmp', exit_on_error=False)
 
     Shell operations are not supported &, |, &&, ||, etc... You can not use for example `echo hello world | grep hello` or
     `echo hello world > file.txt`. If you use it an error will be raised.
 
+    The return code, the stdout and the stderr are returned as a tuple.
+
+    >>> return_code, stdout, stderr = alfred.run("echo hello world")
+
     :param command: command or text program to execute
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
-    if args is None:
-        args = []
+    result = process.run(command, args)
+    if result.return_code != 0 and exit_on_error:
+        raise Exit(result.return_code)
 
-    try:
-        if isinstance(command, str):
-            executable, args = shparser.parse_text_command(command)
-            command = sh(executable)
-
-        logger = get_logger()
-        complete_command = command[args]
-        working_directory = os.getcwd()
-        logger.debug(f'{complete_command} - wd: {working_directory}')
-        complete_command & FG  # pylint: disable=pointless-statement
-    except ProcessExecutionError as exception:
-        if exit_on_error:
-            raise Exit(code=exception.retcode) from exception
+    return (result.return_code, result.stdout, result.stderr)
 
 
 def invoke_itself(args) -> None:
