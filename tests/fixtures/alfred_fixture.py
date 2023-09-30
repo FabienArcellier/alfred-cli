@@ -103,4 +103,5 @@ def use_new_context():
     sets up a new independent execution context for a test
     """
     with ctx.use_new_context():
+        ctx.test_runner_use(True)
         yield

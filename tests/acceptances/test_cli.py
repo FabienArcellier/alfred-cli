@@ -356,7 +356,7 @@ def test_alfred_execution_directory_return_the_directory_where_invocation_is_don
 
 
 def test_alfred_working_directory_is_the_root_of_the_subproject():
-    with fixtup.up('multiproject'):
+    with fixtup.up('multiproject'), alfred_fixture.use_new_context():
         directory_to_create = os.path.join('products', 'product1', 'src')
         os.makedirs(directory_to_create, exist_ok=True)
 

@@ -185,7 +185,7 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> process.Comm
     return process.sh(command, fail_message)
 
 
-def run(command: Union[str, process.Command], args: Optional[List[str]] = None, exit_on_error=True) -> Tuple[int, str, str]:
+def run(command: Union[str, process.Command], args: Optional[Union[str, List[str]]] = None, exit_on_error=True) -> Tuple[int, str, str]:
     """
     Most of the process run by alfred are supposed to stop
     if the excecution process is finishing with an exit code of 0
@@ -220,6 +220,9 @@ def run(command: Union[str, process.Command], args: Optional[List[str]] = None, 
     :param command: command or text program to execute
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
     """
+    if isinstance(args, str):
+        args = [args]
+
     result = process.run(command, args)
     if result.return_code != 0 and exit_on_error:
         raise Exit(result.return_code)
