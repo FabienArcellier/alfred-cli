@@ -3,7 +3,7 @@ import sys
 from typing import Optional, List, Tuple, Union
 
 import alfred.os
-from alfred import manifest, ctx, process
+from alfred import manifest, ctx, process, venv_plugins
 from alfred.exceptions import AlfredException
 from alfred.lib import override_envs
 from alfred.logger import logger
@@ -61,19 +61,6 @@ def venv_bin_path(venv: str) -> str:
     return os.path.join(venv, 'bin')
 
 
-def venv_is_valid(venv: str) -> bool:
-    """
-    checks if a folder is a valid virtualenv
-
-    * checks for the presence of the `bin` folder for posix systems
-    * checks for the presence of the `Scripts` folder for windows
-    """
-    if alfred.os.is_windows():
-        return os.path.isdir(os.path.join(venv, 'Scripts'))
-    else:
-        return os.path.isdir(os.path.join(venv, 'bin'))
-
-
 def venv_lookup(project_dir: Optional[str] = None) -> Optional[str]:
     """
     determines which virtual environment to use based on the manifest or if a virtualenv is detected in the project.
@@ -83,18 +70,11 @@ def venv_lookup(project_dir: Optional[str] = None) -> Optional[str]:
     if project_dir is None:
         project_dir = manifest.lookup_project_dir(project_dir)
 
-    venv = manifest.lookup_parameter_project('venv', project_dir)
-    if venv is not None and venv_is_valid(venv):
-        return venv
-    elif venv is not None:
-        logger.debug(f"venv {venv} is not valid")
-
-    if manifest.lookup_parameter_project('venv_dotvenv_ignore', project_dir) is False:
-        dotvenv_path = os.path.join(project_dir, '.venv')
-        if os.path.isdir(dotvenv_path) and venv_is_valid(dotvenv_path):
-            return dotvenv_path
-        elif os.path.isdir(dotvenv_path):
-            logger.debug(f"venv {venv} is not valid")
+    _venv_plugins = [venv_plugins.venv, venv_plugins.poetry, venv_plugins.dotvenv]
+    for venv_plugin in _venv_plugins:
+        venv = venv_plugin.venv_lookup(project_dir)
+        if venv is not None:
+            return venv
 
     return None
 
