@@ -23,8 +23,11 @@ def publish():
     # update the existing tags
     alfred.run(git, ["fetch"])
 
-    current_version: str = git["describe", "--tags", "--abbrev=0"]().strip()
-    git_status: str = git["status"]()
+    _, stdout, _ = alfred.run(git, ["describe", "--tags", "--abbrev=0"])
+    current_version = stdout.strip()
+
+    _, stdout, _ = alfred.run(git, ["status"])
+    git_status = stdout.strip()
 
     on_master = "On branch master" in git_status
     if not on_master:
