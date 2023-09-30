@@ -35,6 +35,7 @@ class InvocationContext:
     args: Optional[List[str]] = None
     mode: str = Mode.Unknown
     flag: List[str] = dataclasses.field(default_factory=list)
+    test_runner: bool = False
 
 @dataclasses.dataclass
 class Context:
@@ -43,6 +44,8 @@ class Context:
     @property
     def running(self) -> bool:
         return len(self.commands_stack) > 0
+
+
 
 _invocation_context = InvocationContext()
 _context = Context()
@@ -109,18 +112,23 @@ def mode_set(mode: str) -> None:
     _invocation_context.mode = mode
 
 
-def invoke_through_external_venv(args: List[str]) -> None:
+def invoke_through_external_venv(args: List[str], pty: bool = False) -> None:
     """
     Invokes the current alfred command in its own virtual environment.
 
     """
     alfred_cmd = current_command()
     venv = interpreter.venv_lookup(alfred_cmd.project_dir)
-    exit_code, _, stderr = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
+    if pty is True:
+        exit_code = interpreter.run_module_as_pty(module='alfred.cli', venv=venv, args=args)
+        if exit_code != 0:
+            raise Exit(exit_code)
 
-    if exit_code != 0:
-        echo.error(stderr)
-        raise Exit(exit_code)
+    else:
+        exit_code, _, stderr = interpreter.run_module(module='alfred.cli', venv=venv, args=args)
+        if exit_code != 0:
+            echo.error(stderr)
+            raise Exit(exit_code)
 
 
 def root_command() -> Optional[AlfredCommand]:
@@ -259,3 +267,16 @@ def _include_path(path: str, path_extensions: List[str], root_directory: str) ->
         _path = list(reversed(_path))
         path = os.pathsep.join(_path)
     return path
+
+
+def test_runner_use(enabled: bool):
+    """
+    Active this flag to indicate that the test runner is being used.
+    """
+    _invocation_context.test_runner = enabled
+
+def test_runner_used() -> bool:
+    """
+    Returns whether the test runner is being used.
+    """
+    return _invocation_context.test_runner

@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from typing import Optional, List, Tuple, Union
 
@@ -31,25 +32,60 @@ def run_module(module: str, venv: str, args: List[str]) -> Tuple[int, str, str]:
     >>> interpreter.run_module(module='alfred.cli', venv=venv, args=['hello_world'])
     """
     global_path = os.getenv('PATH', '')
-    python_path = venv_python_path(venv)
+    global_python_path = os.getenv('PYTHONPATH', '')
+    python_executable_path = venv_python_path(venv)
     bin_path = venv_bin_path(venv)
     global_path = format_path_variable(global_path, bin_path)
+    python_path = format_path_variable(global_python_path, bin_path)
 
-    if not os.path.isfile(python_path):
+    if not os.path.isfile(python_executable_path):
         raise AlfredException(f"python interpreter not found in venv: {venv}")
 
     if not os.path.isdir(bin_path):
         raise AlfredException(f"bin folder not found in venv: {venv}, bin_path={bin_path}")
 
-    python = process.sh(python_path)
+    python = process.sh(python_executable_path)
     args = ctx.invocation_options() + args
-    logger.debug(f"alfred interpreter - switch to python: {python_path} : args={args}")
+    logger.debug(f"alfred interpreter - switch to python: {python_executable_path} : args={args}")
 
-    with override_envs(VIRTUAL_ENV=venv, PATH=global_path):
+    with override_envs(VIRTUAL_ENV=venv, PATH=global_path, PYTHONPATH=python_path):
         python_args = ['-m', module] + args
         process_result = process.run(python, python_args)
         return process_result.return_code, process_result.stdout, process_result.stderr
 
+
+def run_module_as_pty(module: str, venv: str, args: List[str]) -> int:
+    """
+    run alfred in another virtual environment with same commands without capturing the output
+
+    >>> interpreter.run_module_as_pty(module='alfred.cli', venv=venv, args=['hello_world'])
+    """
+    global_path = os.getenv('PATH', '')
+    global_python_path = os.getenv('PYTHONPATH', '')
+    python_executable_path = venv_python_path(venv)
+    bin_path = venv_bin_path(venv)
+    global_path = format_path_variable(global_path, bin_path)
+    python_path = format_path_variable(global_python_path, bin_path)
+
+    if not os.path.isfile(python_executable_path):
+        raise AlfredException(f"python interpreter not found in venv: {venv}")
+
+    if not os.path.isdir(bin_path):
+        raise AlfredException(f"bin folder not found in venv: {venv}, bin_path={bin_path}")
+
+    python = process.sh(python_executable_path)
+    args = ctx.invocation_options() + args
+    logger.debug(f"alfred interpreter - switch to python: {python_executable_path} : args={args}")
+
+    exit_code = 0
+    with override_envs(VIRTUAL_ENV=venv, PATH=global_path, PYTHONPATH=python_path):
+        try:
+            python_args = ['-m', module] + args
+            subprocess.run([python.executable] + python_args, stdout=None, stderr=None, check=True)
+        except subprocess.CalledProcessError as exception:
+            exit_code = exception.returncode
+
+    return exit_code
 
 def venv_bin_path(venv: str) -> str:
     """

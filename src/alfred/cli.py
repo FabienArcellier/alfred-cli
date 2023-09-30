@@ -114,13 +114,18 @@ class AlfredCli(click.MultiCommand):
             cmd_output = self.resolve_command(ctx, args)
 
             if cmd_output is not None and alfred_ctx.should_use_external_venv():
-                alfred_ctx.invoke_through_external_venv(args)
-                return
-
-        """
-        The command is executed by click normally.
-        """
-        super().invoke(ctx)
+                pty_support = False if alfred_ctx.test_runner_used() else True  # pylint: disable=simplifiable-if-expression
+                alfred_ctx.invoke_through_external_venv(args, pty=pty_support)
+            else:
+                """
+                The command is executed by click normally.
+                """
+                super().invoke(ctx)
+        else:
+            """
+            The command is executed by click normally.
+            """
+            super().invoke(ctx)
 
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
         if alfred_ctx.cli_args() is None:
