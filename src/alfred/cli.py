@@ -142,6 +142,7 @@ class AlfredCli(click.MultiCommand):
 @click.pass_context
 def cli(ctx, debug: bool, version: bool, check: bool, completion: bool):  # pylint: disable=unused-argument
     alfred_ctx.flag_set('--debug', debug)
+    alfred_ctx.env_set('PYTHONUNBUFFERED', '1')
     alfred_ctx.directory_execution_set(os.getcwd())
 
 
