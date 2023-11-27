@@ -144,7 +144,7 @@ class AlfredCli(click.MultiCommand):
 @click.option("-c", "--check", is_flag=True, help="check the command integrity")
 @click.option("--completion", is_flag=True, help="display instructions to enable completion for your shell")
 @click.pass_context
-def cli(ctx, debug: bool, version: bool, check: bool, completion: bool, new: bool):  # pylint: disable=unused-argument
+def cli(ctx, debug: bool, version: bool, check: bool, completion: bool, new: bool):  # pylint: disable=unused-argument, too-many-arguments
     alfred_ctx.flag_set('--debug', debug)
     alfred_ctx.env_set('PYTHONUNBUFFERED', '1')
     alfred_ctx.directory_execution_set(os.getcwd())

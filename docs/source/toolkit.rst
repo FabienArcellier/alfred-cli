@@ -27,6 +27,13 @@ The following methods are used to set up a command that you can use through alfr
 
 .. autofunction:: env
 
+API to ask information to the user
+**********************************
+
+.. autofunction:: prompt
+
+.. autofunction:: confirm
+
 API to check environment
 ************************
 
