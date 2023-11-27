@@ -1,3 +1,10 @@
+"""
+This module brings together Alfred's commands. These commands are prefixed with `--`.
+They are implemented by Alfred and not by the user. They are therefore reserved.
+
+>>> # check the command integrity
+>>> # alfred --check
+"""
 import io
 import os
 from typing import List
@@ -8,7 +15,6 @@ from click.exceptions import Exit
 from alfred import logger, echo, commands
 from alfred.lib import ROOT_DIR
 
-
 def check():
     logger.debug("Checking commands integrity...")
     is_ok = commands.check_integrity()
@@ -18,6 +24,9 @@ def check():
     else:
         echo.error("Fail to load some commands")
         raise Exit(code=1)
+
+def new():
+    raise Exit(code=0)
 
 
 def version():
