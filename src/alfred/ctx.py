@@ -275,8 +275,21 @@ def test_runner_use(enabled: bool):
     """
     _invocation_context.test_runner = enabled
 
+
 def test_runner_used() -> bool:
     """
     Returns whether the test runner is being used.
     """
     return _invocation_context.test_runner
+
+
+def env_set(env_var: str, value: str) -> None:
+    """
+    Sets an environment variable to a given value. If the variable is already set to the given value,
+    nothing is done.
+
+    """
+    original_value = os.getenv(env_var)
+    if original_value != value:
+        logger.debug(f"alfred interpreter - force environment variable {env_var} to {value}")
+        os.environ[env_var] = value
