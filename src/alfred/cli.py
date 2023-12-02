@@ -111,7 +111,11 @@ class AlfredCli(click.MultiCommand):
             self_command.check()
 
         if ctx.params['new'] is True:
-            self_command.new()
+            fullarg = ' '.join(args)
+            if fullarg.strip() == "":
+                self_command.new()
+            else:
+                self_command.new(fullarg)
 
         if len(args) > 0:
             cmd_output = self.resolve_command(ctx, args)

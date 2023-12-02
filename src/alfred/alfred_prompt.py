@@ -1,20 +1,26 @@
 import contextlib
+import dataclasses
 import threading
 from sys import stdin
 from typing import Optional, List, Callable
 
 import click
 import prompt_toolkit
-from prompt_toolkit.completion import FuzzyWordCompleter
+from prompt_toolkit.completion import FuzzyCompleter, WordCompleter
 from prompt_toolkit.validation import Document, Validator, ValidationError
 
 class Driver:
     prompt_toolkit='prompt_toolkit'
     pytest= 'pytest'
 
-prompt_context = threading.local()
-prompt_context.input = [] # use only with fake driver
-prompt_context.driver = Driver.prompt_toolkit
+@dataclasses.dataclass
+class Context:
+    driver: str = Driver.prompt_toolkit
+    input: List[str] = dataclasses.field(default_factory=list)
+
+module_var = threading.local()
+module_var.ctx = Context()
+module_context = module_var.ctx
 
 def prompt(label: str, proposals: Optional[List[str]] = None, default: Optional[str] = None, validation_func: Optional[Callable[[str], Optional[str]]] = None) -> str:
     """
@@ -35,17 +41,32 @@ def prompt(label: str, proposals: Optional[List[str]] = None, default: Optional[
     if proposals is None:
         proposals = []
 
-    if prompt_context.driver == Driver.pytest:
+    if default is not None:
+        label = label + f"[{default}] "
+
+    if module_context.driver == Driver.pytest:
         _input = _emulate_prompt_on_test(default, validation_func)
     elif stdin.isatty():
-        _input = prompt_toolkit.prompt(label, completer=FuzzyWordCompleter(proposals), validator=FuncValidator(default, validation_func))
+        _input = prompt_toolkit.prompt(label, completer=AlfredFuzzyCompleter(proposals), validator=FuncValidator(default, validation_func))
     else:
         _input = _emulate_prompt_on_non_tty(label, default, validation_func)
 
-    if _input == "":
+    if _input.strip() == "":
         return default
 
-    return _input
+    return _input.strip()
+
+
+def AlfredFuzzyCompleter(proposals):  # pylint: disable=invalid-name
+    """
+    Create a fuzzy completer with proposals and support for special characters as / and : and \
+
+    >>> completer = AlfredFuzzyCompleter(proposals=["/home/user", "/home/user/alfred"])
+
+    :param proposals:
+    :return:
+    """
+    return FuzzyCompleter(WordCompleter(words=proposals), pattern=r"^[a-zA-Z0-9_/]+")
 
 
 def confirm(question: str, default: str = "n") -> bool:
@@ -72,12 +93,14 @@ class FuncValidator(Validator):
         if self.validation_func is None:
             return
 
-        if document.text == self.default:
-            return
-
-        error = self.validation_func(document.text)
-        if error is not None:
-            raise ValidationError(message=error, cursor_position=len(document.text))
+        if self.default is not None and (document.text in ["", self.default]):
+            error = self.validation_func(self.default)
+            if error is not None:
+                raise ValidationError(message=error, cursor_position=len(document.text))
+        else:
+            error = self.validation_func(document.text)
+            if error is not None:
+                raise ValidationError(message=error, cursor_position=len(document.text))
 
 
 def _check_confirm(proposition: str) -> Optional[str]:
@@ -88,7 +111,7 @@ def _check_confirm(proposition: str) -> Optional[str]:
 
 
 def _emulate_prompt_on_test(default, validation_func):
-    _input = prompt_context.input.pop(0)
+    _input = module_context.input.pop(0)
     if _input == "" and default is not None:
         _input = default
 
@@ -115,6 +138,8 @@ def _emulate_prompt_on_non_tty(label: str, default: Optional[str], validation_fu
                 is_valid = False
             else:
                 is_valid = True
+        else:
+            is_valid = True
 
     return _input
 
@@ -122,15 +147,15 @@ def _emulate_prompt_on_non_tty(label: str, default: Optional[str], validation_fu
 
 @contextlib.contextmanager
 def use_test_prompt():
-    previous_driver = prompt_context.driver
-    prompt_context.driver = Driver.pytest
-    prompt_context.input = []
+    previous_driver = module_context.driver
+    module_context.driver = Driver.pytest
+    module_context.input = []
     yield
-    prompt_context.driver = previous_driver
+    module_context.driver = previous_driver
 
 
 def reset_test_prompt():
-    prompt_context.input = []
+    module_context.input = []
 
 def send_test_response(response: str):
-    prompt_context.input.append(response)
+    module_context.input.append(response)

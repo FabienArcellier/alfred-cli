@@ -56,6 +56,19 @@ def list_hierarchy_directory(workingdir: str) -> List[str]:
 
     return result
 
+def slugify(text: str, separator: str = "_"):
+    """
+    >>> txt = "This is a test ---"
+    >>> r = slugify(txt)
+    >>> assert r == "this_is_a_test"
+    """
+    to_replace_with_separator = [' ', '\t', '.', '-', '_']
+    text = text.lower()
+    for char in to_replace_with_separator:
+        text = text.replace(char, separator)
+    return text.strip(separator)
+
+
 @contextlib.contextmanager
 def override_env_pythonpath(pythonpath: str) -> ContextManager[None]:
     """

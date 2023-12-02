@@ -47,6 +47,47 @@ def cache_clear():
 
 
 @lru_cache(maxsize=None)
+def list_modules(project_dir: t.Optional[str] = None) -> List[str]:
+    """
+    Lists the modules containing commands.
+
+    >>> from alfred import commands
+    >>> modules = commands.list_modules()
+    """
+    if project_dir is None:
+        project_dir = manifest.lookup_project_dir()
+
+    modules = set()
+    for pattern in manifest.lookup_parameter_project('command', project_dir):
+        pattern_path = os.path.join(project_dir, pattern)
+        project_dir = manifest.lookup_project_dir()
+        for python_module in list_python_modules(pattern_path):
+            python_module = os.path.relpath(python_module, project_dir)
+            modules.add(python_module)
+
+    return sorted(list(modules))
+
+def list_command_directories(project_dir: t.Optional[str] = None) -> List[str]:
+    """
+    Lists folders that contain commands. The folder path is given relative to the project.
+
+    >>> from alfred import commands
+    >>> command_dir = commands.list_command_directories()[0]
+    >>> print(command_dir)
+    >>> # alfred/
+    :return:
+    """
+    command_dirs = []
+    command_globs = manifest.lookup_parameter('command', section='alfred.project', project_dir=project_dir)
+    for command_glob in command_globs:
+        _dir = command_glob
+        while not os.path.isdir(_dir):
+            _dir = os.path.dirname(_dir)
+        command_dirs.append(_dir)
+
+    return command_dirs
+
+@lru_cache(maxsize=None)
 def list_all(project_dir: t.Optional[str] = None, show_error: bool = True) -> List[AlfredCommand]:
     """
     Loads all commands available in the project. This function retrieves the .alfred.yml manifest,

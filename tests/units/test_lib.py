@@ -1,6 +1,6 @@
 import unittest
 
-from alfred.lib import list_hierarchy_directory, override_envs
+from alfred.lib import list_hierarchy_directory, override_envs, slugify
 from alfred.os import is_posix, is_windows
 
 import os
@@ -57,6 +57,14 @@ class TestLib(unittest.TestCase):
             assert os.getenv('TESTANYYOLO') == '2'
 
         assert os.getenv('TESTANYYOLO') is None
+
+    def test_slugify_should_return_a_slug_of_text(self):
+        # Arrange
+        text = "This is a test ---"
+        # Acts
+        result = slugify(text)
+        # Assert
+        assert result == "this_is_a_test"
 
 
 
