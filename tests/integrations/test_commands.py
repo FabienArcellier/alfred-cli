@@ -52,3 +52,25 @@ def test_check_integrity_should_detect_syntax_error_in_subproject():
 
         # Assert
         assert is_ok is False
+
+def test_list_modules_should_return_the_list_of_modules_in_current_alfred_project():
+    # Arrange
+    with fixtup.up('project'):
+        alfred.commands.cache_clear()
+
+        # Act
+        modules = commands.list_modules()
+
+        # Assert
+        assert [os.path.join('alfred', 'cmd1.py')] == modules
+
+def test_list_command_directories_should_return_the_list_of_root_directory_for_commands():
+    # Arrange
+    with fixtup.up('project'):
+        alfred.commands.cache_clear()
+
+        # Act
+        modules = commands.list_command_directories()
+
+        # Assert
+        assert ['alfred'] == modules

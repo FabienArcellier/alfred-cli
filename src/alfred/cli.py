@@ -110,6 +110,13 @@ class AlfredCli(click.MultiCommand):
         if ctx.params['check'] is True:
             self_command.check()
 
+        if ctx.params['new'] is True:
+            fullarg = ' '.join(args)
+            if fullarg.strip() == "":
+                self_command.new()
+            else:
+                self_command.new(fullarg)
+
         if len(args) > 0:
             cmd_output = self.resolve_command(ctx, args)
 
@@ -137,10 +144,11 @@ class AlfredCli(click.MultiCommand):
                help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
 @click.option("-d", "--debug", is_flag=True, help="display debug information like command runned and working directory")
 @click.option("-v", "--version", is_flag=True, help="display the version of alfred")
+@click.option("--new", is_flag=True, help="open a wizard to generate a new command")
 @click.option("-c", "--check", is_flag=True, help="check the command integrity")
 @click.option("--completion", is_flag=True, help="display instructions to enable completion for your shell")
 @click.pass_context
-def cli(ctx, debug: bool, version: bool, check: bool, completion: bool):  # pylint: disable=unused-argument
+def cli(ctx, debug: bool, version: bool, check: bool, completion: bool, new: bool):  # pylint: disable=unused-argument, too-many-arguments
     alfred_ctx.flag_set('--debug', debug)
     alfred_ctx.env_set('PYTHONUNBUFFERED', '1')
     alfred_ctx.directory_execution_set(os.getcwd())

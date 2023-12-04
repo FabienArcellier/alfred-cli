@@ -7,7 +7,7 @@ import plumbum
 import pytest
 
 import alfred
-from alfred import is_windows
+from alfred import is_windows, alfred_prompt
 from alfred.interpreter import venv_python_path
 from tests.fixtures import alfred_fixture
 
@@ -387,6 +387,53 @@ def test_alfred_sh_get_command_from_manifest_path_extension():
 
         assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
         assert stdout.strip() == 'hello world', f"stdout={stdout}"
+
+def test_alfred_new_should_create_an_empty_command():
+    """
+    This test uses the `alfred --new` helper to create a new command. It checks that this command appears in the list of `alfred --help`
+
+    :return:
+    """
+
+    with fixtup.up('project'):
+        with alfred_prompt.use_test_prompt():
+            alfred_prompt.send_test_response('echo')
+            alfred_prompt.send_test_response('')
+            alfred_prompt.send_test_response('alfred/echo.py')
+            alfred_prompt.send_test_response('y')
+
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--new"])
+
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--help"])
+            assert 'cmd:echo' in stdout, f"stdout={stdout}\nstderr={stderr}"
+
+
+def test_alfred_new_should_create_an_command_run_as_full_text():
+    """
+    This test uses the `alfred --new` helper to create a new command. It checks that this command appears in the list of `alfred --help`
+
+    :return:
+    """
+    if alfred.os.is_windows():
+        pytest.skip('Windows does not support this test')
+
+    with fixtup.up('project'):
+        with alfred_prompt.use_test_prompt():
+            alfred_prompt.send_test_response('echo')
+            alfred_prompt.send_test_response('')
+            alfred_prompt.send_test_response('alfred/echo.py')
+            alfred_prompt.send_test_response('y')
+
+            exit_code, stdout, stderr = alfred_fixture.invoke(["--new", "echo", "hello_world"])
+
+            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+
+            exit_code, stdout, stderr = alfred_fixture.invoke(["cmd:echo"])
+            assert 'hello_world' in stdout, f"stdout={stdout}\nstderr={stderr}"
+
+
 
 
 if __name__ == '__main__':

@@ -1,8 +1,5 @@
 import os
 
-import click
-from click import Choice
-
 import alfred
 
 
@@ -20,13 +17,13 @@ def hello_world(name):
     alfred.run(echo, "")
     alfred.run(echo, "")
 
-    value = click.prompt("Would you want to start ?", type=Choice(['y', 'n']), show_choices=True, default='n')
-    if value == 'y':
+    value = alfred.confirm("Would you want to start ?", default='n')
+    if value is True:
         command_module = os.path.relpath(__file__, os.getcwd())
         alfred.run(f"echo Let's code your first command in '{command_module}' !")
 
-        value = click.prompt("Should I open it for you ?", type=Choice(['y', 'n']), show_choices=True, default='n')
-        if value == 'y':
+        value = alfred.confirm("Should I open it for you ?", default='n')
+        if value is True:
             edit = alfred.sh("edit", f"edit alias is not available, you have to open '{command_module}' yourself.")
             alfred.run(edit, command_module)
     else:
