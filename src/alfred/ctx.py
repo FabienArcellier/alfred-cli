@@ -293,3 +293,5 @@ def env_set(env_var: str, value: str) -> None:
     if original_value != value:
         logger.debug(f"alfred interpreter - force environment variable {env_var} to {value}")
         os.environ[env_var] = value
+    else:
+        logger.debug(f"alfred interpreter - keep environment variable {env_var} at {value}")
