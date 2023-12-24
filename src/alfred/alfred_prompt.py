@@ -41,8 +41,8 @@ def prompt(label: str, proposals: Optional[List[str]] = None, default: Optional[
     if proposals is None:
         proposals = []
 
-    if default is not None:
-        label = label + f"[{default}]: "
+    if default is not None and default != "":
+        label = label + f" [{default}]: "
     else:
         label = label + ": "
 
@@ -83,7 +83,7 @@ def confirm(question: str, default: str = "n") -> bool:
     :param default: the default value if the user leaves the field empty
     :return: True if the user confirmed, False otherwise
     """
-    return prompt(question + f" (y, n)", proposals=["y", "n"], default=default, validation_func=_check_confirm) == "y"
+    return prompt(question + " (y, n)", proposals=["y", "n"], default=default, validation_func=_check_confirm) == "y"
 
 
 class FuncValidator(Validator):

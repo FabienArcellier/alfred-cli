@@ -37,14 +37,14 @@ def new(shell_cmd: Optional[str] = None, project_dir: Optional[str] = None):
 
     all_commands = commands.list_all()
     all_commands_names = sorted([cmd.original_name for cmd in all_commands])
-    new_cmd_name = alfred_prompt.prompt('What command do you want to create ? ', all_commands_names, validation_func=lambda p: _check_cmd_should_be_unique(p, all_commands_names))
-    new_cmd_description = alfred_prompt.prompt(f'What the command `{new_cmd_name}` will do ? ', default="")
+    new_cmd_name = alfred_prompt.prompt('Name of command ?', all_commands_names, validation_func=lambda p: _check_cmd_should_be_unique(p, all_commands_names))
+    new_cmd_description = alfred_prompt.prompt(f'Description of `{new_cmd_name}` command ?', default="")
 
     all_modules = commands.list_modules()
     all_command_directories = commands.list_command_directories()
     default_command_module = os.path.join(all_command_directories[0], 'commands.py')
 
-    module_target = alfred_prompt.prompt(f'In which module do you want to create the `{new_cmd_name}` command ? ',
+    module_target = alfred_prompt.prompt(f'Module of `{new_cmd_name}` command ?',
                                      all_modules,
                                      default=default_command_module,
                                      validation_func=lambda p: _check_module_is_valid(p, all_command_directories))
