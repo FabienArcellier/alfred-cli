@@ -19,8 +19,9 @@ Alfred
 .. image:: https://img.shields.io/badge/license-MIT-007EC7.svg
     :target: https://github.com/FabienArcellier/alfred-cli/blob/master/LICENSE
 
+Alfred is an extensible automation tool designed to **streamline repository operations**. It allows you various commands as continuous integration, runner, build commands ...
 
-Alfred is an extensible automation tool. It allows you to build your **continuous integration scripts** in python, and much more. You can replace any scripts using **the best of both worlds, shell and python**.
+You'll craft advanced commands harnessing **the strengths of both worlds: shell and Python**.
 
 Demo
 ----
@@ -32,34 +33,63 @@ Demo
 Quick start
 -----------
 
-Commands of the code base are documented when you run ``alfred`` in a terminal.
+.. code-block:: bash
+    :caption: generate the command to lint the code base
+
+    $ alfred --new pylint src/myapp
+
+.. code-block:: text
+
+    Name of the command ?: lint
+    Description of `lint` command ?: run linter on codebase
+    Module of `lint` command ? [alfred/commands.py]:
+    >>> @alfred.command('lint', help="run linter on codebase")
+    >>> def pylint():
+    >>>   alfred.run('pylint src/myapp')
+
+    Do you want to create the following `lint` command in `alfred/commands.py` ?  (y, n) [y]: y
 
 .. code-block:: bash
-    :caption: alfred
+    :caption: generate the command to run test on the code base
+
+    $ alfred --new pytest tests/unit
+
+.. code-block:: text
+
+    Name of the command ?: tests
+    Description of `tests` command ?: run unit tests on codebase
+    Module of `tests` command ? [alfred/commands.py]:
+    >>> @alfred.command('tests', help="run unit tests on codebase")
+    >>> def tests():
+    >>>   alfred.run('pytest tests/unit')
+
+    Do you want to create the following `tests` command in `alfred/commands.py` ?  (y, n) [y]: y
+
+.. code-block:: bash
+    :caption: show alfred commands
+
+    $ alfred
+
+.. code-block:: text
 
     Usage: alfred [OPTIONS] COMMAND [ARGS]...
 
-      alfred is a building tool to make engineering tasks easier to develop and to
-      maintain
+      alfred is an extensible automation tool designed to streamline repository
+      operations.
+
+    Options:
+      -d, --debug    display debug information like command runned and working
+                     directory
+      -v, --version  display the version of alfred
+      --new          open a wizard to generate a new command
+      -c, --check    check the command integrity
+      --completion   display instructions to enable completion for your shell
+      --help         Show this message and exit.
 
     Commands:
-      ci                  execute continuous integration process of alfred
-      docs:html           build documentation in html format
-      lint                validate the source code using pylint
-      publish             tag a new release and trigger pypi publication
-      tests               validate alfred with all the automatic testing
-    ```
+      lint                run linter on codebase
+      tests               run unit tests on codebase
 
-the commands are implemented in python in modules in the subdirectory ``./alfred``.
-
-.. code-block:: python
-    :caption: ./alfred/ci.py
-
-    @alfred.command('ci', help="execute continuous integration process of alfred")
-    @alfred.option('-v', '--verbose', is_flag=True)
-    def ci(verbose: bool):
-        alfred.invoke_command('lint', verbose=verbose)
-        alfred.invoke_command('tests', verbose=verbose)
 
 Documentation
 -------------

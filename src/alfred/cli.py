@@ -141,7 +141,7 @@ class AlfredCli(click.MultiCommand):
 
 
 @click.command(cls=AlfredCli,
-               help='alfred is a building tool to make engineering tasks easier to develop and to maintain')
+               help='alfred is an extensible automation tool designed to streamline repository operations.')
 @click.option("-d", "--debug", is_flag=True, help="display debug information like command runned and working directory")
 @click.option("-v", "--version", is_flag=True, help="display the version of alfred")
 @click.option("--new", is_flag=True, help="open a wizard to generate a new command")
