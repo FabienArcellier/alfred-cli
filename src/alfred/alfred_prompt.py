@@ -42,7 +42,9 @@ def prompt(label: str, proposals: Optional[List[str]] = None, default: Optional[
         proposals = []
 
     if default is not None:
-        label = label + f"[{default}] "
+        label = label + f"[{default}]: "
+    else:
+        label = label + ": "
 
     if module_context.driver == Driver.pytest:
         _input = _emulate_prompt_on_test(default, validation_func)
@@ -81,7 +83,7 @@ def confirm(question: str, default: str = "n") -> bool:
     :param default: the default value if the user leaves the field empty
     :return: True if the user confirmed, False otherwise
     """
-    return prompt(question + f" (y, n) [{default}]: ", proposals=["y", "n"], default=default, validation_func=_check_confirm) == "y"
+    return prompt(question + f" (y, n)", proposals=["y", "n"], default=default, validation_func=_check_confirm) == "y"
 
 
 class FuncValidator(Validator):

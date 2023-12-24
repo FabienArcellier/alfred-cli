@@ -2,4 +2,4 @@
 >>> def {cmd_slug}():
 >>>   {code}
 
-Do you want to create the following `{cmd}` command in `{cmd_module}` [y, n] ? 
+Do you want to create the following `{cmd}` command in `{cmd_module}` ? 
