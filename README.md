@@ -14,8 +14,8 @@ You'll craft advanced commands harnessing **the strengths of both worlds: shell 
 
 ### Demo
 
-[![asciicast](https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x.svg)](https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x)
-**introductory video on using alfred**
+![introductory video of alfred](https://media.githubusercontent.com/media/FabienArcellier/alfred-cli/master/docs/demo-1.gif)
+**introductory video**
 
 ### Quick-start
 

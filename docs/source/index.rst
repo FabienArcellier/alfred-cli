@@ -28,7 +28,7 @@ Demo
 
 .. raw:: html
 
-    <script async id="asciicast-i7YVDmQBRYVKAq1k74n9oYp0x" src="https://asciinema.org/a/i7YVDmQBRYVKAq1k74n9oYp0x.js"></script>
+    <img src="https://media.githubusercontent.com/media/FabienArcellier/alfred-cli/master/docs/demo-1.gif" alt="introductory video of alfred" width="100%">
 
 Quick start
 -----------
