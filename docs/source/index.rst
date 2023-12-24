@@ -33,6 +33,8 @@ Demo
 Quick start
 -----------
 
+You will generate commands to launch of the linter and unit tests process.
+
 .. code-block:: bash
     :caption: generate the command to lint the code base
 
@@ -64,6 +66,7 @@ Quick start
     >>>   alfred.run('pytest tests/unit')
 
     Do you want to create the following `tests` command in `alfred/commands.py` ?  (y, n) [y]: y
+
 
 .. code-block:: bash
     :caption: show alfred commands
@@ -100,10 +103,11 @@ Documentation
    installation
    getting_started
    command
-   features
+   pipelines
    command_line
    project
    toolkit
+   features
    benefits
    advanced
 

@@ -1,7 +1,11 @@
-Command line
-############
+Alfred cli
+##########
 
 The use of alfred is done from the command line. To launch alfred, just run ``alfred`` in a terminal
+
+.. raw:: html
+
+    <img src="https://media.githubusercontent.com/media/FabienArcellier/alfred-cli/master/docs/demo-4.gif" alt="alfred command lines" width="100%">
 
 .. contents::
   :backlinks: top

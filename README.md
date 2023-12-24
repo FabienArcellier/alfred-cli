@@ -19,7 +19,7 @@ You'll craft advanced commands harnessing **the strengths of both worlds: shell 
 
 ### Quick-start
 
-In this quick-start, we will create 2 commands to automate the launch of the linter and unit tests.
+You will generate commands to launch of the linter and unit tests process.
 
 ```bash
 $ alfred --new pylint src/myapp

@@ -5,43 +5,109 @@ To configure a python project to use alfred, here is the procedure:
 
 .. code-block:: bash
 
-    pip install alfred-cli
     alfred init
 
+Write a first command to run the linter
+***************************************
 
-You can run alfred to see the available commands.
+.. raw:: html
+
+    <img src="https://media.githubusercontent.com/media/FabienArcellier/alfred-cli/master/docs/demo-2.gif" alt="demo of alfred lint" width="100%">
 
 .. code-block:: bash
+    :caption: generate the command to lint the code base
 
-    alfred
+    $ alfred --new pylint src/myapp
+
+.. code-block:: text
+
+    Name of the command ?: lint
+    Description of `lint` command ?: run linter on codebase
+    Module of `lint` command ? [alfred/commands.py]:
+    >>> @alfred.command('lint', help="run linter on codebase")
+    >>> def pylint():
+    >>>   alfred.run('pylint src/myapp')
+
+    Do you want to create the following `lint` command in `alfred/commands.py` ?  (y, n) [y]: y
+
+.. code-block:: python
+    :caption: alfred/commands.py
+
+    import alfred
+
+    @alfred.command('lint', help="run linter on codebase")
+    def pylint():
+        alfred.run('pylint src/myapp')
+
+Write a second command to run the tests
+***************************************
+
+.. raw:: html
+
+    <img src="https://media.githubusercontent.com/media/FabienArcellier/alfred-cli/master/docs/demo-3.gif" alt="demo of alfred tests" width="100%">
+
+.. code-block:: bash
+    :caption: generate the command to run test on the code base
+
+    $ alfred --new pytest tests/unit
+
+.. code-block:: text
+
+    Name of the command ?: tests
+    Description of `tests` command ?: run unit tests on codebase
+    Module of `tests` command ? [alfred/commands.py]:
+    >>> @alfred.command('tests', help="run unit tests on codebase")
+    >>> def tests():
+    >>>   alfred.run('pytest tests/unit')
+
+    Do you want to create the following `tests` command in `alfred/commands.py` ?  (y, n) [y]: y
+
+
+.. code-block:: python
+    :caption: alfred/commands.py
+
+    import alfred
+
+    @alfred.command('lint', help="run linter on codebase")
+    def pylint():
+        alfred.run('pylint src/myapp')
+
+    @alfred.command('tests', help="run unit tests on codebase")
+    def tests():
+        alfred.run('pytest tests/unit')
+
+
+View documentation of commands
+******************************
+
+.. raw:: html
+
+    <img src="https://media.githubusercontent.com/media/FabienArcellier/alfred-cli/master/docs/demo-4.gif" alt="self documenting alfred commands" width="100%">
+
+.. code-block:: bash
+    :caption: show alfred commands
+
+    $ alfred
 
 .. code-block:: text
 
     Usage: alfred [OPTIONS] COMMAND [ARGS]...
 
-    ...
+      alfred is an extensible automation tool designed to streamline repository
+      operations.
+
+    Options:
+      -d, --debug    display debug information like command runned and working
+                     directory
+      -v, --version  display the version of alfred
+      --new          open a wizard to generate a new command
+      -c, --check    check the command integrity
+      --completion   display instructions to enable completion for your shell
+      --help         Show this message and exit.
 
     Commands:
-      hello_world  let alfred introduce it self
+      lint                run linter on codebase
+      tests               run unit tests on codebase
 
 
-The "hello_world" command is created automatically during initialization. It serves as an introduction to Alfred.
-
-.. code-block:: bash
-
-    alfred hello_world
-
-.. code-block:: text
-
-    Hello world, I am alfred, an extensible automation tool.
-
-    I am here to assist you and your team in your daily tasks.
-    You can ask me to run simple tasks as just run automatic tests.
-    You can also ask me to run complex workflow as continuous integration & application deployment.
-
-    You will write your commands in python, and I will run them for you
-
-
-    Would you want to start ? (y, n) [n]
-
-Click **Next** when you are read to write your first command !
+Click **Next** when you are ready to customize command !
