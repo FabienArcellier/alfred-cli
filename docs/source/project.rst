@@ -1,5 +1,5 @@
-Project
-#######
+Alfred settings
+###############
 
 An alfred project is a set of commands and sub-projects linked by a `.alfred.toml` manifest file.
 
