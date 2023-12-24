@@ -38,3 +38,4 @@ A pipeline can pass an optional parameter to the commands it invokes.
         alfred.invoke_command('lint')
         alfred.invoke_command('test', verbose=verbose)
 
+Click **Next** when you are ready to discover the command line of alfred !

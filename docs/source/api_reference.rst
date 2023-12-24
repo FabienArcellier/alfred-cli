@@ -1,5 +1,5 @@
-Command toolkit
-###############
+API Reference
+#############
 
 Alfred offers APIs to write commands, reuse existing commands, ...
 It aim to make your commands easy to read, write and maintain.

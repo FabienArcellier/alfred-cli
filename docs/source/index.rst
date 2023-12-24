@@ -106,7 +106,7 @@ Documentation
    pipelines
    command_line
    project
-   toolkit
+   api_reference
    features
    benefits
    advanced
@@ -126,3 +126,5 @@ Alfred-cli exists thanks to this 2 open source projects.
 
 * `click <https://github.com/pallets/click/>`__
 * `plumbum <https://github.com/tomerfiliba/plumbum>`__
+
+Click **Next** when you are ready to install alfred !

@@ -120,3 +120,6 @@ Check the alfred commands
 .. note:: it's recommanded to run ``alfred --check`` in your continuous integration process.
 
 .. warning:: ``alfred --check`` don't check the parameters of the command and the code inside commands.
+
+
+Click **Next** when you are ready to discover how to tune alfred settings !
