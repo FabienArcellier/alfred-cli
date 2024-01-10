@@ -94,45 +94,51 @@ class AlfredCli(click.MultiCommand):
 
         From the command, if it is played with the wrong interpreter, alfred restarts itself with the target interpreter.
         """
-        args = [*ctx.protected_args, *ctx.args]
-        if ctx.params['debug'] is True:
-            _logger = logger.get_logger()
-            _logger.setLevel(logging.DEBUG)
+        try:
+            args = [*ctx.protected_args, *ctx.args]
+            if ctx.params['debug'] is True:
+                _logger = logger.get_logger()
+                _logger.setLevel(logging.DEBUG)
 
-        display_obsolete_manifests()
+            display_obsolete_manifests()
 
-        if ctx.params['version'] is True:
-            self_command.version()
+            if ctx.params['version'] is True:
+                self_command.version()
 
-        if ctx.params['completion'] is True:
-            self_command.completion()
+            if ctx.params['completion'] is True:
+                self_command.completion()
 
-        if ctx.params['check'] is True:
-            self_command.check()
+            if ctx.params['check'] is True:
+                self_command.check()
 
-        if ctx.params['new'] is True:
-            fullarg = ' '.join(args)
-            if fullarg.strip() == "":
-                self_command.new()
-            else:
-                self_command.new(fullarg)
+            if ctx.params['new'] is True:
+                fullarg = ' '.join(args)
+                if fullarg.strip() == "":
+                    self_command.new()
+                else:
+                    self_command.new(fullarg)
 
-        if len(args) > 0:
-            cmd_output = self.resolve_command(ctx, args)
+            if len(args) > 0:
+                cmd_output = self.resolve_command(ctx, args)
 
-            if cmd_output is not None and alfred_ctx.should_use_external_venv():
-                pty_support = False if alfred_ctx.test_runner_used() else True  # pylint: disable=simplifiable-if-expression
-                alfred_ctx.invoke_through_external_venv(args, pty=pty_support)
+                if cmd_output is not None and alfred_ctx.should_use_external_venv():
+                    pty_support = False if alfred_ctx.test_runner_used() else True  # pylint: disable=simplifiable-if-expression
+                    alfred_ctx.invoke_through_external_venv(args, pty=pty_support)
+                else:
+                    """
+                    The command is executed by click normally.
+                    """
+                    super().invoke(ctx)
             else:
                 """
                 The command is executed by click normally.
                 """
                 super().invoke(ctx)
-        else:
-            """
-            The command is executed by click normally.
-            """
-            super().invoke(ctx)
+        except NotInitialized as exception:
+            # When the project is not recognize as alfred, we show a error message
+            # to ask the user to initialized its directory
+            click.echo(click.style(f"{exception.message}", fg='red'))
+            sys.exit(2)
 
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
         if alfred_ctx.cli_args() is None:
