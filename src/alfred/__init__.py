@@ -9,4 +9,4 @@ import alfred.shell_completion
 """
 https://peps.python.org/pep-0440/
 """
-__version__ = "2.2.3"
+__version__ = "2.2.4"
