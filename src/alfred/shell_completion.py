@@ -56,9 +56,11 @@ def _comp_words(param: str, exclude_separators: t.List[str]):
 
 
 def _format_bash_completion(exclude_separators: t.List[str], item: CompletionItem, incomplete: str) -> str:
-    value = item.value
+    complete = item.value
     for separator in exclude_separators:
+        filled_separator = incomplete.count(separator)
         if separator in incomplete:
-            value = value.split(separator)[-1]
+            complete = separator.join(complete.split(separator)[filled_separator:])
+            break
 
-    return f"{item.type},{value}"
+    return f"{item.type},{complete}"
