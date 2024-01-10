@@ -59,3 +59,9 @@ def multicommand_posix():
 def wrong_multicommand():
     echo = alfred.sh(["@@@@", "@@@@@"])
     alfred.run(echo, ["multicommand", "is", "working"])
+
+
+@alfred.command("hide_stdout")
+def hide_stdout():
+    alfred.run("echo not_hello", stream_stdout=False)
+    alfred.run("echo hello", stream_stdout=True)
