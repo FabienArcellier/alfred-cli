@@ -185,7 +185,11 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> process.Comm
     return process.sh(command, fail_message)
 
 
-def run(command: Union[str, process.Command], args: Optional[Union[str, List[str]]] = None, exit_on_error=True) -> Tuple[int, str, str]:
+def run(command: Union[str, process.Command],
+    args: Optional[Union[str, List[str]]] = None,
+    exit_on_error=True,
+    stream_stdout=True,
+    stream_stderr=True) -> Tuple[int, str, str]:
     """
     Most of the process run by alfred are supposed to stop
     if the excecution process is finishing with an exit code of 0
@@ -204,6 +208,16 @@ def run(command: Union[str, process.Command], args: Optional[Union[str, List[str
     >>> alfred.run(ls, ["/var/yolo"], exit_on_error=False)
     >>> alfred.run(mv, ["/var/yolo", "/var/yolo1"], exit_on_error=False)
 
+    The stdout is displayed by default. You can use the flag stream_stdout to hide the output from terminal. It's useful
+    when you run a command and parse its result.
+
+    >>> alfred.run("ls /var/yolo", stream_stdout=False)
+
+    The stderr is displayed by default. You can use the flag stream_stderr to hide the error output from terminal. It's not recommanded
+    if you keep the error_on_exit to True.
+
+    >>> alfred.run("ls /var/yolo", stream_stderr=False)
+
     A text command can be used directly with alfred.run. The text command is parsed and the execute is extracted from first
     element in text. The arguments are extracted from the other elements.
 
@@ -219,11 +233,13 @@ def run(command: Union[str, process.Command], args: Optional[Union[str, List[str
 
     :param command: command or text program to execute
     :param exit_on_error: break the flow if the exit code is different of 0 (active by default)
+    :param stream_stdout: stream the command output in the terminal (enable by default)
+    :param stream_stderr: stream the command errors in the terminal (enable by default)
     """
     if isinstance(args, str):
         args = [args]
 
-    result = process.run(command, args)
+    result = process.run(command, args, stream_stdout=stream_stdout, stream_stderr=stream_stderr)
     if result.return_code != 0 and exit_on_error:
         raise Exit(result.return_code)
 

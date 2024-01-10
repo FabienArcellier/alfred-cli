@@ -434,6 +434,16 @@ def test_alfred_new_should_create_an_command_run_as_full_text():
             assert 'hello_world' in stdout, f"stdout={stdout}\nstderr={stderr}"
 
 
+def test_alfred_should_hide_output_on_run_command_when_stream_flag_is_set():
+    if alfred.os.is_windows():
+        pytest.skip('Windows does not support this test')
+
+    with fixtup.up('project'):
+        exit_code, stdout, stderr = alfred_fixture.invoke(["cmd:hide_stdout"])
+
+        assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+        assert 'not_hello' not in stdout, f"stdout={stdout}\nstderr={stderr}"
+        assert 'hello' in stdout, f"stdout={stdout}\nstderr={stderr}"
 
 
 if __name__ == '__main__':
