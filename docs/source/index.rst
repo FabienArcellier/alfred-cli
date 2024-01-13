@@ -40,32 +40,10 @@ You will generate commands to launch of the linter and unit tests process.
 
     $ alfred --new pylint src/myapp
 
-.. code-block:: text
-
-    Name of the command ?: lint
-    Description of `lint` command ?: run linter on codebase
-    Module of `lint` command ? [alfred/commands.py]:
-    >>> @alfred.command('lint', help="run linter on codebase")
-    >>> def pylint():
-    >>>   alfred.run('pylint src/myapp')
-
-    Do you want to create the following `lint` command in `alfred/commands.py` ?  (y, n) [y]: y
-
 .. code-block:: bash
     :caption: generate the command to run test on the code base
 
     $ alfred --new pytest tests/unit
-
-.. code-block:: text
-
-    Name of the command ?: tests
-    Description of `tests` command ?: run unit tests on codebase
-    Module of `tests` command ? [alfred/commands.py]:
-    >>> @alfred.command('tests', help="run unit tests on codebase")
-    >>> def tests():
-    >>>   alfred.run('pytest tests/unit')
-
-    Do you want to create the following `tests` command in `alfred/commands.py` ?  (y, n) [y]: y
 
 
 .. code-block:: bash
