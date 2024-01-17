@@ -27,10 +27,9 @@ add_completion_class(BashCompleteAlfred)
 def _get_completion_args(exclude_separators: t.List[str]) -> t.Tuple[t.List[str], str]:
     comp_words = _comp_words(os.environ["COMP_WORDS"], exclude_separators)
     cwords = split_arg_string(comp_words)
-    cword = len(comp_words.split("\n")) - 1
 
     try:
-        incomplete = cwords[cword]
+        incomplete = cwords[-1]
     except IndexError:
         incomplete = ""
 

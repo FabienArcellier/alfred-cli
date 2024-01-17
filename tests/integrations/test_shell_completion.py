@@ -29,3 +29,26 @@ def test_shell_completion_should_autocomplete_cmd_with_double_point_separator_on
         assert 'html:ko' in autocompletes
         assert 'html:ok' in autocompletes
 
+def test_shell_completion_should_autocomplete_params():
+    """
+    """
+    with fixtup.up(''):
+        cli = Group(
+            "cli",
+            chain=True,
+            commands=[
+                Command("docs:html:ok", params=[Option(["--yes"])]),
+                Command("docs:html:ko"),
+                Group("doc:ok", commands=[Command("full")]),
+            ],
+        )
+        completion = BashCompleteAlfred(cli, {}, cli.name, "_CLICK_COMPLETE")
+        os.environ.setdefault('COMP_WORDS', 'docs:html:ok --')
+
+        # Acts
+        autocompletes = completion.complete()
+
+        # Assert
+        assert '--yes' in autocompletes
+        assert '--help' in autocompletes
+
