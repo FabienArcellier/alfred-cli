@@ -5,7 +5,6 @@ They are implemented by Alfred and not by the user. They are therefore reserved.
 >>> # check the command integrity
 >>> # alfred --check
 """
-import io
 import os
 from typing import List, Optional
 
@@ -100,11 +99,11 @@ def _scaffhold_command(project_dir: str, module_target: str, tpl_command_variabl
     target_file = os.path.join(project_dir, module_target)
     if os.path.isfile(target_file) is False:
         new_module = resource.template('command_module_new.tpl', variables=tpl_command_variables)
-        with io.open(target_file, 'w', encoding='utf-8') as filep:
+        with open(target_file, 'w', encoding='utf-8') as filep:
             filep.write(new_module)
     else:
         append_in_module = resource.template('command_module_existing.tpl', variables=tpl_command_variables)
-        with io.open(target_file, 'a', encoding='utf-8') as filep:
+        with open(target_file, 'a', encoding='utf-8') as filep:
             filep.write(append_in_module)
 
 
