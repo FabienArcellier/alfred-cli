@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "alfred-cli"
-version = "2.2.4"
+version = "2.2.5"
 description = "Alfred is an extensible automation tool. It allows you to build your continuous integration scripts in python, and much more. You can replace any scripts using the best of both worlds, shell and python."
 authors = ["Fabien Arcellier <fabien.arcellier@gmail.com>"]
 license = "MIT"
