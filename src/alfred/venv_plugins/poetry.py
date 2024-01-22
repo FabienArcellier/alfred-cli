@@ -3,7 +3,6 @@ Detect when a project use poetry. He retrieve the virtual environment it created
 
 If the parameter venv_poetry_ignore is set in the section project, then the code move on to the next plugin.
 """
-import io
 import os
 import shutil
 import subprocess
@@ -57,7 +56,7 @@ def is_poetry_project(project_dir: str) -> bool:
     if os.path.isfile(pyproject_path) is False:
         return False
 
-    with io.open(pyproject_path, 'r', encoding='utf-8') as pyproject_filep:
+    with open(pyproject_path, 'r', encoding='utf-8') as pyproject_filep:
         try:
             pyproject_dict = toml.load(pyproject_filep)
             build_system = pyproject_dict.get('build-system', {})

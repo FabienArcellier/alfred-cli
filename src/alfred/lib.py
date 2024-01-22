@@ -1,6 +1,5 @@
 import contextlib
 import glob
-import io
 import os
 import sys
 from typing import List, Iterator, ContextManager
@@ -14,7 +13,7 @@ ROOT_DIR = os.path.realpath(os.path.join(__file__, '..'))
 def import_python(python_path: str) -> dict:
 
     module = {"__file__": python_path}
-    with io.open(python_path, encoding="utf8") as file:
+    with open(python_path, encoding="utf8") as file:
         content = file.read()
         try:
             code = compile(content, python_path, 'exec')

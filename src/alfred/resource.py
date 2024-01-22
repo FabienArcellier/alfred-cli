@@ -1,4 +1,3 @@
-import io
 import os
 from typing import Optional
 
@@ -24,7 +23,7 @@ def read(resource: str) -> Optional[str]:
     if not os.path.isfile(resource_path):
         raise ValueError(f'{resource_path} is missing')
 
-    with io.open(resource_path, encoding='utf-8') as filep:
+    with open(resource_path, encoding='utf-8') as filep:
         return filep.read()
 
 
@@ -46,6 +45,6 @@ def template(resource: str, variables: dict):
     if not os.path.isfile(resource_path):
         raise ValueError(f'{resource_path} is missing')
 
-    with io.open(resource_path, encoding='utf-8') as filep:
+    with open(resource_path, encoding='utf-8') as filep:
         content = filep.read()
         return content.format(**variables)

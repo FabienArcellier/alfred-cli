@@ -1,4 +1,3 @@
-import io
 import os
 from typing import Optional, List, Any
 
@@ -39,7 +38,7 @@ def lookup(path: Optional[str] = None, search: bool = True) -> AlfredManifest:
     alfred_project_dir = lookup_project_dir(path=path, search=search)
     alfred_manifest_path = os.path.join(alfred_project_dir, ".alfred.toml")
 
-    with io.open(alfred_manifest_path,  encoding="utf8") as file:
+    with open(alfred_manifest_path,  encoding="utf8") as file:
         alfred_configuration = toml.load(file)
         return AlfredManifest(alfred_manifest_path, alfred_configuration)
 
