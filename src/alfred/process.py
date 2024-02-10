@@ -22,7 +22,7 @@ class ProcessResult:
     stdout: Optional[str]
     stderr: Optional[str]
 
-def run(command: Union[str, Command], args: Optional[List[str]], stream_stdout: bool = True, stream_stderr: bool = True) -> ProcessResult:
+def run(command: Union[str, Command], args: Optional[List[str]] = None, stream_stdout: bool = True, stream_stderr: bool = True) -> ProcessResult:
     """
     Executes a program in a subprocess and retrieves its result (return code, stdout, stderr). The call is blocking.
 
@@ -174,8 +174,18 @@ class capture_output:  # pylint: disable=invalid-name
                 line = self.capture_stream.readline().decode('utf-8')
 
                 if line != '' and self.stream is True:
-                    self.output_stream.write(line)
-                    self.output_stream.flush()
+                    try:
+                        self.output_stream.write(line)
+                        self.output_stream.flush()
+                    except UnicodeEncodeError:
+                        # Encoding error happens on windows because the terminal is not utf-8 by default
+                        #
+                        # encodings\cp1252.py", line 19, in encode
+                        #   return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                        # UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 5
+                        line = line.encode('ascii', errors='replace').decode('ascii')
+                        self.output_stream.write(line)
+                        self.output_stream.flush()
 
                 if line != '':
                     self.capture_logs.append(line)
