@@ -171,23 +171,25 @@ class capture_output:  # pylint: disable=invalid-name
     def _run_capture(self):
         if self.capture_stream is not None:
             while True:
-                line = self.capture_stream.readline().decode('utf-8')
+                line_bytes = self.capture_stream.readline()
+                if line_bytes != b'':
+                    line = line_bytes.decode('utf-8')
+                    if self.stream is True:
+                        try:
 
-                if line != '' and self.stream is True:
-                    try:
-                        self.output_stream.write(line)
-                        self.output_stream.flush()
-                    except UnicodeEncodeError:
-                        # Encoding error happens on windows because the terminal is not utf-8 by default
-                        #
-                        # encodings\cp1252.py", line 19, in encode
-                        #   return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-                        # UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 5
-                        line = line.encode('ascii', errors='replace').decode('ascii')
-                        self.output_stream.write(line)
-                        self.output_stream.flush()
+                            self.output_stream.write(line)
+                            self.output_stream.flush()
+                        except UnicodeEncodeError:
+                            # Encoding error happens on windows because the terminal is not utf-8 by default
+                            #
+                            # encodings\cp1252.py", line 19, in encode
+                            #   return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                            # UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 5
+                            line = line.encode('ascii', errors='replace').decode('ascii')
+                            self.output_stream.write(line)
+                            self.output_stream.flush()
 
-                if line != '':
+
                     self.capture_logs.append(line)
 
                 if self.subprocess.poll() is not None:
