@@ -1,3 +1,4 @@
+import functools
 import os
 import subprocess
 import sys
@@ -97,6 +98,7 @@ def venv_bin_path(venv: str) -> str:
     return os.path.join(venv, 'bin')
 
 
+@functools.lru_cache(maxsize=None)
 def venv_lookup(project_dir: Optional[str] = None) -> Optional[str]:
     """
     determines which virtual environment to use based on the manifest or if a virtualenv is detected in the project.
@@ -113,6 +115,14 @@ def venv_lookup(project_dir: Optional[str] = None) -> Optional[str]:
             return venv
 
     return None
+
+
+def venv_lookup_cache_clear() -> None:
+    """
+    Clears the cache for the venv_lookup function.
+    This is useful for testing to ensure cache doesn't interfere between tests.
+    """
+    venv_lookup.cache_clear()
 
 
 def venv_python_path(venv: str) -> str:

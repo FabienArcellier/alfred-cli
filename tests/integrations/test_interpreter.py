@@ -1,9 +1,18 @@
 import io
 
 import fixtup
+import pytest
 import toml
 
 from alfred import interpreter
+
+
+@pytest.fixture(autouse=True)
+def clear_venv_lookup_cache():
+    """Clear the venv_lookup cache before each test to prevent interference."""
+    interpreter.venv_lookup_cache_clear()
+    yield
+    interpreter.venv_lookup_cache_clear()
 
 
 def test_venv_lookup_should_detect_venv_automatically():
