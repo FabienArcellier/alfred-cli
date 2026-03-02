@@ -5,7 +5,7 @@ import sys
 from typing import Optional, List, Tuple, Union
 
 import alfred.os
-from alfred import manifest, ctx, process, venv_plugins
+from alfred import ctx, process, venv_plugins
 from alfred.exceptions import AlfredException
 from alfred.lib import override_envs
 from alfred.logger import logger
@@ -99,15 +99,12 @@ def venv_bin_path(venv: str) -> str:
 
 
 @functools.lru_cache(maxsize=None)
-def venv_lookup(project_dir: Optional[str] = None) -> Optional[str]:
+def venv_lookup(project_dir: str) -> Optional[str]:
     """
     determines which virtual environment to use based on the manifest or if a virtualenv is detected in the project.
 
     >>> venv_lookup('/home/far/documents/spikes/20230903_1523__try-autocomplete')
     """
-    if project_dir is None:
-        project_dir = manifest.lookup_project_dir(project_dir)
-
     _venv_plugins = [venv_plugins.venv, venv_plugins.poetry, venv_plugins.dotvenv]
     for venv_plugin in _venv_plugins:
         venv = venv_plugin.venv_lookup(project_dir)
