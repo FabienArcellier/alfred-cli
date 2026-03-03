@@ -1,9 +1,19 @@
 import io
+import os
 
 import fixtup
+import pytest
 import toml
 
 from alfred import interpreter
+
+
+@pytest.fixture(autouse=True)
+def clear_venv_lookup_cache():
+    """Clear the venv_lookup cache before each test to prevent interference."""
+    interpreter.venv_lookup_cache_clear()
+    yield
+    interpreter.venv_lookup_cache_clear()
 
 
 def test_venv_lookup_should_detect_venv_automatically():
@@ -17,7 +27,7 @@ def test_venv_lookup_should_detect_venv_automatically():
             toml.dump(manifest, filep)
 
         # Acts
-        result = interpreter.venv_lookup()
+        result = interpreter.venv_lookup(project_dir=os.getcwd())
         # Acts
         assert result.endswith('.venv')
 
@@ -34,7 +44,7 @@ def test_venv_lookup_should_detect_ignore_dotvenv_when_venv_dotvenv_ignore_is_at
             toml.dump(manifest, filep)
 
         # Acts
-        result = interpreter.venv_lookup()
+        result = interpreter.venv_lookup(project_dir=os.getcwd())
 
         # Acts
         assert result is None
@@ -44,6 +54,6 @@ def test_venv_lookup_should_not_detect_venv_when_is_absent():
     # Arrange
     with fixtup.up('project'):
         # Acts
-        result = interpreter.venv_lookup()
+        result = interpreter.venv_lookup(project_dir=os.getcwd())
         # Acts
         assert result is None

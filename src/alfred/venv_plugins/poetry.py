@@ -29,7 +29,10 @@ def venv_lookup(project_dir: str) -> Optional[str]:
 
         result = subprocess.run([poetry, 'env', 'info', '--path'], cwd=project_dir, capture_output=True, check=False)
         if result.returncode != 0:
-            logger.warning('Poetry virtual environment is missing. You should run poetry install.')
+            logger.warning('Fails to get poetry virtual environment. Execute with debug for more information')
+            logger.debug(f"{project_dir =}")
+            logger.debug(f"stdout: {result.stdout.decode('utf-8')}")
+            logger.debug(f"stderr: {result.stderr.decode('utf-8')}")
             return None
 
         venv = result.stdout.decode('utf-8').strip()

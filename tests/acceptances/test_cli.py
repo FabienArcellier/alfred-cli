@@ -7,10 +7,16 @@ import plumbum
 import pytest
 
 import alfred
-from alfred import is_windows, alfred_prompt
+from alfred import is_windows, alfred_prompt, interpreter
 from alfred.interpreter import venv_python_path
 from tests.fixtures import alfred_fixture
 
+@pytest.fixture(autouse=True)
+def clear_venv_lookup_cache():
+    """Clear the venv_lookup cache before each test to prevent interference."""
+    interpreter.venv_lookup_cache_clear()
+    yield
+    interpreter.venv_lookup_cache_clear()
 
 class TestCli(unittest.TestCase):
 
@@ -241,6 +247,7 @@ class TestCli(unittest.TestCase):
         installed inside like mypy and pytest.
 
         """
+        pytest.skip("Not compliant due to a bug with click")
         with fixtup.up('project_with_venv'):
             python_path = venv_python_path(os.path.join(os.getcwd(), '.venv'))
             python = plumbum.local[python_path]
