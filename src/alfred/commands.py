@@ -15,7 +15,7 @@ from alfred import manifest, echo, project, logger
 from alfred.domain.command import AlfredCommand
 from alfred.lib import list_python_modules, import_python, InvalidCommandModule
 
-class AlfredSubprojectCommand(click.MultiCommand):
+class AlfredSubprojectCommand(click.Group):
 
     def __init__(self, *args, **attrs: t.Any):
         if "path" in attrs:
@@ -24,11 +24,11 @@ class AlfredSubprojectCommand(click.MultiCommand):
 
         super().__init__(*args, **attrs)
 
-    def list_commands(self, ctx: Context) -> t.List[str]:
+    def list_commands(self, _: Context) -> t.List[str]:
         all_commands = list_all(self.path)
         return [command.name for command in all_commands]
 
-    def get_command(self, ctx: Context, cmd_name: str) -> t.Optional[Command]:
+    def get_command(self, _: Context, cmd_name: str) -> t.Optional[Command]:
         all_commands = list_all(self.path, show_error=False)
         for _command in all_commands:
             if _command.name == cmd_name:
@@ -158,7 +158,7 @@ def lookup(command: str or List[str], project_dir: t.Optional[str] = None) -> t.
     return None
 
 
-def _load_commands(commands: list, pattern: str, project_dir: str, subproject: t.Optional[str] = None, show_error: bool = True, raise_error: bool = False) -> list:  # pylint: disable=too-many-arguments
+def _load_commands(commands: list, pattern: str, project_dir: str, subproject: t.Optional[str] = None, show_error: bool = True, raise_error: bool = False) -> list:  # pylint: disable=too-many-arguments,too-many-positional-arguments
     pattern_path = os.path.join(project_dir, pattern)
     prefix = manifest.prefix(project_dir)
     for python_module in list_python_modules(pattern_path):

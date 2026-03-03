@@ -2,7 +2,7 @@ import contextlib
 from collections import namedtuple
 from typing import List
 
-from click import BaseCommand
+from click import Command
 from click.testing import CliRunner
 
 import alfred
@@ -22,7 +22,7 @@ def invoke(args: List[str]) -> CliResult:
     """
     alfred.commands.cache_clear()
 
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
     result = runner.invoke(cli, args)
     if result.exception is not None and not isinstance(result.exception, SystemExit):
         raise result.exception
@@ -30,7 +30,7 @@ def invoke(args: List[str]) -> CliResult:
     return CliResult(result.exit_code, result.stdout, result.stderr)
 
 
-def invoke_click(command: BaseCommand, args: List[str] = None) -> CliResult:
+def invoke_click(command: Command, args: List[str] = None) -> CliResult:
     """
     Invokes a click command. This fixture allows to test features of alfred which need to be executed
     through click to work properly like alfred.invoke_command.
@@ -43,7 +43,7 @@ def invoke_click(command: BaseCommand, args: List[str] = None) -> CliResult:
 
     If the command line invocation raises an exception, this fixture also throws it.
     """
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
     result = runner.invoke(command, args)
 
     if result.exception is not None and not isinstance(result.exception, SystemExit):

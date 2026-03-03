@@ -131,13 +131,14 @@ def sh(command: Union[str, List[str]], fail_message: str = None) -> Command:  # 
         possible_suffixes.append(".exe")
 
     for _command in command:
+        if _command == "python":
+            return Command(sys.executable)
+
         for suffix in possible_suffixes:
             fullpath_command = shutil.which(_command + suffix)
             if fullpath_command is not None:
                 executable_command = Command(fullpath_command)
                 break
-
-
 
     if not executable_command:
         complete_fail_message = f" - {fail_message}" if fail_message is not None else ""
