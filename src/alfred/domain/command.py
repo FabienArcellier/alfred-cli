@@ -3,13 +3,13 @@ import functools
 import os
 from typing import Optional, Callable, Generator
 
-from click import BaseCommand
+from click import Command
 
 
 class AlfredCommand:
 
-    def __init__(self, _command: Optional[BaseCommand] = None):
-        self.command: Optional[BaseCommand] = _command
+    def __init__(self, _command: Optional[Command] = None):
+        self.command: Optional[Command] = _command
         self._original_name: Optional[str] = None
         if _command is not None:
             self._original_name = _command.name
@@ -44,7 +44,7 @@ class AlfredCommand:
     def original_name(self):
         return self._original_name
 
-    def register_click(self, click_command: BaseCommand) -> None:
+    def register_click(self, click_command: Command) -> None:
         """
         Registers the click command to execute when called.
 

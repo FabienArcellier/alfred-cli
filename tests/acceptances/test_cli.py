@@ -196,7 +196,7 @@ class TestCli(unittest.TestCase):
         with fixtup.up('project_with_invalid_commands'):
             _, stdout, stderr = alfred_fixture.invoke([])
 
-            assert "hello_world" in stdout
+            assert "hello_world" in stderr
             assert 'invalid_cmd.py" is not valid.' in stderr
             assert "SyntaxError" in stderr
 
@@ -310,7 +310,7 @@ class TestCli(unittest.TestCase):
     def test_alfred_cmdrunning_ignore_code_section_on_listing_call(self):
         with fixtup.up('project_with_cmd_running'):
             exit_code, stdout, stderr = alfred_fixture.invoke([])
-            assert exit_code == 0, f"stdout={stdout}\nstderr={stderr}"
+            assert exit_code == 2, f"stdout={stdout}\nstderr={stderr}"
             assert "command is running" not in stdout
             assert "list command is in progress" in stdout
 

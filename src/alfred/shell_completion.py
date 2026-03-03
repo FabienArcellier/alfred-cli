@@ -5,8 +5,7 @@ This module overrides it to offer autocompletion after this character.
 import os
 import typing as t
 
-from click.parser import split_arg_string
-from click.shell_completion import CompletionItem, add_completion_class, BashComplete
+from click.shell_completion import CompletionItem, add_completion_class, BashComplete, split_arg_string
 
 
 class BashCompleteAlfred(BashComplete):

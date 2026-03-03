@@ -26,7 +26,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 click = "^8.1.0"
 toml = "^0.10"
 shellingham = "^1.3.0"
@@ -34,14 +34,14 @@ prompt-toolkit = "^3.0.41"
 
 
 [tool.poetry.group.dev.dependencies]
-build = "^0.10.0"
-coverage = "^7.2.2"
-fixtup = "^0.1.5"
-pylint = "^2.17.1"
-pytest = "^7.2.2"
-twine = "^4.0.2"
-sphinx = "^5.0.0"
-sphinx-rtd-theme = "^1.2.0"
+build = "^1.4.0"
+coverage = "^7.13.4"
+fixtup = "^0.2.1"
+pylint = "^4.0.5"
+pytest = "^9.0.2"
+twine = "^6.2.0"
+sphinx = "^8"
+sphinx-rtd-theme = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 from typing import List, Any
+import warnings
 
 import click
 
@@ -28,14 +29,14 @@ def init():
         shutil.copy(os.path.join(ROOT_DIR, 'resources', 'cmd.py'), os.path.join('alfred', 'cmd.py'))
 
 
-class AlfredCli(click.MultiCommand):
+class AlfredCli(click.Group):
 
     def __init__(self, **attrs: Any):
         super().__init__(**attrs)
         self._commands_loaded = False
         self._commands: List[AlfredCommand] = []
 
-    def list_commands(self, ctx):
+    def list_commands(self, _):
         try:
             _list_commands = []
             alfred_ctx.mode_set(alfred_ctx.Mode.ListCommands)
@@ -55,7 +56,7 @@ class AlfredCli(click.MultiCommand):
             click.echo(click.style(f"{exception.message}", fg='red'))
             sys.exit(2)
 
-    def get_command(self, ctx, cmd_name: str):
+    def get_command(self, _, cmd_name: str):
         if cmd_name == 'init':
             return init
 
@@ -80,7 +81,7 @@ class AlfredCli(click.MultiCommand):
 
         return None
 
-    def invoke(self, ctx: Context) -> Any:
+    def invoke(self, ctx: click.Context) -> Any:
         """
         The invocation of a command in alfred depends on the location of the targeted alfred command.
 
@@ -95,7 +96,7 @@ class AlfredCli(click.MultiCommand):
         From the command, if it is played with the wrong interpreter, alfred restarts itself with the target interpreter.
         """
         try:
-            args = [*ctx.protected_args, *ctx.args]
+            args = _rebuild_args(ctx)
             if ctx.params['debug'] is True:
                 _logger = logger.get_logger()
                 _logger.setLevel(logging.DEBUG)
@@ -154,7 +155,7 @@ class AlfredCli(click.MultiCommand):
 @click.option("-c", "--check", is_flag=True, help="check the command integrity")
 @click.option("--completion", is_flag=True, help="display instructions to enable completion for your shell")
 @click.pass_context
-def cli(ctx, debug: bool, version: bool, check: bool, completion: bool, new: bool):  # pylint: disable=unused-argument, too-many-arguments
+def cli(ctx, debug: bool, version: bool, check: bool, completion: bool, new: bool):  # pylint: disable=unused-argument, too-many-arguments, too-many-positional-arguments
     alfred_ctx.flag_set('--debug', debug)
     alfred_ctx.env_set('PYTHONUNBUFFERED', '1')
     alfred_ctx.directory_execution_set(os.getcwd())
@@ -183,6 +184,14 @@ def exit_on_error(message: str, exit_code: int = 1):
     exception.exit_code = exit_code
     raise exception
 
+def _rebuild_args(ctx: click.Context) -> list[Any]:
+    warnings.filterwarnings("ignore", message="'protected_args' is deprecated and will be removed in Click 9.0.*")
+    args = []
+    if hasattr(ctx, 'protected_args'):
+        args += ctx.protected_args
+
+    args += ctx.args
+    return args
 
 if __name__ == '__main__':
     cli()  # pylint: disable=no-value-for-parameter
