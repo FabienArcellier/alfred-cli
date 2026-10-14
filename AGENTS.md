@@ -47,8 +47,8 @@ poetry run alfred --help
 ## Code Style Guidelines
 
 ### Python Version
-- **Python 3.8+** is required
-- Target Python 3.9 for pylint checks
+- **Python 3.10+** is required (see `pyproject.toml` `python = "^3.10"`)
+- CI runs against Python 3.10 through 3.14
 
 ### Formatting
 - **Indentation**: 4 spaces (no tabs)
