@@ -105,7 +105,7 @@ def venv_lookup(project_dir: str) -> Optional[str]:
 
     >>> venv_lookup('/home/far/documents/spikes/20230903_1523__try-autocomplete')
     """
-    _venv_plugins = [venv_plugins.venv, venv_plugins.poetry, venv_plugins.dotvenv]
+    _venv_plugins = [venv_plugins.venv, venv_plugins.dotvenv, venv_plugins.poetry]
     for venv_plugin in _venv_plugins:
         venv = venv_plugin.venv_lookup(project_dir)
         if venv is not None:

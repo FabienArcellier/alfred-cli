@@ -27,7 +27,12 @@ def venv_lookup(project_dir: str) -> Optional[str]:
             logger.warning('Poetry manages this project. Poetry is missing from your system.: https://python-poetry.org/docs/#installation')
             return None
 
-        result = subprocess.run([poetry, 'env', 'info', '--path'], cwd=project_dir, capture_output=True, check=False)
+        env = dict(os.environ)
+        env.pop('VIRTUAL_ENV', None)  # poetry otherwise reports the currently active venv
+        result = subprocess.run(
+            [poetry, 'env', 'info', '--path'],
+            cwd=project_dir, capture_output=True, check=False, env=env,
+        )
         if result.returncode != 0:
             logger.warning('Fails to get poetry virtual environment. Execute with debug for more information')
             logger.debug(f"{project_dir =}")
