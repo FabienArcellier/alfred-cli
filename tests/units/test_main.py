@@ -12,8 +12,9 @@ def test_env_should_inject_environment_variable_in_subprocess():
         queue.put(0 if os.getenv("RANDOMVALUE") == "prod" else 1)
 
     with alfred.env(RANDOMVALUE="prod"):
-        queue = multiprocessing.Queue()
-        process = multiprocessing.Process(target=task, args=(queue,))
+        context = multiprocessing.get_context("fork")
+        queue = context.Queue()
+        process = context.Process(target=task, args=(queue,))
         process.start()
         process.join()
         assert_result = queue.get()
